@@ -100,46 +100,108 @@ export async function POST(request: Request) {
       throw historyError;
     }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are Emma, a friendly English tutor. Help the student practice English conversation. Correct mistakes naturally and briefly. Keep answers encouraging, concise, and educational. Use English unless a short explanation in the student's native language is necessary.",
-        },
-        ...(history ?? []).map((item) => ({
-          role: item.role as "user" | "assistant",
-          content: item.content,
-        })),
-      ],
+    const encoder = new TextEncoder();
+    const currentConversationId = conversationId;
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        let fullText = "";
+
+        function sendEvent(
+          event: string,
+          data: Record<string, unknown>,
+        ) {
+          controller.enqueue(
+            encoder.encode(
+              `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`,
+            ),
+          );
+        }
+
+        try {
+          sendEvent("conversation", {
+            conversationId: currentConversationId,
+          });
+
+          const completionStream =
+            await openai.chat.completions.create({
+              model: "gpt-4.1-mini",
+              stream: true,
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You are Emma, a friendly English tutor. Help the student practice English conversation. Correct mistakes naturally and briefly. Keep answers encouraging, concise, and educational. Use English unless a short explanation in the student's native language is necessary.",
+                },
+                ...(history ?? []).map((item) => ({
+                  role: item.role as "user" | "assistant",
+                  content: item.content,
+                })),
+              ],
+            });
+
+          for await (const chunk of completionStream) {
+            const text =
+              chunk.choices[0]?.delta?.content ?? "";
+
+            if (!text) continue;
+
+            fullText += text;
+
+            sendEvent("delta", {
+              text,
+            });
+          }
+
+          if (!fullText.trim()) {
+            fullText =
+              "Sorry, I could not generate a response.";
+
+            sendEvent("delta", {
+              text: fullText,
+            });
+          }
+
+          const { error: assistantMessageError } =
+            await supabase.from("messages").insert({
+              conversation_id: currentConversationId,
+              role: "assistant",
+              content: fullText,
+            });
+
+          if (assistantMessageError) {
+            throw assistantMessageError;
+          }
+
+          sendEvent("done", {
+            message: fullText,
+          });
+
+          controller.close();
+        } catch (error) {
+          console.error("CHAT STREAM ERROR:", error);
+
+          sendEvent("error", {
+            error: "Failed to generate response",
+          });
+
+          controller.close();
+        }
+      },
     });
 
-    const answer =
-      completion.choices[0]?.message?.content?.trim() ||
-      "Sorry, I could not generate a response.";
-
-    const { error: assistantMessageError } = await supabase
-      .from("messages")
-      .insert({
-        conversation_id: conversationId,
-        role: "assistant",
-        content: answer,
-      });
-
-    if (assistantMessageError) {
-      throw assistantMessageError;
-    }
-
-    return NextResponse.json({
-      answer,
-      conversationId,
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      },
     });
   } catch (error) {
     console.error("CHAT API ERROR:", error);
 
     return NextResponse.json(
-      { error: "Failed to generate response" },
+      { error: "Failed to start chat request" },
       { status: 500 },
     );
   }

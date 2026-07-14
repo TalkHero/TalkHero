@@ -209,82 +209,156 @@ export function ChatBox() {
     }
   }
 
-  async function sendMessage() {
-    const text = input.trim();
+ async function sendMessage() {
+  const text = input.trim();
 
-    if (
-      !text ||
-      loading ||
-      historyLoading ||
-      deletingConversationId
-    ) {
-      return;
+  if (
+    !text ||
+    loading ||
+    historyLoading ||
+    deletingConversationId
+  ) {
+    return;
+  }
+
+  const userMessage: Message = {
+    id: crypto.randomUUID(),
+    role: "user",
+    content: text,
+  };
+
+  const assistantMessageId = crypto.randomUUID();
+
+  setMessages((previous) => [
+    ...previous,
+    userMessage,
+    {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+    },
+  ]);
+
+  setInput("");
+  setLoading(true);
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: text,
+        conversationId,
+      }),
+    });
+
+    if (!response.ok) {
+      const responseText = await response.text();
+
+      throw new Error(
+        responseText || "Failed to send message",
+      );
     }
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: text,
-    };
+    if (!response.body) {
+      throw new Error("Streaming is not supported");
+    }
 
-    setMessages((previous) => [
-      ...previous,
-      userMessage,
-    ]);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
 
-    setInput("");
-    setLoading(true);
+    let buffer = "";
+    let receivedText = false;
 
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: text,
-          conversationId,
-        }),
+    while (true) {
+      const { value, done } = await reader.read();
+
+      if (done) break;
+
+      buffer += decoder.decode(value, {
+        stream: true,
       });
 
-      const data = await response.json();
+      const eventBlocks = buffer.split("\n\n");
+      buffer = eventBlocks.pop() ?? "";
 
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to send message",
-        );
+      for (const eventBlock of eventBlocks) {
+        const lines = eventBlock
+          .replace(/\r/g, "")
+          .split("\n");
+
+        const eventName = lines
+          .find((line) => line.startsWith("event:"))
+          ?.slice(6)
+          .trim();
+
+        const dataLine = lines
+          .find((line) => line.startsWith("data:"))
+          ?.slice(5)
+          .trim();
+
+        if (!eventName || !dataLine) continue;
+
+        const data = JSON.parse(dataLine);
+
+        if (
+          eventName === "conversation" &&
+          data.conversationId
+        ) {
+          setConversationId(data.conversationId);
+        }
+
+        if (eventName === "delta" && data.text) {
+          receivedText = true;
+
+          setMessages((previous) =>
+            previous.map((currentMessage) =>
+              currentMessage.id === assistantMessageId
+                ? {
+                    ...currentMessage,
+                    content:
+                      currentMessage.content + data.text,
+                  }
+                : currentMessage,
+            ),
+          );
+        }
+
+        if (eventName === "error") {
+          throw new Error(
+            data.error || "Failed to generate response",
+          );
+        }
       }
-
-      setConversationId(data.conversationId);
-
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: data.answer,
-        },
-      ]);
-
-      await loadConversations();
-    } catch (error) {
-      console.error("SEND MESSAGE ERROR:", error);
-
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content:
-            error instanceof Error
-              ? `❌ ${error.message}`
-              : "❌ Sorry, something went wrong.",
-        },
-      ]);
-    } finally {
-      setLoading(false);
     }
+
+    if (!receivedText) {
+      throw new Error("The assistant returned no text");
+    }
+
+    await loadConversations();
+  } catch (error) {
+    console.error("SEND MESSAGE ERROR:", error);
+
+    setMessages((previous) =>
+      previous.map((currentMessage) =>
+        currentMessage.id === assistantMessageId
+          ? {
+              ...currentMessage,
+              content:
+                error instanceof Error
+                  ? `❌ ${error.message}`
+                  : "❌ Sorry, something went wrong.",
+            }
+          : currentMessage,
+      ),
+    );
+  } finally {
+    setLoading(false);
   }
+}
 
   function handleKeyDown(
     event: React.KeyboardEvent<HTMLInputElement>,
@@ -408,13 +482,6 @@ export function ChatBox() {
               </div>
             ))}
 
-            {loading && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md bg-white px-5 py-3 shadow">
-                  🤖 Thinking...
-                </div>
-              </div>
-            )}
 
             <div ref={bottomRef} />
           </div>
