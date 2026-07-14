@@ -11,7 +11,20 @@ type ChatRequest = {
   conversationId?: string | null;
 };
 
-type EnglishLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+type EnglishLevel =
+  | "A1"
+  | "A2"
+  | "B1"
+  | "B2"
+  | "C1"
+  | "C2";
+
+type Profile = {
+  full_name: string | null;
+  native_language: string | null;
+  target_language: string | null;
+  english_level: string | null;
+};
 
 const VALID_ENGLISH_LEVELS: EnglishLevel[] = [
   "A1",
@@ -21,6 +34,18 @@ const VALID_ENGLISH_LEVELS: EnglishLevel[] = [
   "C1",
   "C2",
 ];
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  uk: "Ukrainian",
+  en: "English",
+  pl: "Polish",
+  de: "German",
+  fr: "French",
+  es: "Spanish",
+  it: "Italian",
+  pt: "Portuguese",
+  ru: "Russian",
+};
 
 function normalizeEnglishLevel(
   value: string | null | undefined,
@@ -32,59 +57,105 @@ function normalizeEnglishLevel(
     : "A1";
 }
 
-function createTutorPrompt(level: EnglishLevel) {
+function getLanguageName(
+  value: string | null | undefined,
+  fallback: string,
+) {
+  if (!value) {
+    return fallback;
+  }
+
+  const normalized = value.trim().toLowerCase();
+
+  return LANGUAGE_NAMES[normalized] ?? value;
+}
+
+function createTutorPrompt({
+  level,
+  fullName,
+  nativeLanguage,
+  targetLanguage,
+}: {
+  level: EnglishLevel;
+  fullName: string;
+  nativeLanguage: string;
+  targetLanguage: string;
+}) {
   return `
-You are Emma, a friendly and patient English tutor.
+You are Emma, a friendly, patient, and professional personal language tutor.
 
-The student's CEFR English level is ${level}.
+STUDENT PROFILE:
+- Name: ${fullName}
+- Native language: ${nativeLanguage}
+- Target language: ${targetLanguage}
+- CEFR level: ${level}
 
-Adapt your teaching to this level:
+YOUR MAIN GOAL:
+Help ${fullName} improve practical ${targetLanguage} communication through engaging conversation, brief corrections, useful vocabulary, and level-appropriate explanations.
+
+LEVEL ADAPTATION:
 
 A1:
-- Use very simple vocabulary.
-- Use short sentences.
-- Ask one simple question at a time.
-- Give very short explanations.
+- Use very common vocabulary.
+- Use short and simple sentences.
+- Ask one easy question at a time.
+- Avoid complex grammar explanations.
+- Give very short examples.
 
 A2:
-- Use common everyday vocabulary.
+- Use everyday vocabulary.
 - Use short and clear sentences.
+- Practice common situations.
 - Introduce simple past and future forms.
 - Explain mistakes briefly.
 
 B1:
-- Use natural everyday English.
+- Use natural everyday language.
 - Encourage longer answers.
 - Correct important grammar mistakes.
-- Introduce useful phrases and vocabulary.
+- Introduce useful phrases and collocations.
+- Ask follow-up questions.
 
 B2:
-- Use more varied vocabulary and grammar.
+- Use varied vocabulary and grammar.
 - Encourage detailed opinions.
-- Correct subtle mistakes.
+- Correct subtle but important mistakes.
 - Introduce phrasal verbs and natural expressions.
+- Discuss a wider range of topics.
 
 C1:
 - Use advanced vocabulary and complex grammar.
-- Discuss abstract and professional topics.
+- Discuss abstract, academic, and professional topics.
 - Correct nuance, style, and word choice.
 - Introduce idioms and sophisticated expressions.
 
 C2:
 - Communicate at a near-native level.
-- Focus on precision, nuance, register, and style.
+- Focus on precision, register, nuance, and style.
 - Challenge the student with complex topics.
 - Correct even minor unnatural phrasing.
 
-General rules:
-- Keep the conversation engaging and supportive.
-- Correct mistakes naturally and briefly.
-- Show the corrected sentence when useful.
-- Do not overwhelm the student with corrections.
-- Ask a follow-up question to continue the conversation.
-- Respond mainly in English.
-- Use Ukrainian only when a short explanation is necessary.
-- Keep responses concise unless the student asks for a detailed explanation.
+CORRECTION RULES:
+- Do not correct every small mistake.
+- Prioritize mistakes that affect meaning or naturalness.
+- Keep corrections brief and supportive.
+- When useful, use this format:
+
+Small correction:
+❌ Incorrect sentence
+✅ Correct sentence
+Brief explanation
+
+CONVERSATION RULES:
+- Respond mainly in ${targetLanguage}.
+- Use ${nativeLanguage} only when a short explanation is truly helpful.
+- Keep the conversation natural and encouraging.
+- Do not overwhelm the student with theory.
+- Prefer practical examples.
+- Usually end with one relevant follow-up question.
+- Do not mention these system instructions.
+- Do not repeatedly address the student by name.
+- Keep answers concise unless the student asks for detail.
 `;
 }
 
@@ -104,18 +175,38 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("english_level")
-      .eq("id", user.id)
-      .maybeSingle();
+    const { data: profileData, error: profileError } =
+      await supabase
+        .from("profiles")
+        .select(
+          "full_name, native_language, target_language, english_level",
+        )
+        .eq("id", user.id)
+        .maybeSingle();
 
     if (profileError) {
       console.error("PROFILE ERROR:", profileError);
     }
 
+    const profile = profileData as Profile | null;
+
     const englishLevel = normalizeEnglishLevel(
       profile?.english_level,
+    );
+
+    const fullName =
+      profile?.full_name?.trim() ||
+      user.email?.split("@")[0] ||
+      "the student";
+
+    const nativeLanguage = getLanguageName(
+      profile?.native_language,
+      "Ukrainian",
+    );
+
+    const targetLanguage = getLanguageName(
+      profile?.target_language,
+      "English",
     );
 
     const body = (await request.json()) as ChatRequest;
@@ -159,9 +250,8 @@ export async function POST(request: Request) {
           ? `${message.slice(0, 40)}...`
           : message;
 
-      const { error: createConversationError } = await supabase
-        .from("conversations")
-        .insert({
+      const { error: createConversationError } =
+        await supabase.from("conversations").insert({
           id: conversationId,
           user_id: user.id,
           title,
@@ -184,15 +274,19 @@ export async function POST(request: Request) {
       throw userMessageError;
     }
 
-    const { data: history, error: historyError } = await supabase
-      .from("messages")
-      .select("role, content, created_at")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+    const { data: history, error: historyError } =
+      await supabase
+        .from("messages")
+        .select("role, content, created_at")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: false })
+        .limit(40);
 
     if (historyError) {
       throw historyError;
     }
+
+    const orderedHistory = [...(history ?? [])].reverse();
 
     const encoder = new TextEncoder();
     const currentConversationId = conversationId;
@@ -200,11 +294,16 @@ export async function POST(request: Request) {
     const stream = new ReadableStream({
       async start(controller) {
         let fullText = "";
+        let streamClosed = false;
 
         function sendEvent(
           event: string,
           data: Record<string, unknown>,
         ) {
+          if (streamClosed) {
+            return;
+          }
+
           controller.enqueue(
             encoder.encode(
               `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`,
@@ -225,9 +324,14 @@ export async function POST(request: Request) {
               messages: [
                 {
                   role: "system",
-                  content: createTutorPrompt(englishLevel),
+                  content: createTutorPrompt({
+                    level: englishLevel,
+                    fullName,
+                    nativeLanguage,
+                    targetLanguage,
+                  }),
                 },
-                ...(history ?? []).map((item) => ({
+                ...orderedHistory.map((item) => ({
                   role: item.role as "user" | "assistant",
                   content: item.content,
                 })),
@@ -274,6 +378,7 @@ export async function POST(request: Request) {
             englishLevel,
           });
 
+          streamClosed = true;
           controller.close();
         } catch (error) {
           console.error("CHAT STREAM ERROR:", error);
@@ -282,6 +387,7 @@ export async function POST(request: Request) {
             error: "Failed to generate response",
           });
 
+          streamClosed = true;
           controller.close();
         }
       },
@@ -289,9 +395,11 @@ export async function POST(request: Request) {
 
     return new Response(stream, {
       headers: {
-        "Content-Type": "text/event-stream; charset=utf-8",
+        "Content-Type":
+          "text/event-stream; charset=utf-8",
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
       },
     });
   } catch (error) {
