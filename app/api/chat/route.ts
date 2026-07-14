@@ -11,6 +11,83 @@ type ChatRequest = {
   conversationId?: string | null;
 };
 
+type EnglishLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+
+const VALID_ENGLISH_LEVELS: EnglishLevel[] = [
+  "A1",
+  "A2",
+  "B1",
+  "B2",
+  "C1",
+  "C2",
+];
+
+function normalizeEnglishLevel(
+  value: string | null | undefined,
+): EnglishLevel {
+  const normalized = value?.toUpperCase() as EnglishLevel;
+
+  return VALID_ENGLISH_LEVELS.includes(normalized)
+    ? normalized
+    : "A1";
+}
+
+function createTutorPrompt(level: EnglishLevel) {
+  return `
+You are Emma, a friendly and patient English tutor.
+
+The student's CEFR English level is ${level}.
+
+Adapt your teaching to this level:
+
+A1:
+- Use very simple vocabulary.
+- Use short sentences.
+- Ask one simple question at a time.
+- Give very short explanations.
+
+A2:
+- Use common everyday vocabulary.
+- Use short and clear sentences.
+- Introduce simple past and future forms.
+- Explain mistakes briefly.
+
+B1:
+- Use natural everyday English.
+- Encourage longer answers.
+- Correct important grammar mistakes.
+- Introduce useful phrases and vocabulary.
+
+B2:
+- Use more varied vocabulary and grammar.
+- Encourage detailed opinions.
+- Correct subtle mistakes.
+- Introduce phrasal verbs and natural expressions.
+
+C1:
+- Use advanced vocabulary and complex grammar.
+- Discuss abstract and professional topics.
+- Correct nuance, style, and word choice.
+- Introduce idioms and sophisticated expressions.
+
+C2:
+- Communicate at a near-native level.
+- Focus on precision, nuance, register, and style.
+- Challenge the student with complex topics.
+- Correct even minor unnatural phrasing.
+
+General rules:
+- Keep the conversation engaging and supportive.
+- Correct mistakes naturally and briefly.
+- Show the corrected sentence when useful.
+- Do not overwhelm the student with corrections.
+- Ask a follow-up question to continue the conversation.
+- Respond mainly in English.
+- Use Ukrainian only when a short explanation is necessary.
+- Keep responses concise unless the student asks for a detailed explanation.
+`;
+}
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -27,6 +104,20 @@ export async function POST(request: Request) {
       );
     }
 
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("english_level")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("PROFILE ERROR:", profileError);
+    }
+
+    const englishLevel = normalizeEnglishLevel(
+      profile?.english_level,
+    );
+
     const body = (await request.json()) as ChatRequest;
     const message = body.message?.trim();
 
@@ -40,15 +131,18 @@ export async function POST(request: Request) {
     let conversationId = body.conversationId ?? null;
 
     if (conversationId) {
-      const { data: conversation, error } = await supabase
+      const {
+        data: conversation,
+        error: conversationError,
+      } = await supabase
         .from("conversations")
         .select("id")
         .eq("id", conversationId)
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (error) {
-        throw error;
+      if (conversationError) {
+        throw conversationError;
       }
 
       if (!conversation) {
@@ -65,7 +159,7 @@ export async function POST(request: Request) {
           ? `${message.slice(0, 40)}...`
           : message;
 
-      const { error } = await supabase
+      const { error: createConversationError } = await supabase
         .from("conversations")
         .insert({
           id: conversationId,
@@ -73,8 +167,8 @@ export async function POST(request: Request) {
           title,
         });
 
-      if (error) {
-        throw error;
+      if (createConversationError) {
+        throw createConversationError;
       }
     }
 
@@ -121,6 +215,7 @@ export async function POST(request: Request) {
         try {
           sendEvent("conversation", {
             conversationId: currentConversationId,
+            englishLevel,
           });
 
           const completionStream =
@@ -130,8 +225,7 @@ export async function POST(request: Request) {
               messages: [
                 {
                   role: "system",
-                  content:
-                    "You are Emma, a friendly English tutor. Help the student practice English conversation. Correct mistakes naturally and briefly. Keep answers encouraging, concise, and educational. Use English unless a short explanation in the student's native language is necessary.",
+                  content: createTutorPrompt(englishLevel),
                 },
                 ...(history ?? []).map((item) => ({
                   role: item.role as "user" | "assistant",
@@ -144,7 +238,9 @@ export async function POST(request: Request) {
             const text =
               chunk.choices[0]?.delta?.content ?? "";
 
-            if (!text) continue;
+            if (!text) {
+              continue;
+            }
 
             fullText += text;
 
@@ -175,6 +271,7 @@ export async function POST(request: Request) {
 
           sendEvent("done", {
             message: fullText,
+            englishLevel,
           });
 
           controller.close();
@@ -201,8 +298,12 @@ export async function POST(request: Request) {
     console.error("CHAT API ERROR:", error);
 
     return NextResponse.json(
-      { error: "Failed to start chat request" },
-      { status: 500 },
+      {
+        error: "Failed to start chat request",
+      },
+      {
+        status: 500,
+      },
     );
   }
 }
