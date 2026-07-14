@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createClient();
 
@@ -17,8 +17,38 @@ export async function GET() {
       );
     }
 
-    const { data: conversation, error: conversationError } =
-      await supabase
+    const url = new URL(request.url);
+    const requestedConversationId =
+      url.searchParams.get("conversationId");
+
+    let conversationId = requestedConversationId;
+
+    if (conversationId) {
+      const {
+        data: conversation,
+        error: conversationError,
+      } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("id", conversationId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (conversationError) {
+        throw conversationError;
+      }
+
+      if (!conversation) {
+        return NextResponse.json(
+          { error: "Conversation not found" },
+          { status: 404 },
+        );
+      }
+    } else {
+      const {
+        data: latestConversation,
+        error: conversationError,
+      } = await supabase
         .from("conversations")
         .select("id")
         .eq("user_id", user.id)
@@ -26,29 +56,33 @@ export async function GET() {
         .limit(1)
         .maybeSingle();
 
-    if (conversationError) {
-      throw conversationError;
+      if (conversationError) {
+        throw conversationError;
+      }
+
+      if (!latestConversation) {
+        return NextResponse.json({
+          conversationId: null,
+          messages: [],
+        });
+      }
+
+      conversationId = latestConversation.id;
     }
 
-    if (!conversation) {
-      return NextResponse.json({
-        conversationId: null,
-        messages: [],
-      });
-    }
-
-    const { data: messages, error: messagesError } = await supabase
-      .from("messages")
-      .select("id, role, content, created_at")
-      .eq("conversation_id", conversation.id)
-      .order("created_at", { ascending: true });
+    const { data: messages, error: messagesError } =
+      await supabase
+        .from("messages")
+        .select("id, role, content, created_at")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
 
     if (messagesError) {
       throw messagesError;
     }
 
     return NextResponse.json({
-      conversationId: conversation.id,
+      conversationId,
       messages: messages ?? [],
     });
   } catch (error) {
