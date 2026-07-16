@@ -11,12 +11,16 @@ import {
   Play,
   Send,
   Square,
+  Mic,
+  BookPlus,
+  MicOff,
   Trash2,
   Volume2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 type Message = {
   id: string;
@@ -34,6 +38,18 @@ type HistoryMessage = {
   id: number | string;
   role: "user" | "assistant";
   content: string;
+};
+type SelectedWord = {
+  word: string;
+  context: string;
+  messageId: string;
+  x: number;
+  y: number;
+};
+
+type ToastMessage = {
+  type: "success" | "error";
+  text: string;
 };
 
 const INITIAL_MESSAGES: Message[] = [
@@ -70,6 +86,15 @@ export function ChatBox() {
     string | null
   >(null);
 
+  const [selectedWord, setSelectedWord] =
+  useState<SelectedWord | null>(null);
+
+const [savingSelectedWord, setSavingSelectedWord] =
+  useState(false);
+
+const [toastMessage, setToastMessage] =
+  useState<ToastMessage | null>(null);
+
   const {
     status: speechStatus,
     isSupported: isSpeechSupported,
@@ -78,6 +103,13 @@ export function ChatBox() {
     resume,
     stop,
   } = useSpeechSynthesis();
+  const {
+  isSupported: isRecognitionSupported,
+  isListening,
+  errorMessage: recognitionError,
+  toggleListening,
+  stopListening,
+} = useSpeechRecognition();
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -184,6 +216,7 @@ export function ChatBox() {
   }, [input]);
 
   function startNewConversation() {
+    setSelectedWord(null);
   if (loading || deletingConversationId) {
     return;
   }
@@ -198,9 +231,11 @@ export function ChatBox() {
   requestAnimationFrame(() => {
     textareaRef.current?.focus();
   });
+  setSelectedWord(null);
 }
 
   async function openConversation(id: string) {
+    setSelectedWord(null);
   if (
     loading ||
     deletingConversationId ||
@@ -211,7 +246,7 @@ export function ChatBox() {
 
   stop();
   setSpeakingMessageId(null);
-
+stopListening();
   await loadConversation(id);
 }
 
@@ -298,7 +333,153 @@ function handleStopSpeaking() {
   stop();
   setSpeakingMessageId(null);
 }
+function handleToggleMicrophone() {
+  stop();
+  setSpeakingMessageId(null);
 
+  toggleListening({
+    language: "en-US",
+    onTranscript: (text) => {
+      setInput((previous) => {
+        const separator =
+          previous.trim().length > 0 ? " " : "";
+
+        return `${previous}${separator}${text}`;
+      });
+    },
+  });
+}
+function showToast(
+  type: ToastMessage["type"],
+  text: string,
+) {
+  setToastMessage({
+    type,
+    text,
+  });
+
+  window.setTimeout(() => {
+    setToastMessage(null);
+  }, 3500);
+}
+
+function handleAssistantTextSelection(
+  message: Message,
+  event: React.MouseEvent<HTMLDivElement>,
+) {
+  const container = event.currentTarget;
+
+  window.requestAnimationFrame(() => {
+    const selection = window.getSelection();
+
+    if (!selection || selection.rangeCount === 0) {
+      setSelectedWord(null);
+      return;
+    }
+
+    const selectedText = selection
+      .toString()
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!selectedText) {
+      setSelectedWord(null);
+      return;
+    }
+
+    if (selectedText.length > 100) {
+      showToast(
+        "error",
+        "Select a shorter word or phrase.",
+      );
+
+      setSelectedWord(null);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+
+    if (!container.contains(range.commonAncestorContainer)) {
+      setSelectedWord(null);
+      return;
+    }
+
+    const rectangle = range.getBoundingClientRect();
+
+    if (!rectangle.width || !rectangle.height) {
+      setSelectedWord(null);
+      return;
+    }
+
+    setSelectedWord({
+      word: selectedText,
+      context: message.content,
+      messageId: message.id,
+      x: rectangle.left + rectangle.width / 2,
+      y: Math.max(12, rectangle.top - 10),
+    });
+  });
+}
+
+async function saveSelectedWord() {
+  if (!selectedWord || savingSelectedWord) {
+    return;
+  }
+
+  const wordToSave = selectedWord.word;
+
+  setSavingSelectedWord(true);
+
+  try {
+    const response = await fetch(
+      "/api/vocabulary/generate",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          word: selectedWord.word,
+          context: selectedWord.context,
+        }),
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Failed to save word.",
+      );
+    }
+
+    setSelectedWord(null);
+    window.getSelection()?.removeAllRanges();
+
+    if (data.alreadyExists) {
+      showToast(
+        "success",
+        `"${data.vocabularyItem.word}" is already in your vocabulary.`,
+      );
+    } else {
+      showToast(
+        "success",
+        `"${data.vocabularyItem.word}" saved to Vocabulary.`,
+      );
+    }
+  } catch (error) {
+    console.error("SAVE SELECTED WORD ERROR:", error);
+
+    showToast(
+      "error",
+      error instanceof Error
+        ? error.message
+        : `Failed to save "${wordToSave}".`,
+    );
+  } finally {
+    setSavingSelectedWord(false);
+  }
+}
   async function sendMessage() {
     const text = input.trim();
 
@@ -311,8 +492,10 @@ function handleStopSpeaking() {
       return;
     }
     stop();
+    setSelectedWord(null);
+window.getSelection()?.removeAllRanges();
 setSpeakingMessageId(null);
-
+stopListening();
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
@@ -665,11 +848,16 @@ setSpeakingMessageId(null);
         {message.content}
       </p>
     ) : (
-      <div className="prose prose-slate max-w-none text-sm leading-7 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-strong:text-slate-900">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {message.content}
-        </ReactMarkdown>
-      </div>
+      <div
+  onMouseUp={(event) =>
+    handleAssistantTextSelection(message, event)
+  }
+  className="prose prose-slate max-w-none select-text text-sm leading-7 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-strong:text-slate-900"
+>
+  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+    {message.content}
+  </ReactMarkdown>
+</div>
     )}
   </div>
 
@@ -724,6 +912,8 @@ setSpeakingMessageId(null);
               Stop
             </button>
           )}
+
+
       </div>
     )}
 </div>
@@ -739,6 +929,34 @@ setSpeakingMessageId(null);
         <div className="shrink-0 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6">
           <div className="mx-auto w-full max-w-4xl">
             <div className="flex items-end gap-2 rounded-2xl border border-slate-300 bg-white p-2 shadow-sm transition focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
+            {isRecognitionSupported && (
+  <button
+    type="button"
+    onClick={handleToggleMicrophone}
+    disabled={controlsDisabled}
+    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition ${
+      isListening
+        ? "bg-red-100 text-red-600 ring-2 ring-red-200"
+        : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+    }`}
+    aria-label={
+      isListening
+        ? "Stop microphone"
+        : "Start microphone"
+    }
+    title={
+      isListening
+        ? "Stop listening"
+        : "Start speaking"
+    }
+  >
+    {isListening ? (
+      <MicOff className="h-5 w-5" />
+    ) : (
+      <Mic className="h-5 w-5" />
+    )}
+  </button>
+)}
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -768,7 +986,11 @@ setSpeakingMessageId(null);
                 )}
               </button>
             </div>
-
+{recognitionError && (
+  <p className="mt-2 text-center text-xs font-medium text-red-600">
+    {recognitionError}
+  </p>
+)}
             <p className="mt-2 text-center text-xs text-slate-400">
               Press Enter to send · Shift + Enter for a new
               line
@@ -776,6 +998,55 @@ setSpeakingMessageId(null);
           </div>
         </div>
       </section>
+{selectedWord && (
+  <div
+    className="fixed z-50 -translate-x-1/2 -translate-y-full"
+    style={{
+      left: selectedWord.x,
+      top: selectedWord.y,
+    }}
+  >
+    <button
+      type="button"
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
+      onClick={saveSelectedWord}
+      disabled={savingSelectedWord}
+      className="flex items-center gap-2 rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white shadow-xl transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-70"
+    >
+      {savingSelectedWord ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <BookPlus className="h-4 w-4" />
+      )}
+
+      {savingSelectedWord ? "Saving..." : "Save"}
+    </button>
+  </div>
+)}
+{toastMessage && (
+  <div
+    className={`fixed bottom-6 right-6 z-[60] max-w-sm rounded-2xl border px-4 py-3 text-sm font-medium shadow-xl ${
+      toastMessage.type === "success"
+        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+        : "border-red-200 bg-red-50 text-red-700"
+    }`}
+  >
+    {toastMessage.text}
+  </div>
+)}{toastMessage && (
+  <div
+    className={`fixed bottom-6 right-6 z-[60] max-w-sm rounded-2xl border px-4 py-3 text-sm font-medium shadow-xl ${
+      toastMessage.type === "success"
+        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+        : "border-red-200 bg-red-50 text-red-700"
+    }`}
+  >
+    {toastMessage.text}
+  </div>
+)}
+
     </div>
   );
 }

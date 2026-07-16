@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageCircle, UserRound } from "lucide-react";
+import { MessageCircle, BookOpen, Brain, UserRound } from "lucide-react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+
 
 const NAVIGATION = [
   {
@@ -12,10 +13,20 @@ const NAVIGATION = [
     icon: MessageCircle,
   },
   {
+  href: "/vocabulary",
+  label: "Vocabulary",
+  icon: BookOpen,
+},
+  {
     href: "/profile",
     label: "Profile",
     icon: UserRound,
   },
+  {
+  href: "/review",
+  label: "Review",
+  icon: Brain,
+},
 ];
 
 export function DashboardHeader() {
