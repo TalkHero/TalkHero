@@ -52,6 +52,12 @@ type ToastMessage = {
   text: string;
 };
 
+type XpToast = {
+  amount: number;
+  totalXp: number;
+  level: number;
+};
+
 const INITIAL_MESSAGES: Message[] = [
   {
     id: "welcome",
@@ -94,6 +100,8 @@ const [savingSelectedWord, setSavingSelectedWord] =
 
 const [toastMessage, setToastMessage] =
   useState<ToastMessage | null>(null);
+
+  const [xpToast, setXpToast] = useState<XpToast | null>(null);
 
   const {
     status: speechStatus,
@@ -588,6 +596,21 @@ stopListening();
             ),
           );
         }
+        if (
+  eventName === "done" &&
+  data.xpAwarded &&
+  data.progress
+) {
+  setXpToast({
+    amount: Number(data.xpAwarded),
+    totalXp: Number(data.progress.xp),
+    level: Number(data.progress.level),
+  });
+
+  window.setTimeout(() => {
+    setXpToast(null);
+  }, 3500);
+}
 
         if (eventName === "error") {
           throw new Error(
@@ -1046,7 +1069,26 @@ stopListening();
     {toastMessage.text}
   </div>
 )}
+{xpToast && (
+  <div className="fixed bottom-6 left-1/2 z-[70] -translate-x-1/2 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 shadow-xl">
+    <div className="flex items-center gap-3">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-lg">
+        ✨
+      </div>
 
+      <div>
+        <p className="text-sm font-bold text-amber-800">
+          +{xpToast.amount} XP
+        </p>
+
+        <p className="text-xs text-amber-700">
+          Total: {xpToast.totalXp} XP · Level{" "}
+          {xpToast.level}
+        </p>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

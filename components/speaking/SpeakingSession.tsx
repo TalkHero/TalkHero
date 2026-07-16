@@ -1,0 +1,699 @@
+"use client";
+
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  Bot,
+  Loader2,
+  Mic,
+  MicOff,
+  PhoneOff,
+  Play,
+  Sparkles,
+  UserRound,
+  Volume2,
+} from "lucide-react";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+
+type SessionPhase =
+  | "idle"
+  | "listening"
+  | "thinking"
+  | "speaking"
+  | "error";
+
+type SpeakingMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+};
+
+function cleanTextForSpeech(text: string) {
+  return text
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/[*_#>-]/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function SpeakingSession() {
+  const [mounted, setMounted] = useState(false);
+  const [sessionActive, setSessionActive] =
+    useState(false);
+
+  const [phase, setPhase] =
+    useState<SessionPhase>("idle");
+
+  const [conversationId, setConversationId] =
+    useState<string | null>(null);
+
+  const [messages, setMessages] = useState<
+    SpeakingMessage[]
+  >([]);
+
+  const [currentTranscript, setCurrentTranscript] =
+    useState("");
+
+  const [emmaResponse, setEmmaResponse] =
+    useState("");
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
+  const sessionActiveRef = useRef(false);
+  const processingTranscriptRef = useRef(false);
+  const speechStartedRef = useRef(false);
+  const messagesBottomRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const {
+    status: recognitionStatus,
+    isSupported: recognitionSupported,
+    errorMessage: recognitionError,
+    startListening,
+    stopListening,
+  } = useSpeechRecognition();
+
+  const {
+    status: speechStatus,
+    isSupported: speechSupported,
+    speak,
+    stop: stopSpeaking,
+  } = useSpeechSynthesis();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const voiceSupported =
+    mounted &&
+    recognitionSupported &&
+    speechSupported;
+
+  useEffect(() => {
+    sessionActiveRef.current = sessionActive;
+  }, [sessionActive]);
+
+  useEffect(() => {
+    messagesBottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages, emmaResponse]);
+
+  function beginListening() {
+    if (
+      !sessionActiveRef.current ||
+      processingTranscriptRef.current
+    ) {
+      return;
+    }
+
+    setPhase("listening");
+    setCurrentTranscript("");
+    setEmmaResponse("");
+    setErrorMessage("");
+
+    startListening({
+      language: "en-US",
+
+      onTranscript: (text) => {
+        const normalizedText = text.trim();
+
+        if (
+          !normalizedText ||
+          processingTranscriptRef.current ||
+          !sessionActiveRef.current
+        ) {
+          return;
+        }
+
+        processingTranscriptRef.current = true;
+
+        stopListening();
+        setCurrentTranscript(normalizedText);
+
+        void sendVoiceMessage(normalizedText);
+      },
+    });
+  }
+
+  async function sendVoiceMessage(text: string) {
+    const userMessage: SpeakingMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: text,
+    };
+
+    const assistantMessageId =
+      crypto.randomUUID();
+
+    setMessages((previous) => [
+      ...previous,
+      userMessage,
+      {
+        id: assistantMessageId,
+        role: "assistant",
+        content: "",
+      },
+    ]);
+
+    setPhase("thinking");
+    setEmmaResponse("");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: text,
+          conversationId,
+        }),
+      });
+
+      if (!response.ok) {
+        const responseText =
+          await response.text();
+
+        throw new Error(
+          responseText ||
+            "Failed to send voice message.",
+        );
+      }
+
+      if (!response.body) {
+        throw new Error(
+          "Streaming is not supported.",
+        );
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      let buffer = "";
+      let fullResponse = "";
+
+      function processEventBlock(
+        eventBlock: string,
+      ) {
+        const lines = eventBlock
+          .replace(/\r/g, "")
+          .split("\n");
+
+        const eventName = lines
+          .find((line) =>
+            line.startsWith("event:"),
+          )
+          ?.slice(6)
+          .trim();
+
+        const dataLines = lines
+          .filter((line) =>
+            line.startsWith("data:"),
+          )
+          .map((line) =>
+            line.slice(5).trim(),
+          );
+
+        if (!eventName || dataLines.length === 0) {
+          return;
+        }
+
+        const data = JSON.parse(
+          dataLines.join("\n"),
+        );
+
+        if (
+          eventName === "conversation" &&
+          data.conversationId
+        ) {
+          setConversationId(
+            String(data.conversationId),
+          );
+        }
+
+        if (
+          eventName === "delta" &&
+          typeof data.text === "string"
+        ) {
+          fullResponse += data.text;
+
+          setEmmaResponse(fullResponse);
+
+          setMessages((previous) =>
+            previous.map((message) =>
+              message.id === assistantMessageId
+                ? {
+                    ...message,
+                    content: fullResponse,
+                  }
+                : message,
+            ),
+          );
+        }
+
+        if (eventName === "error") {
+          throw new Error(
+            data.error ||
+              "Emma could not generate a response.",
+          );
+        }
+      }
+
+      while (true) {
+        const { value, done } =
+          await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        buffer += decoder.decode(value, {
+          stream: true,
+        });
+
+        const eventBlocks =
+          buffer.split("\n\n");
+
+        buffer = eventBlocks.pop() ?? "";
+
+        for (const eventBlock of eventBlocks) {
+          if (eventBlock.trim()) {
+            processEventBlock(eventBlock);
+          }
+        }
+      }
+
+      buffer += decoder.decode();
+
+      if (buffer.trim()) {
+        processEventBlock(buffer);
+      }
+
+      if (!fullResponse.trim()) {
+        throw new Error(
+          "Emma returned an empty response.",
+        );
+      }
+
+      if (!sessionActiveRef.current) {
+        processingTranscriptRef.current = false;
+        return;
+      }
+
+      const speechText =
+        cleanTextForSpeech(fullResponse);
+
+      speechStartedRef.current = false;
+      setPhase("speaking");
+
+      speak(speechText);
+    } catch (error) {
+      console.error(
+        "SPEAKING MODE ERROR:",
+        error,
+      );
+
+      processingTranscriptRef.current = false;
+      setPhase("error");
+
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Speaking Mode failed.",
+      );
+    }
+  }
+
+  useEffect(() => {
+    if (phase !== "speaking") {
+      return;
+    }
+
+    if (speechStatus === "speaking") {
+      speechStartedRef.current = true;
+      return;
+    }
+
+    if (
+      speechStatus === "idle" &&
+      speechStartedRef.current
+    ) {
+      speechStartedRef.current = false;
+      processingTranscriptRef.current = false;
+
+      if (sessionActiveRef.current) {
+        window.setTimeout(() => {
+          if (sessionActiveRef.current) {
+            beginListening();
+          }
+        }, 500);
+      }
+    }
+  }, [phase, speechStatus]);
+
+  useEffect(() => {
+    if (
+      recognitionStatus === "error" &&
+      recognitionError
+    ) {
+      setPhase("error");
+      setErrorMessage(recognitionError);
+      processingTranscriptRef.current = false;
+    }
+  }, [
+    recognitionError,
+    recognitionStatus,
+  ]);
+
+  function startSession() {
+    if (!voiceSupported) {
+      setPhase("error");
+      setErrorMessage(
+        "Voice mode is not supported in this browser. Use the latest Chrome or Edge.",
+      );
+      return;
+    }
+
+    stopSpeaking();
+    stopListening();
+
+    processingTranscriptRef.current = false;
+    speechStartedRef.current = false;
+    sessionActiveRef.current = true;
+
+    setSessionActive(true);
+    setMessages([]);
+    setConversationId(null);
+    setCurrentTranscript("");
+    setEmmaResponse("");
+    setErrorMessage("");
+
+    window.setTimeout(() => {
+      beginListening();
+    }, 250);
+  }
+
+  function stopSession() {
+    sessionActiveRef.current = false;
+    processingTranscriptRef.current = false;
+    speechStartedRef.current = false;
+
+    stopListening();
+    stopSpeaking();
+
+    setSessionActive(false);
+    setPhase("idle");
+    setCurrentTranscript("");
+    setEmmaResponse("");
+    setErrorMessage("");
+  }
+
+  function retryListening() {
+    processingTranscriptRef.current = false;
+    setErrorMessage("");
+
+    if (!sessionActiveRef.current) {
+      sessionActiveRef.current = true;
+      setSessionActive(true);
+    }
+
+    beginListening();
+  }
+
+  useEffect(() => {
+    return () => {
+      sessionActiveRef.current = false;
+      stopListening();
+      stopSpeaking();
+    };
+  }, [stopListening, stopSpeaking]);
+
+  const phaseInformation = {
+    idle: {
+      title: "Ready to practice",
+      description:
+        "Start a hands-free conversation with Emma.",
+      icon: Mic,
+    },
+
+    listening: {
+      title: "I’m listening...",
+      description:
+        "Speak naturally in English.",
+      icon: Mic,
+    },
+
+    thinking: {
+      title: "Emma is thinking...",
+      description:
+        "Your answer is being analyzed.",
+      icon: Loader2,
+    },
+
+    speaking: {
+      title: "Emma is speaking",
+      description:
+        "Listen carefully to her response.",
+      icon: Volume2,
+    },
+
+    error: {
+      title: "Voice session paused",
+      description:
+        errorMessage ||
+        "Something went wrong.",
+      icon: MicOff,
+    },
+  }[phase];
+
+  const PhaseIcon = phaseInformation.icon;
+
+  return (
+    <section className="flex min-h-[620px] flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
+              sessionActive
+                ? "bg-indigo-600 text-white"
+                : "bg-indigo-50 text-indigo-600"
+            }`}
+          >
+            <Sparkles className="h-5 w-5" />
+          </div>
+
+          <div>
+            <h2 className="font-semibold text-slate-950">
+              Conversation with Emma
+            </h2>
+
+            <p className="text-sm text-slate-500">
+              Automatic voice conversation
+            </p>
+          </div>
+        </div>
+
+        {sessionActive ? (
+          <button
+            type="button"
+            onClick={stopSession}
+            className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+          >
+            <PhoneOff className="h-4 w-4" />
+            End session
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={startSession}
+            disabled={
+              mounted && !voiceSupported
+            }
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Play className="h-4 w-4" />
+            Start speaking
+          </button>
+        )}
+      </div>
+
+      <div className="grid min-h-0 flex-1 lg:grid-cols-[340px_1fr]">
+        <div className="flex flex-col items-center justify-center border-b border-slate-200 bg-slate-50 p-8 text-center lg:border-b-0 lg:border-r">
+          <div className="relative">
+            {phase === "listening" && (
+              <>
+                <span className="absolute inset-0 animate-ping rounded-full bg-indigo-300 opacity-40" />
+                <span className="absolute -inset-4 animate-pulse rounded-full border border-indigo-200" />
+              </>
+            )}
+
+            <div
+              className={`relative flex h-28 w-28 items-center justify-center rounded-full shadow-lg transition ${
+                phase === "listening"
+                  ? "bg-indigo-600 text-white"
+                  : phase === "thinking"
+                    ? "bg-amber-100 text-amber-600"
+                    : phase === "speaking"
+                      ? "bg-emerald-100 text-emerald-600"
+                      : phase === "error"
+                        ? "bg-red-100 text-red-600"
+                        : "bg-white text-slate-500"
+              }`}
+            >
+              <PhaseIcon
+                className={`h-11 w-11 ${
+                  phase === "thinking"
+                    ? "animate-spin"
+                    : ""
+                }`}
+              />
+            </div>
+          </div>
+
+          <h3 className="mt-8 text-xl font-bold text-slate-950">
+            {phaseInformation.title}
+          </h3>
+
+          <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
+            {phaseInformation.description}
+          </p>
+
+          {phase === "error" && (
+            <button
+              type="button"
+              onClick={retryListening}
+              className="mt-5 flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
+              <Mic className="h-4 w-4" />
+              Try again
+            </button>
+          )}
+
+          {!mounted ? (
+            <p className="mt-6 text-xs text-slate-400">
+              Checking browser voice support...
+            </p>
+          ) : !voiceSupported ? (
+            <p className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-700">
+              Use the latest Chrome or Edge and allow microphone
+              access.
+            </p>
+          ) : (
+            <p className="mt-6 text-xs text-slate-400">
+              Emma automatically listens again after finishing
+              her response.
+            </p>
+          )}
+        </div>
+
+        <div className="flex min-h-0 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
+            {messages.length === 0 ? (
+              <div className="flex min-h-full items-center justify-center">
+                <div className="max-w-md text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                    <Bot className="h-7 w-7" />
+                  </div>
+
+                  <h3 className="mt-5 text-lg font-semibold text-slate-950">
+                    Start your voice conversation
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-500">
+                    Press Start speaking, answer Emma in English,
+                    and continue the conversation hands-free.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="mx-auto max-w-2xl space-y-5">
+                {messages.map((message) => {
+                  const isUser =
+                    message.role === "user";
+
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex gap-3 ${
+                        isUser
+                          ? "justify-end"
+                          : "justify-start"
+                      }`}
+                    >
+                      {!isUser && (
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
+                          <Bot className="h-5 w-5" />
+                        </div>
+                      )}
+
+                      <div
+                        className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-7 ${
+                          isUser
+                            ? "rounded-br-md bg-indigo-600 text-white"
+                            : "rounded-bl-md border border-slate-200 bg-slate-50 text-slate-700"
+                        }`}
+                      >
+                        {message.content ? (
+                          <p className="whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        ) : (
+                          <div className="flex h-7 items-center gap-1.5">
+                            <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+                            <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+                            <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+                          </div>
+                        )}
+                      </div>
+
+                      {isUser && (
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-slate-600">
+                          <UserRound className="h-5 w-5" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                <div ref={messagesBottomRef} />
+              </div>
+            )}
+          </div>
+
+          {(currentTranscript || emmaResponse) && (
+            <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 sm:px-7">
+              {phase === "thinking" &&
+                currentTranscript && (
+                  <p className="text-sm text-slate-500">
+                    <strong className="text-slate-700">
+                      You said:
+                    </strong>{" "}
+                    {currentTranscript}
+                  </p>
+                )}
+
+              {phase === "speaking" &&
+                emmaResponse && (
+                  <p className="line-clamp-2 text-sm text-slate-500">
+                    <strong className="text-slate-700">
+                      Emma:
+                    </strong>{" "}
+                    {emmaResponse}
+                  </p>
+                )}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

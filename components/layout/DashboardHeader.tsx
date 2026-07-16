@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageCircle, BookOpen, Brain, UserRound, LayoutDashboard } from "lucide-react";
+import { MessageCircle, BookOpen, Brain, UserRound, Mic, LayoutDashboard } from "lucide-react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 
 
@@ -31,6 +31,11 @@ const NAVIGATION = [
   href: "/dashboard",
   label: "Dashboard",
   icon: LayoutDashboard,
+},
+{
+  href: "/speaking",
+  label: "Speaking",
+  icon: Mic,
 },
 ];
 

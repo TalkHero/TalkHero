@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { awardXp } from "@/lib/progress/awardXp";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -363,20 +364,34 @@ export async function POST(request: Request) {
           }
 
           const { error: assistantMessageError } =
-            await supabase.from("messages").insert({
-              conversation_id: currentConversationId,
-              role: "assistant",
-              content: fullText,
-            });
+  await supabase.from("messages").insert({
+    conversation_id: currentConversationId,
+    role: "assistant",
+    content: fullText,
+  });
 
-          if (assistantMessageError) {
-            throw assistantMessageError;
-          }
+if (assistantMessageError) {
+  throw assistantMessageError;
+}
 
-          sendEvent("done", {
-            message: fullText,
-            englishLevel,
-          });
+let progress = null;
+
+try {
+  progress = await awardXp({
+    userId: user.id,
+    amount: 5,
+  });
+} catch (progressError) {
+  // Помилка XP не повинна ламати відповідь Emma.
+  console.error("CHAT XP ERROR:", progressError);
+}
+
+sendEvent("done", {
+  message: fullText,
+  englishLevel,
+  xpAwarded: progress ? 5 : 0,
+  progress,
+});
 
           streamClosed = true;
           controller.close();

@@ -45,6 +45,7 @@ export async function proxy(request: NextRequest) {
   const isProtectedPage =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/chat") ||
+    pathname.startsWith("/speaking") ||
     pathname.startsWith("/vocabulary") ||
     pathname.startsWith("/review") ||
     pathname.startsWith("/profile") ||
@@ -73,6 +74,7 @@ export const config = {
     "/register",
     "/dashboard/:path*",
     "/chat/:path*",
+    "/speaking/:path*",
     "/vocabulary/:path*",
     "/review/:path*",
     "/profile/:path*",
