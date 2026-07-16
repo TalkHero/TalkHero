@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageCircle, BookOpen, Brain, UserRound } from "lucide-react";
+import { MessageCircle, BookOpen, Brain, UserRound, LayoutDashboard } from "lucide-react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 
 
@@ -26,6 +26,11 @@ const NAVIGATION = [
   href: "/review",
   label: "Review",
   icon: Brain,
+},
+{
+  href: "/dashboard",
+  label: "Dashboard",
+  icon: LayoutDashboard,
 },
 ];
 

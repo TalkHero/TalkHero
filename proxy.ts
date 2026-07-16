@@ -43,7 +43,10 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/register");
 
   const isProtectedPage =
+    pathname.startsWith("/dashboard") ||
     pathname.startsWith("/chat") ||
+    pathname.startsWith("/vocabulary") ||
+    pathname.startsWith("/review") ||
     pathname.startsWith("/profile") ||
     pathname.startsWith("/settings");
 
@@ -56,7 +59,7 @@ export async function proxy(request: NextRequest) {
 
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/chat";
+    url.pathname = "/dashboard";
 
     return NextResponse.redirect(url);
   }
@@ -68,7 +71,10 @@ export const config = {
   matcher: [
     "/login",
     "/register",
+    "/dashboard/:path*",
     "/chat/:path*",
+    "/vocabulary/:path*",
+    "/review/:path*",
     "/profile/:path*",
     "/settings/:path*",
   ],
