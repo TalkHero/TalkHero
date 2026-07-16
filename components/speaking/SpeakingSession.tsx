@@ -47,6 +47,9 @@ export function SpeakingSession() {
   const [sessionActive, setSessionActive] =
     useState(false);
 
+  const [startingSession, setStartingSession] =
+  useState(false);
+
   const [phase, setPhase] =
     useState<SessionPhase>("idle");
 
@@ -374,33 +377,93 @@ export function SpeakingSession() {
     recognitionStatus,
   ]);
 
-  function startSession() {
+  async function startSession() {
+  if (!voiceSupported || startingSession) {
     if (!voiceSupported) {
       setPhase("error");
       setErrorMessage(
         "Voice mode is not supported in this browser. Use the latest Chrome or Edge.",
       );
-      return;
     }
 
-    stopSpeaking();
-    stopListening();
-
-    processingTranscriptRef.current = false;
-    speechStartedRef.current = false;
-    sessionActiveRef.current = true;
-
-    setSessionActive(true);
-    setMessages([]);
-    setConversationId(null);
-    setCurrentTranscript("");
-    setEmmaResponse("");
-    setErrorMessage("");
-
-    window.setTimeout(() => {
-      beginListening();
-    }, 250);
+    return;
   }
+
+  stopSpeaking();
+  stopListening();
+
+  processingTranscriptRef.current = true;
+  speechStartedRef.current = false;
+  sessionActiveRef.current = true;
+
+  setStartingSession(true);
+  setSessionActive(true);
+  setPhase("thinking");
+  setMessages([]);
+  setConversationId(null);
+  setCurrentTranscript("");
+  setEmmaResponse("");
+  setErrorMessage("");
+
+  try {
+    const response = await fetch(
+      "/api/speaking/start",
+      {
+        method: "POST",
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "Failed to start speaking session.",
+      );
+    }
+
+    const openingMessage = String(data.message);
+    const openingMessageId = crypto.randomUUID();
+
+    setConversationId(
+      String(data.conversationId),
+    );
+
+    setMessages([
+      {
+        id: openingMessageId,
+        role: "assistant",
+        content: openingMessage,
+      },
+    ]);
+
+    setEmmaResponse(openingMessage);
+
+    speechStartedRef.current = false;
+    setPhase("speaking");
+
+    speak(cleanTextForSpeech(openingMessage));
+  } catch (error) {
+    console.error(
+      "START SPEAKING SESSION ERROR:",
+      error,
+    );
+
+    sessionActiveRef.current = false;
+    processingTranscriptRef.current = false;
+
+    setSessionActive(false);
+    setPhase("error");
+
+    setErrorMessage(
+      error instanceof Error
+        ? error.message
+        : "Failed to start speaking session.",
+    );
+  } finally {
+    setStartingSession(false);
+  }
+}
 
   function stopSession() {
     sessionActiveRef.current = false;
@@ -513,16 +576,24 @@ export function SpeakingSession() {
           </button>
         ) : (
           <button
-            type="button"
-            onClick={startSession}
-            disabled={
-              mounted && !voiceSupported
-            }
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Play className="h-4 w-4" />
-            Start speaking
-          </button>
+  type="button"
+  onClick={startSession}
+  disabled={
+    startingSession ||
+    (mounted && !voiceSupported)
+  }
+  className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+>
+  {startingSession ? (
+    <Loader2 className="h-4 w-4 animate-spin" />
+  ) : (
+    <Play className="h-4 w-4" />
+  )}
+
+  {startingSession
+    ? "Starting..."
+    : "Start speaking"}
+</button>
         )}
       </div>
 
