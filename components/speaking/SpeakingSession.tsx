@@ -32,6 +32,19 @@ type SpeakingMessage = {
   content: string;
 };
 
+type SpeakingEvaluation = {
+  grammarScore: number;
+  fluencyScore: number;
+  vocabularyScore: number;
+  naturalnessScore: number;
+  overallScore: number;
+  wasCorrect: boolean;
+  correctedSentence: string;
+  shortFeedback: string;
+  mainIssue: string;
+  encouragement: string;
+};
+
 function cleanTextForSpeech(text: string) {
   return text
     .replace(/```[\s\S]*?```/g, " ")
@@ -46,6 +59,8 @@ export function SpeakingSession() {
   const [mounted, setMounted] = useState(false);
   const [sessionActive, setSessionActive] =
     useState(false);
+    const [evaluation, setEvaluation] =
+  useState<SpeakingEvaluation | null>(null);
 
   const [startingSession, setStartingSession] =
   useState(false);
@@ -167,6 +182,7 @@ export function SpeakingSession() {
     ]);
 
     setPhase("thinking");
+    setEvaluation(null);
     setEmmaResponse("");
     setErrorMessage("");
 
@@ -317,7 +333,41 @@ export function SpeakingSession() {
 
       speechStartedRef.current = false;
       setPhase("speaking");
+try {
+  const evaluationResponse = await fetch(
+    "/api/speaking/evaluate",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        transcript: text,
+        previousAssistantMessage:
+          messages
+            .filter(
+              (message) =>
+                message.role === "assistant",
+            )
+            .at(-1)?.content ?? "",
+      }),
+    },
+  );
 
+  if (evaluationResponse.ok) {
+    const evaluationData =
+      await evaluationResponse.json();
+
+    setEvaluation(
+      evaluationData.evaluation,
+    );
+  }
+} catch (error) {
+  console.error(
+    "SPEAKING EVALUATION ERROR:",
+    error,
+  );
+}
       speak(speechText);
     } catch (error) {
       console.error(
@@ -736,6 +786,79 @@ export function SpeakingSession() {
                 })}
 
                 <div ref={messagesBottomRef} />
+                {evaluation && (
+  <div className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
+    <h3 className="mb-4 text-lg font-bold text-slate-900">
+      Speaking Feedback
+    </h3>
+
+    <div className="grid grid-cols-2 gap-3 text-sm">
+      <div>
+        Grammar
+        <div className="font-bold">
+          {evaluation.grammarScore}
+        </div>
+      </div>
+
+      <div>
+        Fluency
+        <div className="font-bold">
+          {evaluation.fluencyScore}
+        </div>
+      </div>
+
+      <div>
+        Vocabulary
+        <div className="font-bold">
+          {evaluation.vocabularyScore}
+        </div>
+      </div>
+
+      <div>
+        Naturalness
+        <div className="font-bold">
+          {evaluation.naturalnessScore}
+        </div>
+      </div>
+    </div>
+
+    <div className="mt-5 rounded-xl bg-white p-4">
+      <p className="text-sm font-semibold">
+        Overall
+      </p>
+
+      <p className="text-3xl font-bold text-indigo-600">
+        {evaluation.overallScore}/100
+      </p>
+    </div>
+
+    {!evaluation.wasCorrect && (
+      <div className="mt-5">
+        <p className="font-semibold">
+          Better sentence
+        </p>
+
+        <p className="mt-1 rounded-xl bg-white p-3 italic">
+          {evaluation.correctedSentence}
+        </p>
+      </div>
+    )}
+
+    <div className="mt-5">
+      <p className="font-semibold">
+        Feedback
+      </p>
+
+      <p className="mt-2 text-sm text-slate-600">
+        {evaluation.shortFeedback}
+      </p>
+    </div>
+
+    <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">
+      {evaluation.encouragement}
+    </div>
+  </div>
+)}
               </div>
             )}
           </div>
