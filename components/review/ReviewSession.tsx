@@ -104,7 +104,7 @@ export function ReviewSession() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to load review cards.",
+          data.error || "Не вдалося завантажити картки для повторення.",
         );
       }
 
@@ -122,7 +122,7 @@ export function ReviewSession() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Failed to load review cards.",
+          : "Не вдалося завантажити картки для повторення.",
       );
     } finally {
       setLoading(false);
@@ -174,7 +174,7 @@ export function ReviewSession() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to save review result.",
+          data.error || "Не вдалося зберегти результат повторення.",
         );
       }
 
@@ -196,7 +196,7 @@ export function ReviewSession() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Failed to save review result.",
+          : "Не вдалося зберегти результат повторення.",
       );
     } finally {
       setSubmittingGrade(null);
@@ -231,7 +231,7 @@ export function ReviewSession() {
           className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
         >
           <RotateCcw className="h-4 w-4" />
-          Try again
+          Спробуйте ще
         </button>
       </div>
     );
@@ -259,7 +259,7 @@ export function ReviewSession() {
               {stats.total}
             </p>
             <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">
-              Total words
+              Усього слів
             </p>
           </div>
 
@@ -268,7 +268,7 @@ export function ReviewSession() {
               {stats.learned}
             </p>
             <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">
-              Learned
+              Вивчено
             </p>
           </div>
         </div>
@@ -284,11 +284,11 @@ export function ReviewSession() {
         </div>
 
         <h2 className="mt-5 text-3xl font-bold text-slate-950">
-          Great job!
+          Хороша робота!
         </h2>
 
         <p className="mt-2 text-slate-500">
-          You completed today’s vocabulary review.
+         Ви завершили сьогоднішній огляд словникового запасу.
         </p>
 
         <div className="mt-8 rounded-2xl bg-slate-50 p-6">
@@ -309,7 +309,7 @@ export function ReviewSession() {
           className="mt-6 inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
         >
           <RotateCcw className="h-4 w-4" />
-          Check for more cards
+          Перевірте наявність інших карток
         </button>
       </div>
     );
@@ -325,7 +325,7 @@ export function ReviewSession() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-slate-900">
-              Daily review
+              Щоденний огляд
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
@@ -355,7 +355,7 @@ export function ReviewSession() {
           </div>
 
           <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            Word
+            Слово
           </p>
 
           <h2 className="mt-3 break-words text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
@@ -368,7 +368,7 @@ export function ReviewSession() {
               onClick={() => setAnswerVisible(true)}
               className="mt-10 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
-              Show answer
+              Показати відповідь
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
@@ -376,7 +376,7 @@ export function ReviewSession() {
               {currentCard.translation && (
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Translation
+                    Переклад
                   </p>
 
                   <p className="mt-2 text-xl font-semibold text-slate-800">
@@ -388,7 +388,7 @@ export function ReviewSession() {
               {currentCard.meaning && (
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Meaning
+                    Значення
                   </p>
 
                   <p className="mt-2 text-sm leading-7 text-slate-600">
@@ -400,7 +400,7 @@ export function ReviewSession() {
               {currentCard.example && (
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Example
+                    Наприклад
                   </p>
 
                   <p className="mt-2 text-sm italic leading-7 text-slate-600">
@@ -415,7 +415,7 @@ export function ReviewSession() {
         {answerVisible && (
           <div className="border-t border-slate-200 bg-slate-50 p-4 sm:p-5">
             <p className="mb-3 text-center text-xs font-medium text-slate-500">
-              How well did you remember this word?
+              Наскільки добре ви запам'ятали це слово?
             </p>
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

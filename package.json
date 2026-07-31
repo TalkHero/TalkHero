@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:questions": "node scripts/import-assessment-questions.mjs",
+    "generate:questions": "node --env-file=.env.local scripts/generate-assessment-questions.mjs",
+    "validate:questions": "node --env-file=.env.local scripts/validate-assessment-questions.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -18,8 +21,10 @@
     "next": "16.2.10",
     "openai": "^6.45.0",
     "react": "19.2.4",
+    "react-confetti": "^6.4.0",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
+    "recharts": "^3.9.2",
     "remark-gfm": "^4.0.1",
     "shadcn": "^4.13.0",
     "tailwind-merge": "^3.6.0",

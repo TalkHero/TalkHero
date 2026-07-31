@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import type { ChatMessage } from "@/components/chat/MessageBubble";
 import type { ConversationItem } from "@/components/chat/ConversationSidebar";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 type HistoryMessage = {
   id: number | string;
@@ -22,6 +23,11 @@ type ConversationHistoryResponse = {
 };
 
 type DeleteConversationResponse = {
+  error?: string;
+};
+
+type RenameConversationResponse = {
+  conversation?: ConversationItem;
   error?: string;
 };
 
@@ -60,6 +66,11 @@ export function useConversationManager({
     setDeletingConversationId,
   ] = useState<string | null>(null);
 
+  const [
+    renamingConversationId,
+    setRenamingConversationId,
+  ] = useState<string | null>(null);
+
   const loadConversations = useCallback(async () => {
     try {
       const response = await fetch("/api/conversations", {
@@ -71,7 +82,8 @@ export function useConversationManager({
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to load conversations",
+          data.error ||
+            API_ERRORS.failedToLoadConversations,
         );
       }
 
@@ -109,7 +121,7 @@ export function useConversationManager({
         if (!response.ok) {
           throw new Error(
             responseText ||
-              "Failed to load conversation",
+              API_ERRORS.failedToLoadConversation,
           );
         }
 
@@ -155,7 +167,11 @@ export function useConversationManager({
   }, [loadConversation, loadConversations]);
 
   const startNewConversation = useCallback(() => {
-    if (chatLoading || deletingConversationId) {
+    if (
+      chatLoading ||
+      deletingConversationId ||
+      renamingConversationId
+    ) {
       return false;
     }
 
@@ -163,13 +179,18 @@ export function useConversationManager({
     setMessages(INITIAL_MESSAGES);
 
     return true;
-  }, [chatLoading, deletingConversationId]);
+  }, [
+    chatLoading,
+    deletingConversationId,
+    renamingConversationId,
+  ]);
 
   const openConversation = useCallback(
     async (id: string) => {
       if (
         chatLoading ||
         deletingConversationId ||
+        renamingConversationId ||
         id === conversationId
       ) {
         return false;
@@ -184,17 +205,123 @@ export function useConversationManager({
       conversationId,
       deletingConversationId,
       loadConversation,
+      renamingConversationId,
+    ],
+  );
+
+  const renameConversation = useCallback(
+    async (id: string, newTitle: string) => {
+      if (
+        chatLoading ||
+        deletingConversationId ||
+        renamingConversationId
+      ) {
+        return false;
+      }
+
+      const title = newTitle
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (!title) {
+        window.alert("Назва розмови обов'язкова.");
+        return false;
+      }
+
+      if (title.length > 60) {
+        window.alert(
+          "Назва розмови не може містити більше ніж 60 символів.",
+        );
+        return false;
+      }
+
+      const currentConversation =
+        conversations.find(
+          (conversation) => conversation.id === id,
+        );
+
+      if (currentConversation?.title === title) {
+        return true;
+      }
+
+      setRenamingConversationId(id);
+
+      try {
+        const response = await fetch(
+          `/api/conversations/${encodeURIComponent(id)}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              title,
+            }),
+          },
+        );
+
+        const data =
+          (await response.json()) as RenameConversationResponse;
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              "Не вдалося перейменувати розмову.",
+          );
+        }
+
+        const updatedConversation = data.conversation;
+
+        setConversations((previous) =>
+          previous.map((conversation) =>
+            conversation.id === id
+              ? {
+                  ...conversation,
+                  title:
+                    updatedConversation?.title ?? title,
+                }
+              : conversation,
+          ),
+        );
+
+        return true;
+      } catch (error) {
+        console.error(
+          "RENAME CONVERSATION ERROR:",
+          error,
+        );
+
+        window.alert(
+          error instanceof Error
+            ? error.message
+            : "Не вдалося перейменувати розмову.",
+        );
+
+        return false;
+      } finally {
+        setRenamingConversationId(null);
+      }
+    },
+    [
+      chatLoading,
+      conversations,
+      deletingConversationId,
+      renamingConversationId,
     ],
   );
 
   const deleteConversation = useCallback(
     async (id: string, title: string) => {
-      if (chatLoading || deletingConversationId) {
+      if (
+        chatLoading ||
+        deletingConversationId ||
+        renamingConversationId
+      ) {
         return false;
       }
 
       const confirmed = window.confirm(
-        `Delete conversation "${title}"?`,
+        `Видалити розмову "${title}"?`,
       );
 
       if (!confirmed) {
@@ -217,7 +344,7 @@ export function useConversationManager({
         if (!response.ok) {
           throw new Error(
             data.error ||
-              "Failed to delete conversation",
+              API_ERRORS.failedToDeleteConversation,
           );
         }
 
@@ -247,7 +374,7 @@ export function useConversationManager({
         window.alert(
           error instanceof Error
             ? error.message
-            : "Failed to delete conversation",
+            : API_ERRORS.failedToDeleteConversation,
         );
 
         return false;
@@ -261,13 +388,15 @@ export function useConversationManager({
       deletingConversationId,
       loadConversation,
       loadConversations,
+      renamingConversationId,
     ],
   );
 
   const controlsDisabled =
     chatLoading ||
     historyLoading ||
-    Boolean(deletingConversationId);
+    Boolean(deletingConversationId) ||
+    Boolean(renamingConversationId);
 
   return {
     messages,
@@ -280,11 +409,13 @@ export function useConversationManager({
 
     historyLoading,
     deletingConversationId,
+    renamingConversationId,
     controlsDisabled,
 
     loadConversations,
     startNewConversation,
     openConversation,
+    renameConversation,
     deleteConversation,
   };
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-
+import { API_ERRORS } from "@/lib/i18n/errors";
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -12,7 +12,7 @@ export async function GET() {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -88,7 +88,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        error: "Failed to load review cards.",
+        error: API_ERRORS.failedToUpdateProfile,
       },
       {
         status: 500,

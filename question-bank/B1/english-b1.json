@@ -1,0 +1,1344 @@
+[
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "While we ___ dinner, the electricity suddenly went off.",
+    "passage": null,
+    "options": [
+      "were cooking",
+      "cooked",
+      "have cooked",
+      "are cooking"
+    ],
+    "correct_answer": "were cooking",
+    "explanation_uk": "Тривала дія в минулому, яку перервала інша коротка дія, виражається за допомогою Past Continuous: «were cooking».",
+    "difficulty": 2,
+    "discrimination": 1.05,
+    "estimated_time_seconds": 30,
+    "topic": "Past continuous",
+    "tags": [
+      "past continuous",
+      "interrupted action",
+      "past simple"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-001"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Dr Patel ___ at this hospital for six years.",
+    "passage": null,
+    "options": [
+      "has worked",
+      "worked",
+      "is working",
+      "works"
+    ],
+    "correct_answer": "has worked",
+    "explanation_uk": "Present Perfect вживається для дії, яка почалася в минулому й триває дотепер. Із періодом часу «for six years» правильно вжити «has worked».",
+    "difficulty": 2,
+    "discrimination": 1.08,
+    "estimated_time_seconds": 30,
+    "topic": "Present perfect with for",
+    "tags": [
+      "present perfect",
+      "for",
+      "unfinished time"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-002"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "If it rains tomorrow, we ___ the picnic indoors.",
+    "passage": null,
+    "options": [
+      "will have",
+      "had",
+      "would have",
+      "have had"
+    ],
+    "correct_answer": "will have",
+    "explanation_uk": "У першому умовному реченні після «if» уживається Present Simple, а в головній частині — «will» та початкова форма дієслова: «will have».",
+    "difficulty": 2,
+    "discrimination": 1.12,
+    "estimated_time_seconds": 35,
+    "topic": "First conditional",
+    "tags": [
+      "first conditional",
+      "if clause",
+      "future result"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-003"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "These emails ___ automatically every night.",
+    "passage": null,
+    "options": [
+      "are sent",
+      "have sent",
+      "send",
+      "are sending"
+    ],
+    "correct_answer": "are sent",
+    "explanation_uk": "Електронні листи є об’єктом дії, тому потрібен пасивний стан у Present Simple: «are sent».",
+    "difficulty": 3,
+    "discrimination": 1.1,
+    "estimated_time_seconds": 35,
+    "topic": "Present simple passive",
+    "tags": [
+      "passive voice",
+      "present simple",
+      "regular process"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-004"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Liam said, “I lost my keys yesterday.” Liam said that he ___ his keys the day before.",
+    "passage": null,
+    "options": [
+      "had lost",
+      "has lost",
+      "was losing",
+      "loses"
+    ],
+    "correct_answer": "had lost",
+    "explanation_uk": "У непрямій мові Past Simple зазвичай змінюється на Past Perfect. Тому «lost» перетворюється на «had lost», а «yesterday» — на «the day before».",
+    "difficulty": 4,
+    "discrimination": 1.2,
+    "estimated_time_seconds": 45,
+    "topic": "Reported speech",
+    "tags": [
+      "reported speech",
+      "past perfect",
+      "backshift"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-005"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "The sea isn't ___ for swimming today.",
+    "passage": null,
+    "options": [
+      "warm enough",
+      "enough warm",
+      "too enough warm",
+      "warm too"
+    ],
+    "correct_answer": "warm enough",
+    "explanation_uk": "Прислівник «enough» ставиться після прикметника: «warm enough» — «достатньо тепле».",
+    "difficulty": 2,
+    "discrimination": 0.98,
+    "estimated_time_seconds": 25,
+    "topic": "Adjective plus enough",
+    "tags": [
+      "enough",
+      "adjective order",
+      "degree"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-006"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "That ___ Maya at the door; she's in Spain this week.",
+    "passage": null,
+    "options": [
+      "can't be",
+      "must be",
+      "should be",
+      "has to be"
+    ],
+    "correct_answer": "can't be",
+    "explanation_uk": "«Can't be» виражає впевненість, що припущення неможливе. Це не може бути Мая, оскільки вона зараз в Іспанії.",
+    "difficulty": 3,
+    "discrimination": 1.15,
+    "estimated_time_seconds": 30,
+    "topic": "Modals of deduction",
+    "tags": [
+      "modal verbs",
+      "deduction",
+      "can't be"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-007"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "The village ___ my grandparents live is near the coast.",
+    "passage": null,
+    "options": [
+      "where",
+      "who",
+      "whose",
+      "which"
+    ],
+    "correct_answer": "where",
+    "explanation_uk": "Відносне прислівник «where» уживається, коли йдеться про місце: «the village where my grandparents live».",
+    "difficulty": 3,
+    "discrimination": 1.04,
+    "estimated_time_seconds": 30,
+    "topic": "Relative clauses",
+    "tags": [
+      "relative clauses",
+      "where",
+      "places"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-008"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "My phone wasn't ___ yours, but it still works well.",
+    "passage": null,
+    "options": [
+      "as expensive as",
+      "so expensive than",
+      "more expensive as",
+      "as expensive than"
+    ],
+    "correct_answer": "as expensive as",
+    "explanation_uk": "Для порівняння однакового або неоднакового ступеня ознаки використовується конструкція «(not) as + прикметник + as».",
+    "difficulty": 2,
+    "discrimination": 1.06,
+    "estimated_time_seconds": 30,
+    "topic": "Comparisons with as...as",
+    "tags": [
+      "comparatives",
+      "as as",
+      "adjectives"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-009"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Since the ticket price increased, ___ people have been attending the concerts.",
+    "passage": null,
+    "options": [
+      "fewer",
+      "less",
+      "little",
+      "much"
+    ],
+    "correct_answer": "fewer",
+    "explanation_uk": "«People» — злічуваний іменник у множині, тому для позначення меншої кількості потрібно вживати «fewer».",
+    "difficulty": 3,
+    "discrimination": 1.18,
+    "estimated_time_seconds": 35,
+    "topic": "Quantifiers",
+    "tags": [
+      "fewer",
+      "countable nouns",
+      "quantifiers"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-010"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Eva is interested in ___ how to design websites.",
+    "passage": null,
+    "options": [
+      "learning",
+      "learn",
+      "to learn",
+      "learned"
+    ],
+    "correct_answer": "learning",
+    "explanation_uk": "Після прийменника «in» дієслово вживається у формі герундія із закінченням «-ing»: «interested in learning».",
+    "difficulty": 3,
+    "discrimination": 1.09,
+    "estimated_time_seconds": 30,
+    "topic": "Gerunds after prepositions",
+    "tags": [
+      "gerund",
+      "prepositions",
+      "interested in"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-011"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Visitors ___ feed the animals at the zoo. It is strictly forbidden.",
+    "passage": null,
+    "options": [
+      "mustn't",
+      "don't have to",
+      "couldn't",
+      "wouldn't"
+    ],
+    "correct_answer": "mustn't",
+    "explanation_uk": "«Mustn't» виражає сувору заборону. «Don't have to» означало б відсутність необхідності, а не заборону.",
+    "difficulty": 2,
+    "discrimination": 1.21,
+    "estimated_time_seconds": 30,
+    "topic": "Modal verbs for prohibition",
+    "tags": [
+      "mustn't",
+      "prohibition",
+      "modal verbs"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-012"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Whenever the temperature falls below zero, this lake ___.",
+    "passage": null,
+    "options": [
+      "freezes",
+      "froze",
+      "will freeze",
+      "is freezing"
+    ],
+    "correct_answer": "freezes",
+    "explanation_uk": "Для загальних фактів і повторюваних результатів у підрядній та головній частинах уживається Present Simple: «falls» і «freezes».",
+    "difficulty": 3,
+    "discrimination": 1.03,
+    "estimated_time_seconds": 35,
+    "topic": "Zero conditional",
+    "tags": [
+      "zero conditional",
+      "present simple",
+      "general facts"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-013"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Could you tell me ___?",
+    "passage": null,
+    "options": [
+      "where the nearest pharmacy is",
+      "where is the nearest pharmacy",
+      "the nearest pharmacy where is",
+      "is where the nearest pharmacy"
+    ],
+    "correct_answer": "where the nearest pharmacy is",
+    "explanation_uk": "У непрямому запитанні використовується прямий порядок слів: питальне слово, підмет, а потім дієслово — «where the nearest pharmacy is».",
+    "difficulty": 4,
+    "discrimination": 1.24,
+    "estimated_time_seconds": 40,
+    "topic": "Indirect questions",
+    "tags": [
+      "indirect questions",
+      "word order",
+      "embedded questions"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-014"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "___ the weather was bad, the match continued as planned.",
+    "passage": null,
+    "options": [
+      "Although",
+      "Because",
+      "Unless",
+      "So"
+    ],
+    "correct_answer": "Although",
+    "explanation_uk": "«Although» означає «хоча» та вводить протиставлення: погода була поганою, але матч усе одно продовжився.",
+    "difficulty": 2,
+    "discrimination": 1,
+    "estimated_time_seconds": 25,
+    "topic": "Conjunctions of contrast",
+    "tags": [
+      "although",
+      "conjunctions",
+      "contrast"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-GRAMMAR-015"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "Because the main road was closed, we had to take an alternative ___.",
+    "passage": null,
+    "options": [
+      "journey",
+      "route",
+      "direction",
+      "track"
+    ],
+    "correct_answer": "route",
+    "explanation_uk": "Слово «route» означає шлях або маршрут між місцями. «An alternative route» — це інший маршрут, яким можна скористатися.",
+    "difficulty": 2,
+    "discrimination": 1.02,
+    "estimated_time_seconds": 30,
+    "topic": "transport",
+    "tags": [
+      "meaning in context",
+      "travel vocabulary",
+      "word choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-001"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "I'd love to buy that camera, but I can't ___ it at the moment.",
+    "passage": null,
+    "options": [
+      "avoid",
+      "afford",
+      "expect",
+      "refuse"
+    ],
+    "correct_answer": "afford",
+    "explanation_uk": "«Afford» означає мати достатньо грошей, щоб щось купити. Мовець хоче придбати камеру, але зараз не має на неї коштів.",
+    "difficulty": 2,
+    "discrimination": 1.08,
+    "estimated_time_seconds": 30,
+    "topic": "money and shopping",
+    "tags": [
+      "meaning in context",
+      "word choice",
+      "finance vocabulary"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-002"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "Leo didn't break the cup by accident; he did it ___.",
+    "passage": null,
+    "options": [
+      "by chance",
+      "in public",
+      "on purpose",
+      "at last"
+    ],
+    "correct_answer": "on purpose",
+    "explanation_uk": "Вираз «on purpose» означає «навмисно». Він протиставляється словосполученню «by accident» — «випадково».",
+    "difficulty": 2,
+    "discrimination": 1.12,
+    "estimated_time_seconds": 25,
+    "topic": "everyday actions",
+    "tags": [
+      "common phrase",
+      "meaning in context"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-003"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "We're really ___ our holiday by the sea next month.",
+    "passage": null,
+    "options": [
+      "looking after",
+      "looking forward to",
+      "looking into",
+      "looking around"
+    ],
+    "correct_answer": "looking forward to",
+    "explanation_uk": "«Look forward to» означає з радістю та нетерпінням чекати на майбутню подію.",
+    "difficulty": 3,
+    "discrimination": 1.16,
+    "estimated_time_seconds": 35,
+    "topic": "holidays",
+    "tags": [
+      "phrasal verb",
+      "common phrase"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-004"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "The town square was so ___ during the festival that it was difficult to move.",
+    "passage": null,
+    "options": [
+      "narrow",
+      "crowded",
+      "private",
+      "peaceful"
+    ],
+    "correct_answer": "crowded",
+    "explanation_uk": "«Crowded» означає переповнений людьми. Саме через велику кількість людей площею було важко пересуватися.",
+    "difficulty": 2,
+    "discrimination": 0.98,
+    "estimated_time_seconds": 30,
+    "topic": "towns and events",
+    "tags": [
+      "meaning in context",
+      "adjectives"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-005"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "More than 200 runners will ___ the charity race this Sunday.",
+    "passage": null,
+    "options": [
+      "make use of",
+      "take part in",
+      "keep away from",
+      "get rid of"
+    ],
+    "correct_answer": "take part in",
+    "explanation_uk": "«Take part in» означає брати участь у заході або діяльності. Бігуни братимуть участь у благодійному забігу.",
+    "difficulty": 3,
+    "discrimination": 1.21,
+    "estimated_time_seconds": 35,
+    "topic": "sport and charity",
+    "tags": [
+      "common phrase",
+      "phrasal expression",
+      "collocation"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-006"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "Before you start cooking, check that you have all the necessary ___.",
+    "passage": null,
+    "options": [
+      "ingredients",
+      "materials",
+      "courses",
+      "products"
+    ],
+    "correct_answer": "ingredients",
+    "explanation_uk": "«Ingredients» — це складники, потрібні для приготування страви, наприклад борошно, яйця чи цукор.",
+    "difficulty": 2,
+    "discrimination": 0.94,
+    "estimated_time_seconds": 30,
+    "topic": "food and cooking",
+    "tags": [
+      "topic vocabulary",
+      "word choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-007"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "The team worked all weekend to ___ the project deadline.",
+    "passage": null,
+    "options": [
+      "reach",
+      "meet",
+      "win",
+      "catch"
+    ],
+    "correct_answer": "meet",
+    "explanation_uk": "Усталене словосполучення «meet a deadline» означає завершити роботу не пізніше встановленого терміну.",
+    "difficulty": 3,
+    "discrimination": 1.18,
+    "estimated_time_seconds": 35,
+    "topic": "work and projects",
+    "tags": [
+      "collocation",
+      "work vocabulary"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-008"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "Sofia had to ___ the job offer because the office was too far from her home.",
+    "passage": null,
+    "options": [
+      "turn down",
+      "put off",
+      "give up",
+      "break into"
+    ],
+    "correct_answer": "turn down",
+    "explanation_uk": "«Turn down» означає відхилити пропозицію або запрошення. Софія відмовилася від роботи через віддаленість офісу.",
+    "difficulty": 3,
+    "discrimination": 1.25,
+    "estimated_time_seconds": 40,
+    "topic": "employment",
+    "tags": [
+      "phrasal verb",
+      "meaning in context"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-009"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "There is a lot of ___ for tickets, so the concert may sell out quickly.",
+    "passage": null,
+    "options": [
+      "request",
+      "demand",
+      "choice",
+      "supply"
+    ],
+    "correct_answer": "demand",
+    "explanation_uk": "«Demand» означає високий рівень бажання придбати товар або послугу. Великий попит на квитки може призвести до їх швидкого розпродажу.",
+    "difficulty": 4,
+    "discrimination": 1.27,
+    "estimated_time_seconds": 40,
+    "topic": "entertainment and business",
+    "tags": [
+      "meaning in context",
+      "noun choice",
+      "collocation"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-010"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "Are you ___ with this computer program, or would you like me to show you how it works?",
+    "passage": null,
+    "options": [
+      "familiar",
+      "aware",
+      "typical",
+      "suitable"
+    ],
+    "correct_answer": "familiar",
+    "explanation_uk": "«Familiar with» означає добре знати щось або мати досвід користування цим. Інші варіанти не утворюють потрібного словосполучення з «with» у цьому контексті.",
+    "difficulty": 3,
+    "discrimination": 1.11,
+    "estimated_time_seconds": 35,
+    "topic": "technology",
+    "tags": [
+      "collocation",
+      "word choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-011"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "It took Noah several weeks to fully ___ from his illness.",
+    "passage": null,
+    "options": [
+      "improve",
+      "recover",
+      "repair",
+      "solve"
+    ],
+    "correct_answer": "recover",
+    "explanation_uk": "«Recover from an illness» означає одужати після хвороби. Це стандартне словосполучення з прийменником «from».",
+    "difficulty": 2,
+    "discrimination": 1.04,
+    "estimated_time_seconds": 30,
+    "topic": "health",
+    "tags": [
+      "health vocabulary",
+      "collocation",
+      "word choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-012"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "The supermarket is trying to ___ the amount of plastic used in its packaging.",
+    "passage": null,
+    "options": [
+      "reduce",
+      "remove",
+      "refuse",
+      "release"
+    ],
+    "correct_answer": "reduce",
+    "explanation_uk": "«Reduce» означає зменшувати кількість або обсяг чогось. Супермаркет прагне використовувати менше пластику.",
+    "difficulty": 3,
+    "discrimination": 1.09,
+    "estimated_time_seconds": 35,
+    "topic": "environment",
+    "tags": [
+      "environmental vocabulary",
+      "word choice",
+      "meaning in context"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-013"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "The company offers a good monthly ___ as well as free meals and travel costs.",
+    "passage": null,
+    "options": [
+      "salary",
+      "fee",
+      "fare",
+      "rent"
+    ],
+    "correct_answer": "salary",
+    "explanation_uk": "«Salary» — це регулярна, зазвичай щомісячна, оплата праці. «Fee» — плата за послугу, «fare» — вартість проїзду, а «rent» — орендна плата.",
+    "difficulty": 2,
+    "discrimination": 1.01,
+    "estimated_time_seconds": 30,
+    "topic": "jobs and money",
+    "tags": [
+      "topic vocabulary",
+      "meaning in context"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-014"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "When the teacher asked Maya to present her idea, she ___ for a moment before beginning to speak.",
+    "passage": null,
+    "options": [
+      "complained",
+      "hesitated",
+      "escaped",
+      "interrupted"
+    ],
+    "correct_answer": "hesitated",
+    "explanation_uk": "«Hesitated» означає на мить зупинилася перед дією через невпевненість або хвилювання. Це відповідає ситуації перед початком виступу.",
+    "difficulty": 3,
+    "discrimination": 1.14,
+    "estimated_time_seconds": 35,
+    "topic": "communication",
+    "tags": [
+      "meaning in context",
+      "verbs",
+      "word choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-VOCABULARY-015"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "According to the community garden notice, why will Saturday's work session finish earlier than usual?",
+    "passage": "Green Street Community Garden\n\nOur monthly garden work session will take place this Saturday. It will begin at the usual time of 9:00 a.m., but it will end at noon instead of 2:00 p.m. because a wedding will be held in the park that afternoon. Volunteers will plant tomatoes, repair the wooden fence and clear leaves from the paths. Gloves and tools will be provided, but please bring drinking water. New volunteers should meet Carla beside the main gate at 8:45 a.m. for a short introduction.",
+    "options": [
+      "A wedding is taking place in the park.",
+      "The volunteers have fewer jobs to complete.",
+      "Carla needs to leave at lunchtime.",
+      "The garden has run out of tools."
+    ],
+    "correct_answer": "A wedding is taking place in the park.",
+    "explanation_uk": "У повідомленні прямо сказано, що робоча зустріч завершиться опівдні, оскільки після обіду в парку відбудеться весілля.",
+    "difficulty": 2,
+    "discrimination": 0.91,
+    "estimated_time_seconds": 45,
+    "topic": "Community volunteering",
+    "tags": [
+      "detail",
+      "notice",
+      "schedule"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-001"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What should someone do if this is their first time volunteering at the garden?",
+    "passage": "Green Street Community Garden\n\nOur monthly garden work session will take place this Saturday. It will begin at the usual time of 9:00 a.m., but it will end at noon instead of 2:00 p.m. because a wedding will be held in the park that afternoon. Volunteers will plant tomatoes, repair the wooden fence and clear leaves from the paths. Gloves and tools will be provided, but please bring drinking water. New volunteers should meet Carla beside the main gate at 8:45 a.m. for a short introduction.",
+    "options": [
+      "Meet Carla at the main gate before the session begins.",
+      "Bring a complete set of gardening tools.",
+      "Go directly to the wooden fence at nine o'clock.",
+      "Attend an introduction after the work is finished."
+    ],
+    "correct_answer": "Meet Carla at the main gate before the session begins.",
+    "explanation_uk": "Нових волонтерів просять зустрітися з Карлою біля головних воріт о 8:45 для короткого вступного пояснення.",
+    "difficulty": 2,
+    "discrimination": 0.94,
+    "estimated_time_seconds": 40,
+    "topic": "Community volunteering",
+    "tags": [
+      "detail",
+      "instructions",
+      "notice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-002"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What is the main purpose of Priya's email to Dan?",
+    "passage": "Hi Dan,\n\nThanks for offering to collect me from the station on Friday. My train was originally due to arrive at 6:10 p.m., but the railway company has changed the timetable because of engineering work. I will now arrive at 6:45 p.m. Please don't wait outside the station, as rain is expected. There is a small café opposite platform three where we can meet. I will text you if the train is delayed again.\n\nPriya",
+    "options": [
+      "To tell Dan about a change to her arrival plans",
+      "To ask Dan to purchase a different train ticket",
+      "To explain why she has cancelled her journey",
+      "To invite Dan to travel with her on Friday"
+    ],
+    "correct_answer": "To tell Dan about a change to her arrival plans",
+    "explanation_uk": "Прія повідомляє Дену про новий час прибуття та пропонує інше місце зустрічі, тому головна мета листа — змінити домовленості щодо її приїзду.",
+    "difficulty": 2,
+    "discrimination": 1.02,
+    "estimated_time_seconds": 50,
+    "topic": "Travel arrangements",
+    "tags": [
+      "main-idea",
+      "email",
+      "travel"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-003"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "Why does Priya suggest meeting inside the café?",
+    "passage": "Hi Dan,\n\nThanks for offering to collect me from the station on Friday. My train was originally due to arrive at 6:10 p.m., but the railway company has changed the timetable because of engineering work. I will now arrive at 6:45 p.m. Please don't wait outside the station, as rain is expected. There is a small café opposite platform three where we can meet. I will text you if the train is delayed again.\n\nPriya",
+    "options": [
+      "It will protect Dan from the expected rain.",
+      "It is where train tickets must be collected.",
+      "It stays open later than the station building.",
+      "It is closer to Dan's home than the station."
+    ],
+    "correct_answer": "It will protect Dan from the expected rain.",
+    "explanation_uk": "Прія просить Дена не чекати надворі, оскільки очікується дощ, і пропонує зустрітися в кафе.",
+    "difficulty": 2,
+    "discrimination": 0.89,
+    "estimated_time_seconds": 40,
+    "topic": "Travel arrangements",
+    "tags": [
+      "reason",
+      "email",
+      "weather"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-004"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What did Mateo discover after he started repairing the chairs?",
+    "passage": "Mateo bought four old dining chairs online because he wanted to learn how to repair furniture. The seller warned him that they needed some work, but the photos made the damage look minor. Once Mateo removed the seats, he discovered that two wooden frames were badly cracked. At first, he thought he had wasted his money. However, his neighbour, who had worked as a carpenter, showed him how to replace the broken pieces. The project took three weekends, and the chairs are now strong enough to use every day.",
+    "options": [
+      "Two of the wooden frames had serious cracks.",
+      "The seats were made from expensive material.",
+      "All four chairs had recently been repaired.",
+      "The seller had included the wrong photographs."
+    ],
+    "correct_answer": "Two of the wooden frames had serious cracks.",
+    "explanation_uk": "Після того як Матео зняв сидіння, він виявив, що дві дерев'яні рами були сильно тріснуті.",
+    "difficulty": 2,
+    "discrimination": 0.97,
+    "estimated_time_seconds": 50,
+    "topic": "Furniture repair",
+    "tags": [
+      "detail",
+      "narrative",
+      "discovery"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-005"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "How did Mateo's feelings about buying the chairs most likely change?",
+    "passage": "Mateo bought four old dining chairs online because he wanted to learn how to repair furniture. The seller warned him that they needed some work, but the photos made the damage look minor. Once Mateo removed the seats, he discovered that two wooden frames were badly cracked. At first, he thought he had wasted his money. However, his neighbour, who had worked as a carpenter, showed him how to replace the broken pieces. The project took three weekends, and the chairs are now strong enough to use every day.",
+    "options": [
+      "He first regretted the purchase but later felt more positive about it.",
+      "He was pleased at first but became bored with the easy project.",
+      "He remained angry because the chairs could not be used.",
+      "He was uncertain at first and then decided to sell them immediately."
+    ],
+    "correct_answer": "He first regretted the purchase but later felt more positive about it.",
+    "explanation_uk": "Спочатку Матео думав, що даремно витратив гроші, але з допомогою сусіда відремонтував стільці, і тепер ними можна користуватися щодня. Це вказує на позитивну зміну його ставлення.",
+    "difficulty": 4,
+    "discrimination": 1.18,
+    "estimated_time_seconds": 65,
+    "topic": "Furniture repair",
+    "tags": [
+      "inference",
+      "feelings",
+      "narrative"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-006"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What is the museum announcement mainly explaining to visitors?",
+    "passage": "City History Museum Update\n\nThe second floor will be closed from 3 to 14 May while new lights are installed. During this period, the popular clothing exhibition will move to the ground-floor gallery. The café and gift shop will remain open as normal. Visitors who have already booked the second-floor guided tour may join a special tour of the museum garden instead or receive a full refund. Contact the booking office by 1 May if you would like a refund.",
+    "options": [
+      "How building work will affect exhibitions and booked tours",
+      "Why the museum café is changing its opening hours",
+      "Where visitors can donate historical clothing",
+      "When a new museum garden will be created"
+    ],
+    "correct_answer": "How building work will affect exhibitions and booked tours",
+    "explanation_uk": "Оголошення пояснює, що через установлення нового освітлення поверх буде закрито, виставку перенесуть, а заброньовані екскурсії замінять або компенсують.",
+    "difficulty": 3,
+    "discrimination": 1.06,
+    "estimated_time_seconds": 55,
+    "topic": "Museum information",
+    "tags": [
+      "main-idea",
+      "announcement",
+      "public-place"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-007"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What must visitors do if they want their guided-tour payment returned?",
+    "passage": "City History Museum Update\n\nThe second floor will be closed from 3 to 14 May while new lights are installed. During this period, the popular clothing exhibition will move to the ground-floor gallery. The café and gift shop will remain open as normal. Visitors who have already booked the second-floor guided tour may join a special tour of the museum garden instead or receive a full refund. Contact the booking office by 1 May if you would like a refund.",
+    "options": [
+      "Contact the booking office no later than 1 May",
+      "Visit the ground-floor gallery before 3 May",
+      "Show their ticket at the museum gift shop",
+      "Join the garden tour before requesting repayment"
+    ],
+    "correct_answer": "Contact the booking office no later than 1 May",
+    "explanation_uk": "Щоб отримати повне повернення коштів, відвідувачі повинні звернутися до відділу бронювання до 1 травня.",
+    "difficulty": 2,
+    "discrimination": 0.93,
+    "estimated_time_seconds": 45,
+    "topic": "Museum information",
+    "tags": [
+      "detail",
+      "deadline",
+      "announcement"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-008"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "Why was Hana surprised by the local walking group?",
+    "passage": "When Hana moved to Brookdale for her new job, she joined a local walking group because she hoped to meet people. She expected the members to walk quickly through the hills every weekend. Instead, the group chose gentle routes and often stopped to photograph birds or discuss local plants. Hana soon realised that the walks were less about exercise and more about enjoying nature together. Although she still went running alone during the week, she began looking forward to the group's slow Sunday walks.",
+    "options": [
+      "Its walks focused more on nature than on hard exercise.",
+      "Most members were people from her workplace.",
+      "The group only met on weekday evenings.",
+      "Members were not allowed to take photographs."
+    ],
+    "correct_answer": "Its walks focused more on nature than on hard exercise.",
+    "explanation_uk": "Хана очікувала швидких прогулянок пагорбами, але група обирала легкі маршрути й часто зупинялася, щоб спостерігати за природою.",
+    "difficulty": 3,
+    "discrimination": 1.09,
+    "estimated_time_seconds": 55,
+    "topic": "Social activities",
+    "tags": [
+      "contrast",
+      "detail",
+      "leisure"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-009"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What can be concluded about Hana's opinion of the Sunday walks?",
+    "passage": "When Hana moved to Brookdale for her new job, she joined a local walking group because she hoped to meet people. She expected the members to walk quickly through the hills every weekend. Instead, the group chose gentle routes and often stopped to photograph birds or discuss local plants. Hana soon realised that the walks were less about exercise and more about enjoying nature together. Although she still went running alone during the week, she began looking forward to the group's slow Sunday walks.",
+    "options": [
+      "She came to enjoy them despite their relaxed pace.",
+      "She planned to persuade the group to walk faster.",
+      "She attended them only because her employer required it.",
+      "She preferred them mainly as preparation for races."
+    ],
+    "correct_answer": "She came to enjoy them despite their relaxed pace.",
+    "explanation_uk": "Хоча прогулянки виявилися повільнішими, ніж Хана очікувала, вона почала з нетерпінням чекати недільних зустрічей. Отже, їй сподобався їхній спокійний темп.",
+    "difficulty": 3,
+    "discrimination": 1.14,
+    "estimated_time_seconds": 60,
+    "topic": "Social activities",
+    "tags": [
+      "inference",
+      "attitude",
+      "leisure"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-READING-010"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "cloze",
+    "question_type": "multiple_choice",
+    "prompt": "The instructions were quite ___, so everyone knew exactly what to do.",
+    "passage": null,
+    "options": [
+      "clear",
+      "careless",
+      "crowded",
+      "ordinary"
+    ],
+    "correct_answer": "clear",
+    "explanation_uk": "Прикметник «clear» означає «зрозумілий, чіткий». Оскільки всі точно знали, що робити, інструкції були зрозумілими.",
+    "difficulty": 2,
+    "discrimination": 0.92,
+    "estimated_time_seconds": 30,
+    "topic": "Instructions",
+    "tags": [
+      "vocabulary",
+      "adjectives",
+      "context"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-CLOZE-001"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "cloze",
+    "question_type": "multiple_choice",
+    "prompt": "During our visit to the science museum, we found ___ how astronauts sleep in space.",
+    "passage": null,
+    "options": [
+      "out",
+      "up",
+      "on",
+      "over"
+    ],
+    "correct_answer": "out",
+    "explanation_uk": "Фразове дієслово «find out» означає «дізнатися» або «з’ясувати». Тут відвідувачі дізналися, як астронавти сплять у космосі.",
+    "difficulty": 3,
+    "discrimination": 1.04,
+    "estimated_time_seconds": 35,
+    "topic": "Science museum",
+    "tags": [
+      "phrasal_verbs",
+      "vocabulary",
+      "education"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-CLOZE-002"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "cloze",
+    "question_type": "multiple_choice",
+    "prompt": "Booking is required, so you won't be allowed to use the meeting room ___ you reserve it in advance.",
+    "passage": null,
+    "options": [
+      "unless",
+      "although",
+      "because",
+      "while"
+    ],
+    "correct_answer": "unless",
+    "explanation_uk": "«Unless» означає «якщо не». Кімнатою не дозволять користуватися, якщо її не забронювати заздалегідь.",
+    "difficulty": 3,
+    "discrimination": 1.16,
+    "estimated_time_seconds": 45,
+    "topic": "Booking a room",
+    "tags": [
+      "grammar",
+      "conditionals",
+      "conjunctions"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-CLOZE-003"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "cloze",
+    "question_type": "multiple_choice",
+    "prompt": "The documentary was much more interesting ___ I had expected.",
+    "passage": null,
+    "options": [
+      "than",
+      "that",
+      "as",
+      "then"
+    ],
+    "correct_answer": "than",
+    "explanation_uk": "Після порівняльної форми «more interesting» уживається сполучник «than»: «цікавіший, ніж я очікував».",
+    "difficulty": 2,
+    "discrimination": 0.88,
+    "estimated_time_seconds": 25,
+    "topic": "Films and media",
+    "tags": [
+      "grammar",
+      "comparatives",
+      "conjunctions"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-CLOZE-004"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "cloze",
+    "question_type": "multiple_choice",
+    "prompt": "Even though Ana moved abroad, we still keep ___ through regular video calls.",
+    "passage": null,
+    "options": [
+      "in touch",
+      "on time",
+      "at once",
+      "by accident"
+    ],
+    "correct_answer": "in touch",
+    "explanation_uk": "Сталий вираз «keep in touch» означає «підтримувати зв’язок». Ана та її знайомі продовжують спілкуватися за допомогою відеодзвінків.",
+    "difficulty": 2,
+    "discrimination": 1.01,
+    "estimated_time_seconds": 30,
+    "topic": "Communication",
+    "tags": [
+      "collocation",
+      "relationships",
+      "communication"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-CLOZE-005"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "use_of_english",
+    "question_type": "multiple_choice",
+    "prompt": "Could you keep an ___ on my suitcase while I buy a ticket?",
+    "passage": null,
+    "options": [
+      "eye",
+      "look",
+      "view",
+      "sight"
+    ],
+    "correct_answer": "eye",
+    "explanation_uk": "Сталий вираз «keep an eye on something» означає «наглядати за чимось» або «стежити за чимось».",
+    "difficulty": 2,
+    "discrimination": 1.02,
+    "estimated_time_seconds": 30,
+    "topic": "Fixed expressions",
+    "tags": [
+      "fixed-expression",
+      "collocation",
+      "travel"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-USE-OF-ENGLISH-001"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "use_of_english",
+    "question_type": "multiple_choice",
+    "prompt": "I can't figure ___ how to change the password on this website.",
+    "passage": null,
+    "options": [
+      "out",
+      "up",
+      "off",
+      "over"
+    ],
+    "correct_answer": "out",
+    "explanation_uk": "Фразове дієслово «figure out» означає «зрозуміти» або «з'ясувати, як щось зробити».",
+    "difficulty": 2,
+    "discrimination": 1.08,
+    "estimated_time_seconds": 35,
+    "topic": "Phrasal verbs",
+    "tags": [
+      "phrasal-verb",
+      "technology",
+      "word-choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-USE-OF-ENGLISH-002"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "use_of_english",
+    "question_type": "multiple_choice",
+    "prompt": "This coffee is too hot for me to drink. In other words, it isn't ___ for me to drink.",
+    "passage": null,
+    "options": [
+      "cool enough",
+      "enough cool",
+      "so cool",
+      "too cool"
+    ],
+    "correct_answer": "cool enough",
+    "explanation_uk": "Конструкцію «too hot to drink» можна передати як «not cool enough to drink». Прикметник ставиться перед «enough»: «cool enough».",
+    "difficulty": 3,
+    "discrimination": 1.16,
+    "estimated_time_seconds": 50,
+    "topic": "Sentence transformations",
+    "tags": [
+      "transformation",
+      "too-and-enough",
+      "adjective-order"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-USE-OF-ENGLISH-003"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "use_of_english",
+    "question_type": "multiple_choice",
+    "prompt": "Her explanation didn't ___ sense, so I asked her to explain the idea again.",
+    "passage": null,
+    "options": [
+      "make",
+      "do",
+      "have",
+      "give"
+    ],
+    "correct_answer": "make",
+    "explanation_uk": "Англійською вживається сталий вираз «make sense», який означає «мати сенс» або «бути зрозумілим».",
+    "difficulty": 2,
+    "discrimination": 0.98,
+    "estimated_time_seconds": 30,
+    "topic": "Collocations",
+    "tags": [
+      "collocation",
+      "make-sense",
+      "communication"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-USE-OF-ENGLISH-004"
+  },
+  {
+    "cefr_level": "B1",
+    "category": "use_of_english",
+    "question_type": "multiple_choice",
+    "prompt": "These trousers don't ___ me anymore because they are too tight.",
+    "passage": null,
+    "options": [
+      "fit",
+      "suit",
+      "match",
+      "combine"
+    ],
+    "correct_answer": "fit",
+    "explanation_uk": "Дієслово «fit» означає «підходити за розміром». «Suit» стосується того, чи пасує річ людині за стилем, а «match» — чи поєднуються речі між собою.",
+    "difficulty": 3,
+    "discrimination": 1.21,
+    "estimated_time_seconds": 40,
+    "topic": "Nuanced word choice",
+    "tags": [
+      "fit-suit-match",
+      "clothing",
+      "word-choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "B1-USE-OF-ENGLISH-005"
+  }
+]

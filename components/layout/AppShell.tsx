@@ -13,6 +13,26 @@ type AppShellProps = {
   streak: number;
 };
 
+function getUkrainianDayWord(value: number) {
+  const normalizedValue = Math.abs(value);
+  const lastTwoDigits = normalizedValue % 100;
+  const lastDigit = normalizedValue % 10;
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return "днів";
+  }
+
+  if (lastDigit === 1) {
+    return "день";
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return "дні";
+  }
+
+  return "днів";
+}
+
 export function AppShell({
   children,
   fullName,
@@ -23,7 +43,9 @@ export function AppShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const firstName =
-    fullName.trim().split(/\s+/)[0] || "Student";
+    fullName.trim().split(/\s+/)[0] || "Студент";
+
+  const streakLabel = getUkrainianDayWord(streak);
 
   return (
     <div className="flex h-dvh overflow-hidden bg-slate-50">
@@ -39,35 +61,38 @@ export function AppShell({
               type="button"
               onClick={() => setSidebarOpen(true)}
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 lg:hidden"
-              aria-label="Open navigation"
+              aria-label="Відкрити навігацію"
             >
               <Menu className="h-5 w-5" />
             </button>
 
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-950">
-                Hello, {firstName} 👋
+                Привіт, {firstName} 👋
               </p>
 
               <p className="text-xs text-slate-400">
-                Ready for your next lesson?
+                Готові до наступного уроку?
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden items-center gap-2 rounded-xl bg-orange-50 px-3 py-2 sm:flex">
-              <span>🔥</span>
+              <span aria-hidden="true">🔥</span>
+
               <span className="text-sm font-bold text-orange-700">
                 {streak}
               </span>
+
               <span className="text-xs text-orange-500">
-                day streak
+                {streakLabel} поспіль
               </span>
             </div>
 
             <div className="hidden items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 sm:flex">
-              <span>✨</span>
+              <span aria-hidden="true">✨</span>
+
               <span className="text-sm font-bold text-amber-700">
                 {xp} XP
               </span>
@@ -84,7 +109,7 @@ export function AppShell({
                 </p>
 
                 <p className="text-[11px] text-slate-400">
-                  Level {englishLevel}
+                  Рівень {englishLevel}
                 </p>
               </div>
             </div>

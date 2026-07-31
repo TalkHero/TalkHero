@@ -26,7 +26,7 @@ export function XpToast({ xp }: XpToastProps) {
           </p>
 
           <p className="text-xs text-amber-700">
-            Total: {xp.totalXp} XP · Level {xp.level}
+              Всього: {xp.totalXp} XP · Рівень {xp.level}
           </p>
         </div>
       </div>

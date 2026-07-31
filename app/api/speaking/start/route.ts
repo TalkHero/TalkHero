@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -108,7 +109,7 @@ export async function POST() {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -175,8 +176,7 @@ export async function POST() {
     if (!openingMessage) {
       return NextResponse.json(
         {
-          error:
-            "Emma could not create an opening message.",
+          error: API_ERRORS.failedToCreateOpeningMessage,
         },
         { status: 502 },
       );
@@ -220,7 +220,7 @@ export async function POST() {
 
     return NextResponse.json(
       {
-        error: "Failed to start speaking session.",
+        error: API_ERRORS.failedToStartSpeakingSession,
       },
       { status: 500 },
     );

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 const VALID_LEVELS = [
   "A1",
@@ -36,7 +37,7 @@ export async function PATCH(request: Request) {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -48,7 +49,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Invalid English level. Use A1, A2, B1, B2, C1, or C2.",
+           API_ERRORS.invalidEnglishLevel
         },
         { status: 400 },
       );
@@ -76,7 +77,7 @@ export async function PATCH(request: Request) {
     console.error("UPDATE ENGLISH LEVEL ERROR:", error);
 
     return NextResponse.json(
-      { error: "Failed to update English level" },
+      { error: API_ERRORS.failedToUpdateEnglishLevel },
       { status: 500 },
     );
   }

@@ -48,7 +48,7 @@ export function SelectedWordPopup({
           <BookPlus className="h-4 w-4" />
         )}
 
-        {saving ? "Saving..." : "Save"}
+        {saving ? "Збереження..." : "Зберегти"}
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 type RouteContext = {
   params: Promise<{
@@ -108,7 +109,7 @@ export async function PATCH(
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -124,7 +125,7 @@ export async function PATCH(
       return NextResponse.json(
         {
           error:
-            "Invalid grade. Use again, hard, good, or easy.",
+            API_ERRORS.invalidReviewGrade,
         },
         { status: 400 },
       );
@@ -152,7 +153,7 @@ export async function PATCH(
 
     if (!card) {
       return NextResponse.json(
-        { error: "Review card not found." },
+        { error: API_ERRORS.reviewCardNotFound },
         { status: 404 },
       );
     }
@@ -226,7 +227,7 @@ export async function PATCH(
 
     return NextResponse.json(
       {
-        error: "Failed to update review card.",
+        error: API_ERRORS.failedToUpdateReviewCard,
       },
       {
         status: 500,

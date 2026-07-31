@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -11,13 +12,13 @@ const generateVocabularyRequestSchema = z.object({
   word: z
     .string()
     .trim()
-    .min(1, "Word is required.")
-    .max(100, "Word or phrase is too long."),
+    .min(1, API_ERRORS.wordRequired)
+.max(100, "Слово або фраза не можуть містити більше 100 символів."),
 
   context: z
     .string()
     .trim()
-    .max(1000, "Context is too long.")
+    .max(1000, "Контекст не може містити більше 1000 символів.")
     .optional()
     .default(""),
 });
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -147,7 +148,7 @@ export async function POST(request: Request) {
         {
           error:
             validationResult.error.issues[0]?.message ||
-            "Invalid request data.",
+            API_ERRORS.invalidRequestData,
         },
         { status: 400 },
       );
@@ -286,7 +287,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "The AI did not return a vocabulary card.",
+            API_ERRORS.aiDidNotReturnVocabularyCard,
         },
         { status: 502 },
       );
@@ -306,7 +307,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "The AI returned an invalid vocabulary card.",
+            API_ERRORS.invalidVocabularyCard,
         },
         { status: 502 },
       );
@@ -324,7 +325,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "The generated vocabulary card is incomplete.",
+            API_ERRORS.incompleteVocabularyCard,
         },
         { status: 502 },
       );
@@ -438,7 +439,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Failed to generate and save vocabulary card.",
+          API_ERRORS.failedToGenerateVocabularyCard,
       },
       { status: 500 },
     );

@@ -81,13 +81,13 @@ export function ChatComposer({
               }`}
               aria-label={
                 isListening
-                  ? "Stop microphone"
-                  : "Start microphone"
+                  ? "Зупинити мікрофон"
+                  : "Увімкнути мікрофон"
               }
               title={
                 isListening
-                  ? "Stop listening"
-                  : "Start speaking"
+                  ? "Зупинити запис"
+                  : "Почати говорити"
               }
             >
               {isListening ? (
@@ -107,7 +107,7 @@ export function ChatComposer({
             onKeyDown={handleKeyDown}
             disabled={disabled}
             rows={1}
-            placeholder="Message Emma..."
+            placeholder="Напишіть повідомлення Emma..."
             className="max-h-40 min-h-11 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm leading-6 text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed"
           />
 
@@ -116,7 +116,7 @@ export function ChatComposer({
             onClick={onSend}
             disabled={disabled || !input.trim()}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
-            aria-label="Send message"
+            aria-label="Надіслати повідомлення"
           >
             {loading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -133,7 +133,7 @@ export function ChatComposer({
         )}
 
         <p className="mt-2 text-center text-xs text-slate-400">
-          Press Enter to send · Shift + Enter for a new line
+          Натисніть Enter, щоб надіслати · Shift + Enter — новий рядок
         </p>
       </div>
     </div>

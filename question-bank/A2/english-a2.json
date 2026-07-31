@@ -1,0 +1,542 @@
+[
+  {
+    "cefr_level": "A2",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Where ___ your cousin live?",
+    "passage": null,
+    "options": [
+      "does",
+      "do",
+      "is",
+      "has"
+    ],
+    "correct_answer": "does",
+    "explanation_uk": "У запитанні в Present Simple з підметом у третій особі однини «your cousin» використовується допоміжне дієслово «does». Основне дієслово «live» залишається в початковій формі.",
+    "difficulty": 2,
+    "discrimination": 1.05,
+    "estimated_time_seconds": 30,
+    "topic": "Present Simple questions",
+    "tags": [
+      "present-simple",
+      "questions",
+      "auxiliary-do"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-GRAMMAR-001"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "We ___ go to the beach yesterday because the weather was terrible.",
+    "passage": null,
+    "options": [
+      "didn't",
+      "don't",
+      "weren't",
+      "haven't"
+    ],
+    "correct_answer": "didn't",
+    "explanation_uk": "Слово «yesterday» указує на Past Simple. Заперечна форма утворюється за допомогою «didn't» та початкової форми дієслова «go».",
+    "difficulty": 2,
+    "discrimination": 1.08,
+    "estimated_time_seconds": 30,
+    "topic": "Past Simple negatives",
+    "tags": [
+      "past-simple",
+      "negatives",
+      "did-not"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-GRAMMAR-002"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "I ___ my aunt this weekend. We have already made plans.",
+    "passage": null,
+    "options": [
+      "am visiting",
+      "visit",
+      "visited",
+      "was visiting"
+    ],
+    "correct_answer": "am visiting",
+    "explanation_uk": "Present Continuous можна використовувати для запланованих дій у майбутньому. Фраза «We have already made plans» показує, що зустріч уже організована.",
+    "difficulty": 3,
+    "discrimination": 1.12,
+    "estimated_time_seconds": 40,
+    "topic": "Present Continuous for future arrangements",
+    "tags": [
+      "present-continuous",
+      "future-arrangements",
+      "plans"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-GRAMMAR-003"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "This is ___ coat. She left it on the chair.",
+    "passage": null,
+    "options": [
+      "Maria's",
+      "Marias",
+      "Maria",
+      "of Maria"
+    ],
+    "correct_answer": "Maria's",
+    "explanation_uk": "Щоб показати належність речі людині, до її імені додаємо апостроф і «s»: «Maria's coat» — пальто Марії.",
+    "difficulty": 1,
+    "discrimination": 0.94,
+    "estimated_time_seconds": 25,
+    "topic": "Possessive nouns",
+    "tags": [
+      "possessive",
+      "apostrophe-s",
+      "nouns"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-GRAMMAR-004"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "How ___ time do we have before the bus leaves?",
+    "passage": null,
+    "options": [
+      "much",
+      "many",
+      "few",
+      "several"
+    ],
+    "correct_answer": "much",
+    "explanation_uk": "Іменник «time» у значенні кількості часу є незлічуваним, тому в запитанні використовуємо «How much».",
+    "difficulty": 2,
+    "discrimination": 1.01,
+    "estimated_time_seconds": 25,
+    "topic": "Countable and uncountable nouns",
+    "tags": [
+      "much",
+      "uncountable-nouns",
+      "questions"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-GRAMMAR-005"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Of the three bags, the red one is ___.",
+    "passage": null,
+    "options": [
+      "the cheapest",
+      "cheaper",
+      "cheap",
+      "the cheaper"
+    ],
+    "correct_answer": "the cheapest",
+    "explanation_uk": "Коли порівнюємо три або більше предмети, використовуємо найвищий ступінь прикметника. Для короткого прикметника «cheap» це форма «the cheapest».",
+    "difficulty": 2,
+    "discrimination": 1.09,
+    "estimated_time_seconds": 35,
+    "topic": "Superlative adjectives",
+    "tags": [
+      "superlatives",
+      "adjectives",
+      "comparison"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-GRAMMAR-006"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Lucy hasn't finished her science project ___.",
+    "passage": null,
+    "options": [
+      "yet",
+      "already",
+      "ever",
+      "last night"
+    ],
+    "correct_answer": "yet",
+    "explanation_uk": "«Yet» зазвичай уживається наприкінці заперечного речення в Present Perfect, коли очікується, що дія буде завершена пізніше.",
+    "difficulty": 3,
+    "discrimination": 1.16,
+    "estimated_time_seconds": 35,
+    "topic": "Present Perfect with yet",
+    "tags": [
+      "present-perfect",
+      "yet",
+      "time-adverbs"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-GRAMMAR-007"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "When Ben was six, he ___ swim, but now he swims very well.",
+    "passage": null,
+    "options": [
+      "couldn't",
+      "can't",
+      "doesn't",
+      "isn't"
+    ],
+    "correct_answer": "couldn't",
+    "explanation_uk": "Для вираження відсутності здатності в минулому використовуємо «couldn't». Обставина «when Ben was six» показує, що йдеться про минулий час.",
+    "difficulty": 2,
+    "discrimination": 1.03,
+    "estimated_time_seconds": 30,
+    "topic": "Past ability with could",
+    "tags": [
+      "could",
+      "past-ability",
+      "modal-verbs"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-GRAMMAR-008"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "The café was very busy, so we had to ___ for a table.",
+    "passage": null,
+    "options": [
+      "wait",
+      "carry",
+      "invite",
+      "follow"
+    ],
+    "correct_answer": "wait",
+    "explanation_uk": "Дієслово «wait» означає чекати. У кафе не було вільного столика, тому людям довелося зачекати.",
+    "difficulty": 2,
+    "discrimination": 1.02,
+    "estimated_time_seconds": 30,
+    "topic": "Eating out",
+    "tags": [
+      "meaning in context",
+      "verbs",
+      "restaurants"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-VOCABULARY-001"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "We went to the beach and ___ lots of photos.",
+    "passage": null,
+    "options": [
+      "took",
+      "did",
+      "held",
+      "brought"
+    ],
+    "correct_answer": "took",
+    "explanation_uk": "В англійській мові вживають словосполучення «take photos» — фотографувати. У минулому часі «take» змінюється на «took».",
+    "difficulty": 2,
+    "discrimination": 1.08,
+    "estimated_time_seconds": 30,
+    "topic": "Holidays",
+    "tags": [
+      "collocations",
+      "photos",
+      "past context"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-VOCABULARY-002"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "Jack didn't leave home early, so he ___ the bus to work.",
+    "passage": null,
+    "options": [
+      "missed",
+      "lost",
+      "failed",
+      "dropped"
+    ],
+    "correct_answer": "missed",
+    "explanation_uk": "Словосполучення «miss the bus» означає не встигнути на автобус. Оскільки Джек не вийшов рано, він пропустив свій автобус.",
+    "difficulty": 3,
+    "discrimination": 1.12,
+    "estimated_time_seconds": 35,
+    "topic": "Transport",
+    "tags": [
+      "collocations",
+      "travel",
+      "word choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-VOCABULARY-003"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "At the airport, you must show your ___ before you get on the plane.",
+    "passage": null,
+    "options": [
+      "boarding pass",
+      "shopping list",
+      "restaurant menu",
+      "birthday card"
+    ],
+    "correct_answer": "boarding pass",
+    "explanation_uk": "«Boarding pass» — це посадковий талон, який пасажир показує перед посадкою на літак. Інші варіанти не пов’язані з посадкою на рейс.",
+    "difficulty": 2,
+    "discrimination": 1.05,
+    "estimated_time_seconds": 25,
+    "topic": "Air travel",
+    "tags": [
+      "airport",
+      "travel",
+      "topic vocabulary"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-VOCABULARY-004"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "After paying for the shoes, Marta put the ___ in her bag in case she needed to return them.",
+    "passage": null,
+    "options": [
+      "receipt",
+      "menu",
+      "ticket",
+      "letter"
+    ],
+    "correct_answer": "receipt",
+    "explanation_uk": "«Receipt» — це чек, який покупець отримує після оплати. Він може знадобитися, щоб повернути товар у магазин.",
+    "difficulty": 3,
+    "discrimination": 1.2,
+    "estimated_time_seconds": 40,
+    "topic": "Shopping",
+    "tags": [
+      "topic vocabulary",
+      "money",
+      "meaning in context"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-VOCABULARY-005"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "I can't talk now because I'm in a hurry. I'll call you ___.",
+    "passage": null,
+    "options": [
+      "later",
+      "away",
+      "again yesterday",
+      "last week"
+    ],
+    "correct_answer": "later",
+    "explanation_uk": "«I'll call you later» — поширена фраза зі значенням «Я зателефоную тобі пізніше». Інші варіанти не відповідають цьому майбутньому контексту.",
+    "difficulty": 1,
+    "discrimination": 0.94,
+    "estimated_time_seconds": 25,
+    "topic": "Communication",
+    "tags": [
+      "common phrases",
+      "time expressions",
+      "phone calls"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-VOCABULARY-006"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "The post office is on the ___ of King Street and Park Road, where the two roads meet.",
+    "passage": null,
+    "options": [
+      "corner",
+      "middle",
+      "side",
+      "end"
+    ],
+    "correct_answer": "corner",
+    "explanation_uk": "Коли дві вулиці перетинаються, будівля може бути «on the corner» — на розі. Пояснення про місце зустрічі двох доріг указує саме на це слово.",
+    "difficulty": 2,
+    "discrimination": 1.06,
+    "estimated_time_seconds": 35,
+    "topic": "Places in town",
+    "tags": [
+      "directions",
+      "topic vocabulary",
+      "meaning in context"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-VOCABULARY-007"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "By which day must students pay for the farm visit?",
+    "passage": "Class 8 will visit Green Hill Farm on Friday 14 June. The bus will leave school at 8:30 a.m. and return at about 4 p.m. Students should bring lunch and a bottle of water. The farm will provide boots, so special shoes are not needed. The visit will still happen if it rains because most activities are inside a large barn. Please pay £6 to the school office by Monday 10 June.",
+    "options": [
+      "Monday 10 June",
+      "Friday 14 June",
+      "Thursday 13 June",
+      "Monday 17 June"
+    ],
+    "correct_answer": "Monday 10 June",
+    "explanation_uk": "В оголошенні сказано, що учні мають сплатити 6 фунтів до понеділка, 10 червня.",
+    "difficulty": 1,
+    "discrimination": 0.9,
+    "estimated_time_seconds": 35,
+    "topic": "School farm visit",
+    "tags": [
+      "detail",
+      "dates",
+      "school-trip"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-READING-001"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "Why can the farm visit continue in rainy weather?",
+    "passage": "Class 8 will visit Green Hill Farm on Friday 14 June. The bus will leave school at 8:30 a.m. and return at about 4 p.m. Students should bring lunch and a bottle of water. The farm will provide boots, so special shoes are not needed. The visit will still happen if it rains because most activities are inside a large barn. Please pay £6 to the school office by Monday 10 June.",
+    "options": [
+      "Most activities take place inside.",
+      "The students will receive umbrellas.",
+      "The bus can travel quickly in the rain.",
+      "The farm is close to the school."
+    ],
+    "correct_answer": "Most activities take place inside.",
+    "explanation_uk": "Більшість занять відбуватиметься у великому сараї, тобто в приміщенні, тому дощ не завадить поїздці.",
+    "difficulty": 2,
+    "discrimination": 1.05,
+    "estimated_time_seconds": 40,
+    "topic": "School farm visit",
+    "tags": [
+      "inference",
+      "weather",
+      "school-trip"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-READING-002"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What is Leo mainly telling Rosa about in his email?",
+    "passage": "Hi Rosa,\nI started volunteering at the town animal centre last month. Every Wednesday after school, I clean the rabbits' homes and fill their water bowls. I wanted to work with the dogs, but volunteers under 16 cannot take them outside. I still enjoy being there because the staff teach me a lot about animal care. Next month, I will also help make posters for the centre's adoption day.\nLeo",
+    "options": [
+      "His volunteer work at an animal centre",
+      "His plans to get a rabbit at home",
+      "A school lesson about making posters",
+      "A new dog-walking business"
+    ],
+    "correct_answer": "His volunteer work at an animal centre",
+    "explanation_uk": "У листі Лео переважно описує свою волонтерську роботу в центрі для тварин: свої обов’язки, правила та майбутні завдання.",
+    "difficulty": 2,
+    "discrimination": 1.1,
+    "estimated_time_seconds": 50,
+    "topic": "Volunteering with animals",
+    "tags": [
+      "main-idea",
+      "email",
+      "volunteering"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-READING-003"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What new task will Leo do next month?",
+    "passage": "Hi Rosa,\nI started volunteering at the town animal centre last month. Every Wednesday after school, I clean the rabbits' homes and fill their water bowls. I wanted to work with the dogs, but volunteers under 16 cannot take them outside. I still enjoy being there because the staff teach me a lot about animal care. Next month, I will also help make posters for the centre's adoption day.\nLeo",
+    "options": [
+      "Make posters for an adoption day",
+      "Take the dogs for walks",
+      "Give food to the dogs",
+      "Teach new volunteers"
+    ],
+    "correct_answer": "Make posters for an adoption day",
+    "explanation_uk": "Лео пише, що наступного місяця допомагатиме робити плакати до дня прилаштування тварин.",
+    "difficulty": 1,
+    "discrimination": 0.95,
+    "estimated_time_seconds": 35,
+    "topic": "Volunteering with animals",
+    "tags": [
+      "detail",
+      "future-plans",
+      "volunteering"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-READING-004"
+  },
+  {
+    "cefr_level": "A2",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What will Zoe probably do while she waits for her swimming lesson?",
+    "passage": "When Zoe arrived at the swimming pool, she saw a notice saying that her 10 a.m. lesson would begin at 11 a.m. The coach's train was late. Zoe called her father to tell him about the change. Then she went to the pool café, bought some juice and took a book out of her bag.",
+    "options": [
+      "Read her book in the café",
+      "Travel home by train",
+      "Practise swimming alone",
+      "Meet the coach at the station"
+    ],
+    "correct_answer": "Read her book in the café",
+    "explanation_uk": "Зої потрібно чекати до 11:00. Вона пішла до кафе, купила сік і дістала книжку, тому найімовірніше читатиме під час очікування.",
+    "difficulty": 3,
+    "discrimination": 1.2,
+    "estimated_time_seconds": 45,
+    "topic": "Waiting for a swimming lesson",
+    "tags": [
+      "inference",
+      "daily-activities",
+      "leisure"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A2-READING-005"
+  }
+]

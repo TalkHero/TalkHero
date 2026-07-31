@@ -119,7 +119,7 @@ export function useSpeechRecognition() {
       if (!isSupported) {
         setStatus("error");
         setErrorMessage(
-          "Speech recognition is not supported in this browser.",
+          "Розпізнавання мовлення не підтримується у цьому браузері.",
         );
         return;
       }
@@ -136,7 +136,7 @@ export function useSpeechRecognition() {
       if (!RecognitionConstructor) {
         setStatus("error");
         setErrorMessage(
-          "Speech recognition is not supported in this browser.",
+          "Розпізнавання мовлення не підтримується у цьому браузері",
         );
         return;
       }
@@ -200,21 +200,21 @@ export function useSpeechRecognition() {
 
         if (event.error === "not-allowed") {
           setErrorMessage(
-            "Microphone permission was denied.",
+            "Доступ до мікрофона заборонено.",
           );
         } else if (
           event.error === "audio-capture"
         ) {
           setErrorMessage(
-            "No microphone was found.",
+            "Мікрофон не знайдено.",
           );
         } else if (event.error === "network") {
           setErrorMessage(
-            "Speech recognition network error.",
+            "Помилка мережі під час розпізнавання мовлення.",
           );
         } else {
           setErrorMessage(
-            "Speech recognition failed.",
+            "Не вдалося розпізнати мовлення.",
           );
         }
       };
@@ -243,7 +243,7 @@ export function useSpeechRecognition() {
         shouldContinueRef.current = false;
         setStatus("error");
         setErrorMessage(
-          "Could not start speech recognition.",
+          "Не вдалося запустити розпізнавання мовлення.",
         );
       }
     },

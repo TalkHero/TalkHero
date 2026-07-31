@@ -1,92 +1,184 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { ProfileForm } from "@/components/profile/ProfileForm";
+"use client";
 
-type EnglishLevel =
-  | "A1"
-  | "A2"
-  | "B1"
-  | "B2"
-  | "C1"
-  | "C2";
+import { useEffect, useState } from "react";
+import { Loader2, RefreshCw } from "lucide-react";
 
-const VALID_LEVELS: EnglishLevel[] = [
-  "A1",
-  "A2",
-  "B1",
-  "B2",
-  "C1",
-  "C2",
-];
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { XpProgress } from "@/components/profile/XpProgress";
+import { StatisticsCards } from "@/components/profile/StatisticsCards";
+import { AchievementsGrid } from "@/components/profile/AchievementsGrid";
+import type { ProfileAchievement } from "@/components/profile/AchievementCard";
+import { ActivityCalendar } from "@/components/profile/ActivityCalendar";
 
-function normalizeEnglishLevel(
-  value: string | null | undefined,
-): EnglishLevel {
-  const normalized = value?.toUpperCase() as EnglishLevel;
+type ProfileDashboardData = {
+  profile: {
+    id: string;
+    email: string | null;
+    fullName: string | null;
+    nativeLanguage: string | null;
+    targetLanguage: string | null;
+    englishLevel: string;
+  };
 
-  return VALID_LEVELS.includes(normalized)
-    ? normalized
-    : "A1";
-}
+  progress: {
+    xp: number;
+    level: number;
+    currentLevelXp: number;
+    nextLevelXp: number;
+    xpInsideCurrentLevel: number;
+    xpRequiredForNextLevel: number;
+    progressPercent: number;
+  };
 
-export default async function ProfilePage() {
-  const supabase = await createClient();
+  streak: {
+    currentStreak: number;
+    longestStreak: number;
+    lastActivityDate: string | null;
+  };
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  achievements: {
+    items: ProfileAchievement[];
+    unlocked: ProfileAchievement[];
+    locked: ProfileAchievement[];
+    total: number;
+    unlockedCount: number;
+  };
+activity: {
+  days: {
+    date: string;
+    count: number;
+  }[];
+  totalActiveDays: number;
+  totalActivities: number;
+};
+  statistics: {
+    messagesSent: number;
+    savedWords: number;
+    speakingSessions: number;
+    conversations: number;
+  };
 
-  if (userError || !user) {
-    redirect("/login");
+
+};
+
+export default function ProfilePage() {
+  const [data, setData] = useState<ProfileDashboardData | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function loadProfile() {
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/profile", {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      const responseData: unknown = await response.json();
+
+      if (!response.ok) {
+        const message =
+          typeof responseData === "object" &&
+          responseData !== null &&
+          "error" in responseData &&
+          typeof responseData.error === "string"
+            ? responseData.error
+            : "Не вдалося завантажити профіль.";
+
+        throw new Error(message);
+      }
+
+      setData(responseData as ProfileDashboardData);
+    } catch (error) {
+      console.error("LOAD PROFILE ERROR:", error);
+
+      setErrorMessage(
+        error instanceof Error ? error.message : "Не вдалося завантажити профіль.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
-  const { data: profile, error: profileError } =
-    await supabase
-      .from("profiles")
-      .select(
-        "full_name, native_language, target_language, english_level",
-      )
-      .eq("id", user.id)
-      .maybeSingle();
+  useEffect(() => {
+    void loadProfile();
+  }, []);
 
-  if (profileError) {
-    console.error("PROFILE PAGE ERROR:", profileError);
+  if (loading) {
+    return (
+      <div className="flex min-h-full items-center justify-center bg-slate-50 p-6">
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 shadow-sm">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          Loading profile...
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMessage || !data) {
+    return (
+      <div className="flex min-h-full items-center justify-center bg-slate-50 p-6">
+        <div className="w-full max-w-md rounded-3xl border border-red-200 bg-white p-6 text-center shadow-sm">
+          <h1 className="text-lg font-bold text-slate-900">
+            Не вдалося завантажити профіль
+          </h1>
+
+          <p className="mt-2 text-sm text-red-600">
+            {errorMessage ?? "Сталася невідома помилка."}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => void loadProfile()}
+            className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Спробуйте ще
+            </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
-            Account settings
-          </p>
+    <main className="min-h-full overflow-y-auto bg-slate-50">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+        <ProfileHeader
+          fullName={data.profile.fullName}
+          email={data.profile.email}
+          englishLevel={data.profile.englishLevel}
+          currentStreak={data.streak.currentStreak}
+          longestStreak={data.streak.longestStreak}
+        />
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
-            Your profile
-          </h1>
+        <XpProgress
+          xp={data.progress.xp}
+          level={data.progress.level}
+          xpInsideCurrentLevel={data.progress.xpInsideCurrentLevel}
+          xpRequiredForNextLevel={data.progress.xpRequiredForNextLevel}
+          progressPercent={data.progress.progressPercent}
+        />
 
-          <p className="mt-2 max-w-2xl text-slate-500">
-            Update your personal information and learning
-            preferences. Emma will use these settings in new
-            conversations.
-          </p>
-        </div>
+        <StatisticsCards
+          messagesSent={data.statistics.messagesSent}
+          savedWords={data.statistics.savedWords}
+          speakingSessions={data.statistics.speakingSessions}
+          conversations={data.statistics.conversations}
+        />
 
-        <ProfileForm
-          initialProfile={{
-            fullName:
-              profile?.full_name ??
-              user.user_metadata?.full_name ??
-              "",
-            nativeLanguage:
-              profile?.native_language ?? "uk",
-            targetLanguage:
-              profile?.target_language ?? "en",
-            englishLevel: normalizeEnglishLevel(
-              profile?.english_level,
-            ),
-          }}
+        <ActivityCalendar
+  days={data.activity.days}
+  totalActiveDays={data.activity.totalActiveDays}
+  currentStreak={data.streak.currentStreak}
+/>
+
+        <AchievementsGrid
+          achievements={data.achievements.items}
+          unlockedCount={data.achievements.unlockedCount}
+          total={data.achievements.total}
         />
       </div>
     </main>

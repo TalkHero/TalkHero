@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   MessageCircle,
   Mic,
-  Settings,
   UserRound,
   X,
 } from "lucide-react";
@@ -21,41 +20,36 @@ type AppSidebarProps = {
 const NAVIGATION = [
   {
     href: "/dashboard",
-    label: "Dashboard",
+    label: "Головна",
     icon: LayoutDashboard,
   },
   {
     href: "/chat",
-    label: "Chat with Emma",
+    label: "Чат з Еммою",
     icon: MessageCircle,
   },
   {
     href: "/speaking",
-    label: "Speaking",
+    label: "Говоріння",
     icon: Mic,
   },
   {
     href: "/vocabulary",
-    label: "Vocabulary",
+    label: "Словник",
     icon: BookOpen,
   },
   {
     href: "/review",
-    label: "Daily review",
+    label: "Щоденне повторення",
     icon: Brain,
   },
 ];
 
-const SETTINGS_NAVIGATION = [
+const ACCOUNT_NAVIGATION = [
   {
     href: "/profile",
-    label: "Profile",
+    label: "Профіль",
     icon: UserRound,
-  },
-  {
-    href: "/settings",
-    label: "Settings",
-    icon: Settings,
   },
 ];
 
@@ -73,6 +67,7 @@ export function AppSidebar({
     }>;
   }) {
     const Icon = item.icon;
+
     const active =
       pathname === item.href ||
       pathname.startsWith(`${item.href}/`);
@@ -133,7 +128,7 @@ export function AppSidebar({
               </p>
 
               <p className="text-xs text-slate-400">
-                Learn with Emma
+                Навчайся з Emma
               </p>
             </div>
           </Link>
@@ -151,7 +146,7 @@ export function AppSidebar({
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5">
           <div>
             <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Learn
+              Навчання
             </p>
 
             <nav className="space-y-1">
@@ -161,27 +156,26 @@ export function AppSidebar({
 
           <div className="mt-8">
             <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Account
+              Акаунт
             </p>
 
             <nav className="space-y-1">
-              {SETTINGS_NAVIGATION.map(renderLink)}
+              {ACCOUNT_NAVIGATION.map(renderLink)}
             </nav>
           </div>
 
           <div className="mt-auto pt-8">
             <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 to-indigo-950 p-4 text-white">
               <p className="text-xs font-semibold uppercase tracking-wider text-indigo-300">
-                Daily practice
+                Щоденна практика
               </p>
 
               <p className="mt-2 text-sm font-semibold">
-                Keep your streak alive
+                Збережи свою серію
               </p>
 
               <p className="mt-1 text-xs leading-5 text-slate-300">
-                Complete a chat, speaking session, or vocabulary
-                review today.
+                Пройдіть чат, сесію розмови або повторіть словниковий запас сьогодні.
               </p>
 
               <Link
@@ -189,7 +183,7 @@ export function AppSidebar({
                 onClick={onClose}
                 className="mt-4 flex w-full items-center justify-center rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold transition hover:bg-white/20"
               >
-                Start review
+                Почати огляд
               </Link>
             </div>
           </div>

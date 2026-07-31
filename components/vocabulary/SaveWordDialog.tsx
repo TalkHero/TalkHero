@@ -101,7 +101,7 @@ export function SaveWordDialog({
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to save word.",
+          data.error || "Не вдалося зберегти слово.",
         );
       }
 
@@ -113,7 +113,7 @@ export function SaveWordDialog({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Failed to save word.",
+          : "Не вдалося зберегти слово.",
       );
     } finally {
       setSaving(false);
@@ -165,7 +165,8 @@ export function SaveWordDialog({
 
               <p className="mt-1 text-sm text-slate-500">
                 Emma will create the translation,
-                explanation, and example automatically.
+                Емма автоматично створить переклад,
+пояснення та приклад.
               </p>
             </div>
           </div>
@@ -208,7 +209,7 @@ export function SaveWordDialog({
 
               <div className="mt-4 rounded-xl bg-slate-50 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Context
+                  Контекст
                 </p>
 
                 <p className="mt-2 line-clamp-4 text-sm leading-6 text-slate-600">
@@ -229,7 +230,7 @@ export function SaveWordDialog({
                   disabled={saving}
                   className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-50"
                 >
-                  Cancel
+                  Відмінити
                 </button>
 
                 <button
@@ -244,8 +245,8 @@ export function SaveWordDialog({
                   )}
 
                   {saving
-                    ? "Creating card..."
-                    : "Create and save"}
+  ? "Creating card..."
+  : "Create and save"}
                 </button>
               </div>
             </form>
@@ -257,12 +258,12 @@ export function SaveWordDialog({
                 <div>
                   <h3 className="font-semibold text-slate-950">
                     {alreadyExists
-                      ? "Already in your vocabulary"
-                      : "Word saved successfully"}
+  ? "Вже є у вашому словнику"
+  : "Слово успішно збережено"}
                   </h3>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    The vocabulary card is ready for review.
+                    Картка зі словниковим запасом готова до повторення.
                   </p>
                 </div>
               </div>
@@ -270,7 +271,7 @@ export function SaveWordDialog({
               <div className="mt-5 space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-5">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Word
+                    Слово
                   </p>
 
                   <p className="mt-1 text-lg font-semibold text-slate-950">
@@ -281,7 +282,7 @@ export function SaveWordDialog({
                 {savedItem.translation && (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Translation
+                      Переклад
                     </p>
 
                     <p className="mt-1 text-sm text-slate-700">
@@ -293,7 +294,7 @@ export function SaveWordDialog({
                 {savedItem.meaning && (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Meaning
+                      Значання
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-slate-700">
@@ -305,7 +306,7 @@ export function SaveWordDialog({
                 {savedItem.example && (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                      Example
+                      Приклад
                     </p>
 
                     <p className="mt-1 border-l-2 border-indigo-200 pl-3 text-sm italic leading-6 text-slate-600">
@@ -321,7 +322,7 @@ export function SaveWordDialog({
                   onClick={onClose}
                   className="rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
-                  Done
+                  Готово
                 </button>
               </div>
             </div>

@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Bot,
   Loader2,
@@ -16,34 +12,19 @@ import {
   UserRound,
   Volume2,
 } from "lucide-react";
+
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import {
+  SpeakingReport,
+  type SpeakingEvaluation,
+  type SpeakingReportMessage,
+} from "@/components/speaking/SpeakingReport";
+import { UI_ERRORS } from "@/lib/i18n/errors";
 
-type SessionPhase =
-  | "idle"
-  | "listening"
-  | "thinking"
-  | "speaking"
-  | "error";
+type SessionPhase = "idle" | "listening" | "thinking" | "speaking" | "error";
 
-type SpeakingMessage = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-};
-
-type SpeakingEvaluation = {
-  grammarScore: number;
-  fluencyScore: number;
-  vocabularyScore: number;
-  naturalnessScore: number;
-  overallScore: number;
-  wasCorrect: boolean;
-  correctedSentence: string;
-  shortFeedback: string;
-  mainIssue: string;
-  encouragement: string;
-};
+type SpeakingMessage = SpeakingReportMessage;
 
 function cleanTextForSpeech(text: string) {
   return text
@@ -55,40 +36,80 @@ function cleanTextForSpeech(text: string) {
     .trim();
 }
 
+function isSpeakingEvaluation(value: unknown): value is SpeakingEvaluation {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const evaluation = value as Record<string, unknown>;
+
+  return (
+    typeof evaluation.grammarScore === "number" &&
+    typeof evaluation.fluencyScore === "number" &&
+    typeof evaluation.vocabularyScore === "number" &&
+    typeof evaluation.naturalnessScore === "number" &&
+    typeof evaluation.overallScore === "number" &&
+    typeof evaluation.wasCorrect === "boolean" &&
+    typeof evaluation.correctedSentence === "string" &&
+    typeof evaluation.shortFeedback === "string" &&
+    typeof evaluation.mainIssue === "string" &&
+    typeof evaluation.encouragement === "string"
+  );
+}
+
 export function SpeakingSession() {
   const [mounted, setMounted] = useState(false);
-  const [sessionActive, setSessionActive] =
-    useState(false);
-    const [evaluation, setEvaluation] =
-  useState<SpeakingEvaluation | null>(null);
 
-  const [startingSession, setStartingSession] =
-  useState(false);
+  const [sessionActive, setSessionActive] = useState(false);
 
-  const [phase, setPhase] =
-    useState<SessionPhase>("idle");
+  const [startingSession, setStartingSession] = useState(false);
 
-  const [conversationId, setConversationId] =
-    useState<string | null>(null);
+  const [showReport, setShowReport] = useState(false);
 
-  const [messages, setMessages] = useState<
-    SpeakingMessage[]
+  const [sessionStartedAt] = useState(() => Date.now());
+
+const [completionData, setCompletionData] = useState<{
+  xpEarned: number;
+
+  progress: {
+    xp: number;
+    level: number;
+    progressPercent: number;
+
+    previousLevel: number;
+    leveledUp: boolean;
+  };
+} | null>(null);
+
+const completingSessionRef = useRef(false);
+
+  const [phase, setPhase] = useState<SessionPhase>("idle");
+
+  const [conversationId, setConversationId] = useState<string | null>(null);
+
+  const [messages, setMessages] = useState<SpeakingMessage[]>([]);
+
+  const [evaluation, setEvaluation] = useState<SpeakingEvaluation | null>(null);
+
+  const [sessionEvaluations, setSessionEvaluations] = useState<
+    SpeakingEvaluation[]
   >([]);
 
-  const [currentTranscript, setCurrentTranscript] =
-    useState("");
+  const [currentTranscript, setCurrentTranscript] = useState("");
 
-  const [emmaResponse, setEmmaResponse] =
-    useState("");
+  const [emmaResponse, setEmmaResponse] = useState("");
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const sessionActiveRef = useRef(false);
+
   const processingTranscriptRef = useRef(false);
+
   const speechStartedRef = useRef(false);
-  const messagesBottomRef =
-    useRef<HTMLDivElement | null>(null);
+
+  const messagesRef = useRef<SpeakingMessage[]>([]);
+
+  const messagesBottomRef = useRef<HTMLDivElement | null>(null);
 
   const {
     status: recognitionStatus,
@@ -109,26 +130,24 @@ export function SpeakingSession() {
     setMounted(true);
   }, []);
 
-  const voiceSupported =
-    mounted &&
-    recognitionSupported &&
-    speechSupported;
-
   useEffect(() => {
     sessionActiveRef.current = sessionActive;
   }, [sessionActive]);
 
   useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  useEffect(() => {
     messagesBottomRef.current?.scrollIntoView({
       behavior: "smooth",
     });
-  }, [messages, emmaResponse]);
+  }, [messages, emmaResponse, evaluation]);
+
+  const voiceSupported = mounted && recognitionSupported && speechSupported;
 
   function beginListening() {
-    if (
-      !sessionActiveRef.current ||
-      processingTranscriptRef.current
-    ) {
+    if (!sessionActiveRef.current || processingTranscriptRef.current) {
       return;
     }
 
@@ -161,6 +180,54 @@ export function SpeakingSession() {
     });
   }
 
+  async function evaluateTranscript(transcript: string) {
+    const previousAssistantMessage =
+      [...messagesRef.current]
+        .reverse()
+        .find(
+          (message) => message.role === "assistant" && message.content.trim(),
+        )?.content ?? "";
+
+    try {
+      const response = await fetch("/api/speaking/evaluate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          transcript,
+          previousAssistantMessage,
+        }),
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const responseData: unknown = await response.json();
+
+      if (
+        typeof responseData !== "object" ||
+        responseData === null ||
+        !("evaluation" in responseData)
+      ) {
+        return;
+      }
+
+      const nextEvaluation = responseData.evaluation;
+
+      if (!isSpeakingEvaluation(nextEvaluation)) {
+        return;
+      }
+
+      setEvaluation(nextEvaluation);
+
+      setSessionEvaluations((previous) => [...previous, nextEvaluation]);
+    } catch (error) {
+      console.error("SPEAKING EVALUATION ERROR:", error);
+    }
+  }
+
   async function sendVoiceMessage(text: string) {
     const userMessage: SpeakingMessage = {
       id: crypto.randomUUID(),
@@ -168,18 +235,20 @@ export function SpeakingSession() {
       content: text,
     };
 
-    const assistantMessageId =
-      crypto.randomUUID();
+    const assistantMessageId = crypto.randomUUID();
 
-    setMessages((previous) => [
-      ...previous,
+    const nextMessages: SpeakingMessage[] = [
+      ...messagesRef.current,
       userMessage,
       {
         id: assistantMessageId,
         role: "assistant",
         content: "",
       },
-    ]);
+    ];
+
+    messagesRef.current = nextMessages;
+    setMessages(nextMessages);
 
     setPhase("thinking");
     setEvaluation(null);
@@ -199,19 +268,13 @@ export function SpeakingSession() {
       });
 
       if (!response.ok) {
-        const responseText =
-          await response.text();
+        const responseText = await response.text();
 
-        throw new Error(
-          responseText ||
-            "Failed to send voice message.",
-        );
+        throw new Error(responseText || "Не вдалося надіслати голосове повідомлення.");
       }
 
       if (!response.body) {
-        throw new Error(
-          "Streaming is not supported.",
-        );
+        throw new Error("Ваш браузер не підтримує потокову передачу даних.");
       }
 
       const reader = response.body.getReader();
@@ -220,76 +283,76 @@ export function SpeakingSession() {
       let buffer = "";
       let fullResponse = "";
 
-      function processEventBlock(
-        eventBlock: string,
-      ) {
-        const lines = eventBlock
-          .replace(/\r/g, "")
-          .split("\n");
+      function processEventBlock(eventBlock: string) {
+        const lines = eventBlock.replace(/\r/g, "").split("\n");
 
         const eventName = lines
-          .find((line) =>
-            line.startsWith("event:"),
-          )
+          .find((line) => line.startsWith("event:"))
           ?.slice(6)
           .trim();
 
         const dataLines = lines
-          .filter((line) =>
-            line.startsWith("data:"),
-          )
-          .map((line) =>
-            line.slice(5).trim(),
-          );
+          .filter((line) => line.startsWith("data:"))
+          .map((line) => line.slice(5).trim());
 
         if (!eventName || dataLines.length === 0) {
           return;
         }
 
-        const data = JSON.parse(
-          dataLines.join("\n"),
-        );
+        const parsedData: unknown = JSON.parse(dataLines.join("\n"));
+
+        if (typeof parsedData !== "object" || parsedData === null) {
+          return;
+        }
+
+        const data = parsedData as Record<string, unknown>;
 
         if (
           eventName === "conversation" &&
-          data.conversationId
+          typeof data.conversationId === "string"
         ) {
-          setConversationId(
-            String(data.conversationId),
-          );
+          setConversationId(data.conversationId);
         }
 
         if (
-          eventName === "delta" &&
-          typeof data.text === "string"
+          eventName === "conversation" &&
+          typeof data.conversationId === "number"
         ) {
+          setConversationId(String(data.conversationId));
+        }
+
+        if (eventName === "delta" && typeof data.text === "string") {
           fullResponse += data.text;
 
           setEmmaResponse(fullResponse);
 
-          setMessages((previous) =>
-            previous.map((message) =>
+          setMessages((previous) => {
+            const updatedMessages = previous.map((message) =>
               message.id === assistantMessageId
                 ? {
                     ...message,
                     content: fullResponse,
                   }
                 : message,
-            ),
-          );
+            );
+
+            messagesRef.current = updatedMessages;
+
+            return updatedMessages;
+          });
         }
 
         if (eventName === "error") {
           throw new Error(
-            data.error ||
-              "Emma could not generate a response.",
+            typeof data.error === "string"
+              ? data.error
+              : "Emma не змогла відповісти",
           );
         }
       }
 
       while (true) {
-        const { value, done } =
-          await reader.read();
+        const { value, done } = await reader.read();
 
         if (done) {
           break;
@@ -299,8 +362,7 @@ export function SpeakingSession() {
           stream: true,
         });
 
-        const eventBlocks =
-          buffer.split("\n\n");
+        const eventBlocks = buffer.split("\n\n");
 
         buffer = eventBlocks.pop() ?? "";
 
@@ -318,9 +380,7 @@ export function SpeakingSession() {
       }
 
       if (!fullResponse.trim()) {
-        throw new Error(
-          "Emma returned an empty response.",
-        );
+        throw new Error("Емма повернула порожню відповідь.");
       }
 
       if (!sessionActiveRef.current) {
@@ -328,60 +388,26 @@ export function SpeakingSession() {
         return;
       }
 
-      const speechText =
-        cleanTextForSpeech(fullResponse);
+      await evaluateTranscript(text);
+
+      if (!sessionActiveRef.current) {
+        processingTranscriptRef.current = false;
+        return;
+      }
 
       speechStartedRef.current = false;
       setPhase("speaking");
-try {
-  const evaluationResponse = await fetch(
-    "/api/speaking/evaluate",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        transcript: text,
-        previousAssistantMessage:
-          messages
-            .filter(
-              (message) =>
-                message.role === "assistant",
-            )
-            .at(-1)?.content ?? "",
-      }),
-    },
-  );
 
-  if (evaluationResponse.ok) {
-    const evaluationData =
-      await evaluationResponse.json();
-
-    setEvaluation(
-      evaluationData.evaluation,
-    );
-  }
-} catch (error) {
-  console.error(
-    "SPEAKING EVALUATION ERROR:",
-    error,
-  );
-}
-      speak(speechText);
+      speak(cleanTextForSpeech(fullResponse));
     } catch (error) {
-      console.error(
-        "SPEAKING MODE ERROR:",
-        error,
-      );
+      console.error("SPEAKING MODE ERROR:", error);
 
       processingTranscriptRef.current = false;
+
       setPhase("error");
 
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Speaking Mode failed.",
+        error instanceof Error ? error.message : "Під час розмовної практики сталася помилка.",
       );
     }
   }
@@ -396,10 +422,7 @@ try {
       return;
     }
 
-    if (
-      speechStatus === "idle" &&
-      speechStartedRef.current
-    ) {
+    if (speechStatus === "idle" && speechStartedRef.current) {
       speechStartedRef.current = false;
       processingTranscriptRef.current = false;
 
@@ -414,108 +437,164 @@ try {
   }, [phase, speechStatus]);
 
   useEffect(() => {
-    if (
-      recognitionStatus === "error" &&
-      recognitionError
-    ) {
+    if (recognitionStatus === "error" && recognitionError) {
       setPhase("error");
       setErrorMessage(recognitionError);
       processingTranscriptRef.current = false;
     }
-  }, [
-    recognitionError,
-    recognitionStatus,
-  ]);
+  }, [recognitionError, recognitionStatus]);
 
   async function startSession() {
-  if (!voiceSupported || startingSession) {
-    if (!voiceSupported) {
-      setPhase("error");
-      setErrorMessage(
-        "Voice mode is not supported in this browser. Use the latest Chrome or Edge.",
-      );
+    if (!voiceSupported || startingSession) {
+      if (!voiceSupported) {
+        setPhase("error");
+
+        setErrorMessage(UI_ERRORS.voiceModeNotSupported);
+      }
+
+      return;
     }
 
+    stopSpeaking();
+    stopListening();
+
+    sessionActiveRef.current = true;
+    processingTranscriptRef.current = true;
+    speechStartedRef.current = false;
+
+    messagesRef.current = [];
+
+    setShowReport(false);
+    setStartingSession(true);
+    setSessionActive(true);
+    setPhase("thinking");
+    setMessages([]);
+    setSessionEvaluations([]);
+    setEvaluation(null);
+    setConversationId(null);
+    setCurrentTranscript("");
+    setEmmaResponse("");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/speaking/start", {
+        method: "POST",
+      });
+
+      const responseData: unknown = await response.json();
+
+      if (typeof responseData !== "object" || responseData === null) {
+        throw new Error("Сервер повернув некоректну відповідь.");
+      }
+
+      const data = responseData as Record<string, unknown>;
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Не вдалося розпочати розмовну практику.",
+        );
+      }
+
+      if (typeof data.message !== "string") {
+        throw new Error("Початкове повідомлення відсутнє.");
+      }
+
+      const openingMessage = data.message;
+
+      const openingMessageId = crypto.randomUUID();
+
+      const openingMessages: SpeakingMessage[] = [
+        {
+          id: openingMessageId,
+          role: "assistant",
+          content: openingMessage,
+        },
+      ];
+
+      messagesRef.current = openingMessages;
+      setMessages(openingMessages);
+
+      if (typeof data.conversationId === "string") {
+        setConversationId(data.conversationId);
+      } else if (typeof data.conversationId === "number") {
+        setConversationId(String(data.conversationId));
+      }
+
+      setEmmaResponse(openingMessage);
+
+      speechStartedRef.current = false;
+      setPhase("speaking");
+
+      speak(cleanTextForSpeech(openingMessage));
+    } catch (error) {
+      console.error("START SPEAKING SESSION ERROR:", error);
+
+      sessionActiveRef.current = false;
+      processingTranscriptRef.current = false;
+
+      setSessionActive(false);
+      setPhase("error");
+
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Не можливо почтаку розмовну практику.",
+      );
+    } finally {
+      setStartingSession(false);
+    }
+  }
+  async function completeSpeakingSession() {
+  if (completingSessionRef.current) {
     return;
   }
 
-  stopSpeaking();
-  stopListening();
-
-  processingTranscriptRef.current = true;
-  speechStartedRef.current = false;
-  sessionActiveRef.current = true;
-
-  setStartingSession(true);
-  setSessionActive(true);
-  setPhase("thinking");
-  setMessages([]);
-  setConversationId(null);
-  setCurrentTranscript("");
-  setEmmaResponse("");
-  setErrorMessage("");
+  completingSessionRef.current = true;
 
   try {
-    const response = await fetch(
-      "/api/speaking/start",
-      {
-        method: "POST",
+    const response = await fetch("/api/speaking/complete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        conversationId,
+        startedAt: new Date(sessionStartedAt).toISOString(),
+        durationSeconds: Math.floor(
+          (Date.now() - sessionStartedAt) / 1000,
+        ),
+        evaluations: sessionEvaluations,
+      }),
+    });
 
     const data = await response.json();
 
+
     if (!response.ok) {
       throw new Error(
-        data.error ||
-          "Failed to start speaking session.",
-      );
+  typeof data.error === "string"
+    ? data.error
+    : "Не вдалося завершити розмовну практику.",
+);
     }
 
-    const openingMessage = String(data.message);
-    const openingMessageId = crypto.randomUUID();
+    setCompletionData({
+      xpEarned: data.session.xpEarned,
+      progress: data.progress,
+    });
 
-    setConversationId(
-      String(data.conversationId),
-    );
-
-    setMessages([
-      {
-        id: openingMessageId,
-        role: "assistant",
-        content: openingMessage,
-      },
-    ]);
-
-    setEmmaResponse(openingMessage);
-
-    speechStartedRef.current = false;
-    setPhase("speaking");
-
-    speak(cleanTextForSpeech(openingMessage));
   } catch (error) {
-    console.error(
-      "START SPEAKING SESSION ERROR:",
-      error,
-    );
-
-    sessionActiveRef.current = false;
-    processingTranscriptRef.current = false;
-
-    setSessionActive(false);
-    setPhase("error");
-
-    setErrorMessage(
-      error instanceof Error
-        ? error.message
-        : "Failed to start speaking session.",
-    );
+    console.error(error);
   } finally {
-    setStartingSession(false);
+    completingSessionRef.current = false;
   }
 }
 
-  function stopSession() {
+  async function stopSession() {
+    const hadActiveSession = sessionActiveRef.current;
+
     sessionActiveRef.current = false;
     processingTranscriptRef.current = false;
     speechStartedRef.current = false;
@@ -528,6 +607,31 @@ try {
     setCurrentTranscript("");
     setEmmaResponse("");
     setErrorMessage("");
+
+    if (hadActiveSession) {
+  await completeSpeakingSession();
+  setShowReport(true);
+}
+  }
+
+  function closeReport() {
+    setShowReport(false);
+
+    messagesRef.current = [];
+
+    setMessages([]);
+    setSessionEvaluations([]);
+    setEvaluation(null);
+    setConversationId(null);
+    setPhase("idle");
+    setCurrentTranscript("");
+    setEmmaResponse("");
+    setErrorMessage("");
+  }
+
+  function restartSession() {
+    setShowReport(false);
+    void startSession();
   }
 
   function retryListening() {
@@ -550,40 +654,46 @@ try {
     };
   }, [stopListening, stopSpeaking]);
 
+  if (showReport) {
+    return (
+      <SpeakingReport
+  evaluations={sessionEvaluations}
+  messages={messages}
+  completionData={completionData}
+  onClose={closeReport}
+  onRestart={restartSession}
+/>
+    );
+  }
+
   const phaseInformation = {
     idle: {
-      title: "Ready to practice",
-      description:
-        "Start a hands-free conversation with Emma.",
+      title: "Готові до практики",
+      description: "Почніть розмову з Еммою без використання рук.",
       icon: Mic,
     },
 
     listening: {
-      title: "I’m listening...",
-      description:
-        "Speak naturally in English.",
+      title: "Я слухаю...",
+      description: "Говоріть англійською природно.",
       icon: Mic,
     },
 
     thinking: {
-      title: "Emma is thinking...",
-      description:
-        "Your answer is being analyzed.",
+      title: "Emma слухає...",
+      description: "YВаша відповідь аналізується.",
       icon: Loader2,
     },
 
     speaking: {
-      title: "Emma is speaking",
-      description:
-        "Listen carefully to her response.",
+      title: "Emma говорить",
+      description: "Уважно слухайте її відповідь.",
       icon: Volume2,
     },
 
     error: {
-      title: "Voice session paused",
-      description:
-        errorMessage ||
-        "Something went wrong.",
+      title: "Голосову сесію призупинено",
+      description: errorMessage || "Сталася помилка.",
       icon: MicOff,
     },
   }[phase];
@@ -606,11 +716,11 @@ try {
 
           <div>
             <h2 className="font-semibold text-slate-950">
-              Conversation with Emma
+              Розмова з Еммою
             </h2>
 
             <p className="text-sm text-slate-500">
-              Automatic voice conversation
+              Автоматична голосова розмова
             </p>
           </div>
         </div>
@@ -622,28 +732,23 @@ try {
             className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100"
           >
             <PhoneOff className="h-4 w-4" />
-            End session
+            Завершити сесію
           </button>
         ) : (
           <button
-  type="button"
-  onClick={startSession}
-  disabled={
-    startingSession ||
-    (mounted && !voiceSupported)
-  }
-  className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
->
-  {startingSession ? (
-    <Loader2 className="h-4 w-4 animate-spin" />
-  ) : (
-    <Play className="h-4 w-4" />
-  )}
+            type="button"
+            onClick={() => void startSession()}
+            disabled={startingSession || (mounted && !voiceSupported)}
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {startingSession ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
 
-  {startingSession
-    ? "Starting..."
-    : "Start speaking"}
-</button>
+            {startingSession ? "Починається..." : "Почати говорити"}
+          </button>
         )}
       </div>
 
@@ -672,9 +777,7 @@ try {
             >
               <PhaseIcon
                 className={`h-11 w-11 ${
-                  phase === "thinking"
-                    ? "animate-spin"
-                    : ""
+                  phase === "thinking" ? "animate-spin" : ""
                 }`}
               />
             </div>
@@ -695,23 +798,21 @@ try {
               className="mt-5 flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               <Mic className="h-4 w-4" />
-              Try again
+              Спробуйте ще
             </button>
           )}
 
           {!mounted ? (
             <p className="mt-6 text-xs text-slate-400">
-              Checking browser voice support...
+              Перевірка підтримки голосового керування браузером...
             </p>
           ) : !voiceSupported ? (
             <p className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-700">
-              Use the latest Chrome or Edge and allow microphone
-              access.
+              Використовуйте найновішу версію Chrome або Edge та дозвольте доступ до мікрофона.
             </p>
           ) : (
-            <p className="mt-6 text-xs text-slate-400">
-              Emma automatically listens again after finishing
-              her response.
+            <p className="mt-6 text-xs text-slatme-400">
+              Після завершення відповіді Емма автоматично знову почне слухати.
             </p>
           )}
         </div>
@@ -726,28 +827,24 @@ try {
                   </div>
 
                   <h3 className="mt-5 text-lg font-semibold text-slate-950">
-                    Start your voice conversation
+                    Почніть голосову розмову
                   </h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Press Start speaking, answer Emma in English,
-                    and continue the conversation hands-free.
+                    Натисніть «Почати говорити», відповідайте Еммі англійською та продовжуйте розмову без використання рук.
                   </p>
                 </div>
               </div>
             ) : (
               <div className="mx-auto max-w-2xl space-y-5">
                 {messages.map((message) => {
-                  const isUser =
-                    message.role === "user";
+                  const isUser = message.role === "user";
 
                   return (
                     <div
                       key={message.id}
                       className={`flex gap-3 ${
-                        isUser
-                          ? "justify-end"
-                          : "justify-start"
+                        isUser ? "justify-end" : "justify-start"
                       }`}
                     >
                       {!isUser && (
@@ -785,105 +882,98 @@ try {
                   );
                 })}
 
-                <div ref={messagesBottomRef} />
                 {evaluation && (
-  <div className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
-    <h3 className="mb-4 text-lg font-bold text-slate-900">
-      Speaking Feedback
-    </h3>
+                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-lg font-bold text-slate-900">
+                        Зворотній зв'язок
+                      </h3>
 
-    <div className="grid grid-cols-2 gap-3 text-sm">
-      <div>
-        Grammar
-        <div className="font-bold">
-          {evaluation.grammarScore}
-        </div>
-      </div>
+                      <div className="rounded-full bg-white px-3 py-1 text-sm font-bold text-indigo-600">
+                        {evaluation.overallScore}/100
+                      </div>
+                    </div>
 
-      <div>
-        Fluency
-        <div className="font-bold">
-          {evaluation.fluencyScore}
-        </div>
-      </div>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                      <div className="rounded-xl bg-white p-3">
+                        <p className="text-slate-500">Grammar</p>
 
-      <div>
-        Vocabulary
-        <div className="font-bold">
-          {evaluation.vocabularyScore}
-        </div>
-      </div>
+                        <p className="mt-1 font-bold text-slate-900">
+                          {evaluation.grammarScore}
+                        </p>
+                      </div>
 
-      <div>
-        Naturalness
-        <div className="font-bold">
-          {evaluation.naturalnessScore}
-        </div>
-      </div>
-    </div>
+                      <div className="rounded-xl bg-white p-3">
+                        <p className="text-slate-500">Fluency</p>
 
-    <div className="mt-5 rounded-xl bg-white p-4">
-      <p className="text-sm font-semibold">
-        Overall
-      </p>
+                        <p className="mt-1 font-bold text-slate-900">
+                          {evaluation.fluencyScore}
+                        </p>
+                      </div>
 
-      <p className="text-3xl font-bold text-indigo-600">
-        {evaluation.overallScore}/100
-      </p>
-    </div>
+                      <div className="rounded-xl bg-white p-3">
+                        <p className="text-slate-500">Vocabulary</p>
 
-    {!evaluation.wasCorrect && (
-      <div className="mt-5">
-        <p className="font-semibold">
-          Better sentence
-        </p>
+                        <p className="mt-1 font-bold text-slate-900">
+                          {evaluation.vocabularyScore}
+                        </p>
+                      </div>
 
-        <p className="mt-1 rounded-xl bg-white p-3 italic">
-          {evaluation.correctedSentence}
-        </p>
-      </div>
-    )}
+                      <div className="rounded-xl bg-white p-3">
+                        <p className="text-slate-500">Naturalness</p>
 
-    <div className="mt-5">
-      <p className="font-semibold">
-        Feedback
-      </p>
+                        <p className="mt-1 font-bold text-slate-900">
+                          {evaluation.naturalnessScore}
+                        </p>
+                      </div>
+                    </div>
 
-      <p className="mt-2 text-sm text-slate-600">
-        {evaluation.shortFeedback}
-      </p>
-    </div>
+                    {!evaluation.wasCorrect && evaluation.correctedSentence && (
+                      <div className="mt-4">
+                        <p className="text-sm font-semibold text-slate-800">
+                          Better sentence
+                        </p>
 
-    <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">
-      {evaluation.encouragement}
-    </div>
-  </div>
-)}
+                        <p className="mt-2 rounded-xl bg-white p-3 text-sm italic text-slate-700">
+                          {evaluation.correctedSentence}
+                        </p>
+                      </div>
+                    )}
+
+                    {evaluation.shortFeedback && (
+                      <p className="mt-4 text-sm leading-6 text-slate-600">
+                        {evaluation.shortFeedback}
+                      </p>
+                    )}
+
+                    {evaluation.encouragement && (
+                      <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">
+                        {evaluation.encouragement}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div ref={messagesBottomRef} />
               </div>
             )}
           </div>
 
           {(currentTranscript || emmaResponse) && (
             <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 sm:px-7">
-              {phase === "thinking" &&
-                currentTranscript && (
-                  <p className="text-sm text-slate-500">
-                    <strong className="text-slate-700">
-                      You said:
-                    </strong>{" "}
-                    {currentTranscript}
-                  </p>
-                )}
+              {phase === "thinking" && currentTranscript && (
+                <p className="text-sm text-slate-500">
+                  <strong className="text-slate-700">You said:</strong>{" "}
+                  {currentTranscript}
+                </p>
+              )}
 
-              {phase === "speaking" &&
-                emmaResponse && (
-                  <p className="line-clamp-2 text-sm text-slate-500">
-                    <strong className="text-slate-700">
-                      Emma:
-                    </strong>{" "}
-                    {emmaResponse}
-                  </p>
-                )}
+              {phase === "speaking" && emmaResponse && (
+                <p className="line-clamp-2 text-sm text-slate-500">
+                  <strong className="text-slate-700">Emma:</strong>{" "}
+                  {emmaResponse}
+                </p>
+              )}
             </div>
           )}
         </div>

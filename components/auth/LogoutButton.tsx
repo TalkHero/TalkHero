@@ -20,7 +20,7 @@ export function LogoutButton() {
       variant="destructive"
       onClick={handleLogout}
     >
-      Logout
+      Вийти
     </Button>
   );
 }

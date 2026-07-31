@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -28,13 +29,19 @@ const evaluateRequestSchema = z.object({
   transcript: z
     .string()
     .trim()
-    .min(1, "Transcript is required.")
-    .max(2000, "Transcript is too long."),
+    .min(1, API_ERRORS.transcriptRequired)
+    .max(
+      2000,
+      "Текст відповіді не може містити більше 2000 символів.",
+    ),
 
   previousAssistantMessage: z
     .string()
     .trim()
-    .max(3000, "Context is too long.")
+    .max(
+      3000,
+      "Контекст не може містити більше 3000 символів.",
+    )
     .optional()
     .default(""),
 });
@@ -139,7 +146,7 @@ export async function POST(request: Request) {
     if (userError || !user) {
       return NextResponse.json(
         {
-          error: "Unauthorized",
+          error: API_ERRORS.unauthorized,
         },
         {
           status: 401,
@@ -157,7 +164,7 @@ export async function POST(request: Request) {
         {
           error:
             validationResult.error.issues[0]?.message ||
-            "Invalid evaluation data.",
+            API_ERRORS.invalidEvaluationData,
         },
         {
           status: 400,
@@ -296,7 +303,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "The evaluator returned an empty response.",
+            API_ERRORS.emptyEvaluationResponse,
         },
         {
           status: 502,
@@ -318,7 +325,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "The evaluator returned invalid data.",
+            API_ERRORS.invalidEvaluationResponse,
         },
         {
           status: 502,
@@ -338,7 +345,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "The speaking evaluation is incomplete.",
+            API_ERRORS.incompleteSpeakingEvaluation,
         },
         {
           status: 502,
@@ -359,7 +366,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Failed to evaluate the spoken response.",
+          API_ERRORS.failedToEvaluateSpeaking,
       },
       {
         status: 500,

@@ -23,8 +23,12 @@ import { XpToast } from "@/components/chat/XpToast";
 import { useSelectedWord } from "@/hooks/useSelectedWord";
 import { useSpeechControls } from "@/hooks/useSpeechControls";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-import { useChatStream } from "@/hooks/useChatStream";
+import { type DailyStreak, useChatStream } from "@/hooks/useChatStream";
 import { useConversationManager } from "@/hooks/useConversationManager";
+import { StreakBadge } from "@/components/chat/StreakBadge";
+import { type UnlockedAchievement } from "@/hooks/useChatStream";
+
+import { AchievementToast } from "@/components/chat/AchievementToast";
 
 type Message = ChatMessage;
 
@@ -34,22 +38,20 @@ type XpToastData = {
   level: number;
 };
 
-
-
 export function ChatBox() {
-
-
-
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
-
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [xpToast, setXpToast] = useState<XpToastData | null>(null);
+  const [dailyStreak, setDailyStreak] = useState<DailyStreak | null>(null);
+  const [achievementToast, setAchievementToast] =
+  useState<UnlockedAchievement | null>(null);
 
-   const {
+const achievementQueue = useRef<UnlockedAchievement[]>([]);
+
+  const {
     messages,
     setMessages,
     conversations,
@@ -57,11 +59,13 @@ export function ChatBox() {
     setConversationId,
     historyLoading,
     deletingConversationId,
-    controlsDisabled,
-    loadConversations,
-    startNewConversation,
-    openConversation,
-    deleteConversation,
+renamingConversationId,
+controlsDisabled,
+loadConversations,
+startNewConversation,
+openConversation,
+renameConversation,
+deleteConversation,
   } = useConversationManager({
     chatLoading: loading,
   });
@@ -96,11 +100,6 @@ export function ChatBox() {
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-
-
-
-
-
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -108,35 +107,30 @@ export function ChatBox() {
     });
   }, [messages, loading]);
 
-function handleStartNewConversation() {
-  const started = startNewConversation();
+  function handleStartNewConversation() {
+    const started = startNewConversation();
 
-  if (!started) {
-    return;
+    if (!started) {
+      return;
+    }
+
+    resetSpeech();
+    stopListening();
+    clearSelectedWord();
+    setInput("");
   }
-
-  resetSpeech();
-  stopListening();
-  clearSelectedWord();
-  setInput("");
-}
 
   async function handleOpenConversation(id: string) {
-  if (
-    loading ||
-    deletingConversationId ||
-    id === conversationId
-  ) {
-    return;
+    if (loading || deletingConversationId || id === conversationId) {
+      return;
+    }
+
+    resetSpeech();
+    stopListening();
+    clearSelectedWord();
+
+    await openConversation(id);
   }
-
-  resetSpeech();
-  stopListening();
-  clearSelectedWord();
-
-  await openConversation(id);
-}
-
 
   function handleToggleMicrophone() {
     resetSpeech();
@@ -195,6 +189,10 @@ function handleStartNewConversation() {
           setConversationId(newConversationId);
         },
 
+        onConversationTitle: () => {
+  loadConversations();
+},
+
         onDelta: (messageId, deltaText) => {
           setMessages((previous) =>
             previous.map((message) =>
@@ -219,6 +217,41 @@ function handleStartNewConversation() {
             setXpToast(null);
           }, 3500);
         },
+
+        onStreakUpdated: (streak) => {
+          setDailyStreak(streak);
+        },
+
+        onAchievementsUnlocked: (achievements) => {
+  if (!achievements.length) {
+    return;
+  }
+
+  achievementQueue.current.push(...achievements);
+
+  if (achievementToast) {
+    return;
+  }
+
+  const showNext = () => {
+    const next = achievementQueue.current.shift();
+
+    if (!next) {
+      setAchievementToast(null);
+      return;
+    }
+
+    setAchievementToast(next);
+
+    window.setTimeout(() => {
+      setAchievementToast(null);
+
+      window.setTimeout(showNext, 300);
+    }, 5000);
+  };
+
+  showNext();
+},
       });
 
       await loadConversations();
@@ -232,8 +265,8 @@ function handleStartNewConversation() {
                 ...message,
                 content:
                   error instanceof Error
-                    ? `Sorry, something went wrong: ${error.message}`
-                    : "Sorry, something went wrong.",
+                    ? `Вибачте, сталася помилка: ${error.message}`
+                    : "Вибачте, сталася помилка.",
               }
             : message,
         ),
@@ -243,8 +276,6 @@ function handleStartNewConversation() {
     }
   }
 
-
-
   return (
     <div className="relative flex h-full min-h-0 overflow-hidden bg-slate-50">
       <ConversationSidebar
@@ -252,34 +283,40 @@ function handleStartNewConversation() {
   conversations={conversations}
   activeConversationId={conversationId}
   deletingConversationId={deletingConversationId}
+  renamingConversationId={renamingConversationId}
   disabled={controlsDisabled}
   onClose={() => setSidebarOpen(false)}
   onNewConversation={handleStartNewConversation}
   onOpenConversation={handleOpenConversation}
+  onRenameConversation={renameConversation}
   onDeleteConversation={deleteConversation}
 />
 
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="flex h-14 shrink-0 items-center border-b border-slate-200 bg-white px-4 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100"
-            aria-label="Open conversations"
-          >
-            <PanelLeftOpen className="h-5 w-5" />
-          </button>
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4">
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100 lg:hidden"
+              aria-label="Відкрити розмови"
+            >
+              <PanelLeftOpen className="h-5 w-5" />
+            </button>
 
-          <p className="ml-2 text-sm font-semibold text-slate-800">
-            Conversations
-          </p>
+            <p className="ml-2 text-sm font-semibold text-slate-800">
+              TalkHero
+            </p>
+          </div>
+
+          <StreakBadge streak={dailyStreak} />
         </div>
 
         {historyLoading ? (
           <div className="flex flex-1 items-center justify-center">
             <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-sm text-slate-500 shadow-sm">
               <Loader2 className="h-5 w-5 animate-spin" />
-              Loading conversation...
+              Завантаження розмови...
             </div>
           </div>
         ) : (
@@ -302,29 +339,29 @@ function handleStartNewConversation() {
                       title={
                         speakingMessageId === message.id &&
                         speechStatus === "speaking"
-                          ? "Pause"
+                          ? "Пауза"
                           : speakingMessageId === message.id &&
                               speechStatus === "paused"
-                            ? "Resume"
-                            : "Listen"
+                            ? "Продовжити"
+                            : "Прослухати"
                       }
                     >
                       {speakingMessageId === message.id &&
                       speechStatus === "speaking" ? (
                         <>
                           <Pause className="h-4 w-4" />
-                          Pause
+                          Пауза
                         </>
                       ) : speakingMessageId === message.id &&
                         speechStatus === "paused" ? (
                         <>
                           <Play className="h-4 w-4" />
-                          Resume
+                          Продовжити
                         </>
                       ) : (
                         <>
                           <Volume2 className="h-4 w-4" />
-                          Listen
+                          Прослухати
                         </>
                       )}
                     </button>
@@ -335,10 +372,10 @@ function handleStartNewConversation() {
                           type="button"
                           onClick={handleStopSpeaking}
                           className="flex h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-slate-400 transition hover:bg-slate-100 hover:text-red-600"
-                          title="Stop"
+                          title="Зупинити"
                         >
                           <Square className="h-3.5 w-3.5 fill-current" />
-                          Stop
+                          Зупинити
                         </button>
                       )}
                   </div>
@@ -382,6 +419,7 @@ function handleStartNewConversation() {
       <Toast message={toastMessage} />
 
       <XpToast xp={xpToast} />
+      <AchievementToast achievement={achievementToast} />
     </div>
   );
 }

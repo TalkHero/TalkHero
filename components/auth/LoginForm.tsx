@@ -16,7 +16,7 @@ export function LoginForm() {
 
  async function handleLogin() {
   if (!email || !password) {
-    alert("Please enter your email and password.");
+    alert("Введіть електронну пошту та пароль.");
     return;
   }
 
@@ -32,11 +32,11 @@ export function LoginForm() {
   setLoading(false);
 
   if (result.error) {
-    alert(result.error.message);
+    alert("Не вдалося увійти. Перевірте електронну пошту та пароль.");
     return;
   }
 
-  alert("Login successful!");
+  alert("Вхід виконано успішно!");
 
   router.push("/chat");
   router.refresh();
@@ -45,7 +45,7 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
       <h1 className="mb-2 text-3xl font-bold">
-        Welcome back 👋
+        З поверненням 👋
       </h1>
 
       <p className="mb-6 text-slate-500">
@@ -55,7 +55,7 @@ export function LoginForm() {
       <div className="space-y-4">
         <input
           className="w-full rounded-lg border p-3"
-          placeholder="Email"
+          placeholder="Електронна пошта"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -63,7 +63,7 @@ export function LoginForm() {
 
         <input
           className="w-full rounded-lg border p-3"
-          placeholder="Password"
+          placeholder="Пароль"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

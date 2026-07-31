@@ -35,7 +35,24 @@ const NEXT_STATUS: Record<VocabularyStatus, VocabularyStatus> = {
   learning: "learned",
   learned: "new",
 };
+  function getWordCountLabel(count: number) {
+  const lastTwoDigits = count % 100;
+  const lastDigit = count % 10;
 
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return "слів";
+  }
+
+  if (lastDigit === 1) {
+    return "слово";
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return "слова";
+  }
+
+  return "слів";
+}
 export function VocabularyManager() {
   const [vocabulary, setVocabulary] = useState<VocabularyItem[]>(
     [],
@@ -73,7 +90,7 @@ export function VocabularyManager() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to load vocabulary.",
+          data.error || "Не вдалося завантажити словник.",
         );
       }
 
@@ -84,7 +101,7 @@ export function VocabularyManager() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Failed to load vocabulary.",
+          : "Не вдалося завантажити словник.",
       );
     } finally {
       setLoading(false);
@@ -142,7 +159,7 @@ export function VocabularyManager() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to add word.",
+          data.error || "Не вдалося додати слово.",
         );
       }
 
@@ -161,7 +178,7 @@ export function VocabularyManager() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Failed to add word.",
+          : "Не вдалося оновити слово.",
       );
     } finally {
       setSaving(false);
@@ -194,7 +211,7 @@ export function VocabularyManager() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to update word.",
+          data.error || "Не вдалося оновити слово.",
         );
       }
 
@@ -211,7 +228,7 @@ export function VocabularyManager() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Failed to update word.",
+          : "Не вдалося оновити слово.",
       );
     } finally {
       setUpdatingId(null);
@@ -246,7 +263,7 @@ export function VocabularyManager() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to delete word.",
+          data.error || "Не вдалося видалити слово.",
         );
       }
 
@@ -261,7 +278,7 @@ export function VocabularyManager() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Failed to delete word.",
+          : "Не вдалося видалити слово.",
       );
     } finally {
       setDeletingId(null);
@@ -276,11 +293,11 @@ export function VocabularyManager() {
       >
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-slate-900">
-            Add a new word
+            Додати нове слово
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Save useful words and phrases for future practice.
+            Зберігайте корисні слова та фрази для подальшої практики.
           </p>
         </div>
 
@@ -288,7 +305,7 @@ export function VocabularyManager() {
           <input
             value={word}
             onChange={(event) => setWord(event.target.value)}
-            placeholder="Word or phrase"
+            placeholder="Слово або фраза"
             className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
           />
 
@@ -297,14 +314,14 @@ export function VocabularyManager() {
             onChange={(event) =>
               setTranslation(event.target.value)
             }
-            placeholder="Translation"
+            placeholder="Переклад"
             className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
           />
 
           <textarea
             value={meaning}
             onChange={(event) => setMeaning(event.target.value)}
-            placeholder="Meaning or explanation"
+            placeholder="Значення або пояснення"
             rows={3}
             className="resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
           />
@@ -312,7 +329,7 @@ export function VocabularyManager() {
           <textarea
             value={example}
             onChange={(event) => setExample(event.target.value)}
-            placeholder="Example sentence"
+            placeholder="Приклад речення"
             rows={3}
             className="resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
           />
@@ -330,7 +347,7 @@ export function VocabularyManager() {
               <Plus className="h-4 w-4" />
             )}
 
-            {saving ? "Adding..." : "Add word"}
+            {saving ? "додаванyz..." : "Додати слово"}
           </button>
 
           {errorMessage && (
@@ -345,12 +362,11 @@ export function VocabularyManager() {
         <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">
-              Your vocabulary
+              Ваш словник
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              {vocabulary.length} saved{" "}
-              {vocabulary.length === 1 ? "word" : "words"}
+
             </p>
           </div>
 
@@ -360,7 +376,7 @@ export function VocabularyManager() {
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search vocabulary..."
+              placeholder="Пошук слів..."
               className="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
           </div>
@@ -451,7 +467,7 @@ export function VocabularyManager() {
                           <Check className="h-4 w-4" />
                         )}
 
-                        Next status
+                        Наступний статус
                       </button>
 
                       <button

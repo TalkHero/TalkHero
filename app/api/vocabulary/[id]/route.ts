@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 type RouteContext = {
   params: Promise<{
@@ -26,7 +27,7 @@ export async function PATCH(
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -40,7 +41,7 @@ export async function PATCH(
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Invalid vocabulary status." },
+        { error: API_ERRORS.invalidVocabularyStatus },
         { status: 400 },
       );
     }
@@ -74,7 +75,7 @@ export async function PATCH(
 
     if (!vocabularyItem) {
       return NextResponse.json(
-        { error: "Vocabulary item not found." },
+        { error: API_ERRORS.vocabularyItemNotFound },
         { status: 404 },
       );
     }
@@ -86,7 +87,7 @@ export async function PATCH(
     console.error("UPDATE VOCABULARY ERROR:", error);
 
     return NextResponse.json(
-      { error: "Failed to update vocabulary item." },
+      { error: API_ERRORS.failedToUpdateVocabularyItem },
       { status: 500 },
     );
   }
@@ -106,7 +107,7 @@ export async function DELETE(
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -127,7 +128,7 @@ export async function DELETE(
 
     if (!vocabularyItem) {
       return NextResponse.json(
-        { error: "Vocabulary item not found." },
+        { error: API_ERRORS.vocabularyItemNotFound },
         { status: 404 },
       );
     }
@@ -150,7 +151,7 @@ export async function DELETE(
     console.error("DELETE VOCABULARY ERROR:", error);
 
     return NextResponse.json(
-      { error: "Failed to delete vocabulary item." },
+      { error: API_ERRORS.failedToDeleteVocabularyItem },
       { status: 500 },
     );
   }

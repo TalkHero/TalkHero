@@ -32,47 +32,132 @@ type DashboardData = {
     vocabulary: number;
     learned: number;
     dueToday: number;
+    speakingToday: number;
+  };
+
+  assessment: {
+    hasAssessment: boolean;
+
+    latest: {
+      attemptId: string;
+      testSlug: string;
+      testName: string;
+      cefrLevel: string | null;
+      finalLevel: string | null;
+      percentage: number;
+      passed: boolean | null;
+      completedAt: string;
+      averageResponseTimeMs: number | null;
+    } | null;
+
+    categories: Array<{
+      category: string;
+      answered: number;
+      correct: number;
+      percentage: number;
+      averageResponseTimeMs: number | null;
+    }>;
+
+    strongestCategory: string | null;
+    weakestCategory: string | null;
+    recommendedTestSlug: string;
   };
 };
 
 const QUICK_ACTIONS = [
   {
     href: "/chat",
-    title: "Chat with Emma",
+    title: "Чат з Еммою",
     description:
-      "Practice real English conversations with your AI tutor.",
+      "Практикуйте живі розмови англійською зі своїм AI-викладачем.",
     icon: MessageCircle,
     iconClassName:
       "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white",
   },
   {
     href: "/speaking",
-    title: "Speaking practice",
+    title: "Практика говоріння",
     description:
-      "Speak out loud and receive instant AI feedback.",
+      "Говоріть уголос і миттєво отримуйте відгук від AI.",
     icon: Mic,
     iconClassName:
       "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white",
   },
   {
     href: "/review",
-    title: "Daily review",
+    title: "Щоденне повторення",
     description:
-      "Review vocabulary cards that are ready today.",
+      "Повторюйте картки зі словами, які доступні сьогодні.",
     icon: Brain,
     iconClassName:
       "bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-white",
   },
   {
     href: "/vocabulary",
-    title: "Vocabulary",
+    title: "Словник",
     description:
-      "Manage your saved English words and phrases.",
+      "ПКеруйте збереженими англійськими словами та фразами.",
     icon: BookOpen,
     iconClassName:
       "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white",
   },
 ];
+
+const ASSESSMENT_CATEGORY_LABELS: Record<
+  string,
+  string
+> = {
+  grammar: "Граматика",
+  vocabulary: "Словниковий запас",
+  reading: "Читання",
+  cloze: "Заповнення пропусків",
+  use_of_english: "Використання англійської",
+  listening: "Аудіювання",
+  writing: "Письмо",
+  speaking: "Говоріння",
+};
+
+function getAssessmentCategoryLabel(
+  category: string | null,
+): string {
+  if (!category) {
+    return "Ще недостатньо даних";
+  }
+
+  return (
+    ASSESSMENT_CATEGORY_LABELS[category] ??
+    category
+  );
+}
+
+function formatResponseTime(
+  responseTimeMs: number | null,
+): string {
+  if (
+    responseTimeMs === null ||
+    responseTimeMs < 0
+  ) {
+    return "Немає даних";
+  }
+
+  const totalSeconds = Math.round(
+    responseTimeMs / 1000,
+  );
+
+  if (totalSeconds < 60) {
+    return `${totalSeconds} с`;
+  }
+
+  const minutes = Math.floor(
+    totalSeconds / 60,
+  );
+
+  const seconds = totalSeconds % 60;
+
+  return seconds > 0
+    ? `${minutes} хв ${seconds} с`
+    : `${minutes} хв`;
+}
 
 export function DashboardOverview() {
   const [data, setData] =
@@ -98,7 +183,7 @@ export function DashboardOverview() {
       if (!response.ok) {
         throw new Error(
           responseData.error ||
-            "Failed to load dashboard.",
+            "Не вдалося завантажити головну панель.",
         );
       }
 
@@ -109,7 +194,7 @@ export function DashboardOverview() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Failed to load dashboard.",
+          : "Помилка завантаження результатів.",
       );
     } finally {
       setLoading(false);
@@ -125,7 +210,7 @@ export function DashboardOverview() {
       <div className="flex min-h-[500px] items-center justify-center">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm text-slate-500 shadow-sm">
           <Loader2 className="h-5 w-5 animate-spin" />
-          Loading your progress...
+          Завантаження...
         </div>
       </div>
     );
@@ -135,7 +220,7 @@ export function DashboardOverview() {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
         <p className="font-semibold text-red-700">
-          Could not load dashboard
+          Помилка завантаження результатів
         </p>
 
         <p className="mt-2 text-sm text-red-600">
@@ -147,7 +232,7 @@ export function DashboardOverview() {
           onClick={loadDashboard}
           className="mt-5 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
         >
-          Try again
+          Спрауйте ще
         </button>
       </div>
     );
@@ -192,25 +277,25 @@ const xpRemaining = Math.max(
 
 const dailyTasks = [
   {
-    label: "Start a conversation with Emma",
+    label: "Почати розмову з Еммою",
     href: "/chat",
     completed:
       data.stats.conversations > 0,
   },
   {
-    label: "Review vocabulary",
+    label: "Повторити слова",
     href: "/review",
     completed:
       data.stats.dueToday === 0 &&
       data.stats.vocabulary > 0,
   },
   {
-    label: "Practice speaking",
-    href: "/speaking",
-    completed: false,
-  },
+  label: "Практикувати говоріння",
+  href: "/speaking",
+  completed: data.stats.speakingToday > 0,
+},
   {
-    label: "Learn new vocabulary",
+    label: "Вивчити нові слова",
     href: "/vocabulary",
     completed:
       data.stats.vocabulary > 0,
@@ -227,7 +312,7 @@ const dailyGoalPercentage = Math.round(
 
   const statistics = [
     {
-      label: "Current streak",
+      label: "Поточна серія",
       value: data.profile.streak,
       suffix: "days",
       icon: Flame,
@@ -235,7 +320,7 @@ const dailyGoalPercentage = Math.round(
         "bg-orange-50 text-orange-600",
     },
     {
-      label: "Vocabulary",
+      label: "Словник",
       value: data.stats.vocabulary,
       suffix: "words",
       icon: BookOpen,
@@ -243,7 +328,7 @@ const dailyGoalPercentage = Math.round(
         "bg-indigo-50 text-indigo-600",
     },
     {
-      label: "Learned",
+      label: "Вивчено",
       value: data.stats.learned,
       suffix: "words",
       icon: Trophy,
@@ -251,7 +336,7 @@ const dailyGoalPercentage = Math.round(
         "bg-emerald-50 text-emerald-600",
     },
     {
-      label: "Conversations",
+      label: "Розмови",
       value: data.stats.conversations,
       suffix: "chats",
       icon: MessageCircle,
@@ -267,16 +352,15 @@ const dailyGoalPercentage = Math.round(
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-indigo-300">
               <Sparkles className="h-4 w-4" />
-              Welcome back
+              З поверненням
             </div>
 
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Hello, {data.profile.fullName}
+              Вітаємо, {data.profile.fullName}
             </h1>
 
             <p className="mt-3 max-w-xl leading-7 text-slate-300">
-              Continue practicing English and keep building
-              your daily learning habit.
+             Продовжуйте практикувати англійську мову та розвивайте свою щоденну звичку навчатися.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -284,7 +368,7 @@ const dailyGoalPercentage = Math.round(
                 href="/chat"
                 className="inline-flex items-center gap-2 rounded-xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400"
               >
-                Practice with Emma
+                Спілкуйся з Emma
                 <ArrowRight className="h-4 w-4" />
               </Link>
 
@@ -292,7 +376,7 @@ const dailyGoalPercentage = Math.round(
                 href="/review"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
               >
-                Review {data.stats.dueToday} words
+                Огляд {data.stats.dueToday} слів
               </Link>
             </div>
           </div>
@@ -306,7 +390,7 @@ const dailyGoalPercentage = Math.round(
               </p>
 
               <p className="mt-1 text-xs uppercase tracking-wider text-slate-400">
-                English level
+                Рівень англійської
               </p>
             </div>
 
@@ -318,28 +402,177 @@ const dailyGoalPercentage = Math.round(
               </p>
 
               <p className="mt-1 text-xs uppercase tracking-wider text-slate-400">
-                Total XP
+                Усього XP
               </p>
             </div>
           </div>
         </div>
       </section>
+      <section className="overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-6 shadow-sm sm:p-8">
+  {data.assessment.hasAssessment &&
+  data.assessment.latest ? (
+    <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+      <div>
+        <div className="flex items-center gap-2 text-sm font-semibold text-violet-600">
+          <Target className="h-4 w-4" />
+          Оцінювання рівня
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-end gap-4">
+          <div>
+            <p className="text-sm text-slate-500">
+              Останній результат
+            </p>
+
+            <p className="mt-1 text-4xl font-bold tracking-tight text-slate-950">
+              {Math.round(
+                data.assessment.latest.percentage,
+              )}
+              %
+            </p>
+          </div>
+
+          <div className="mb-1 rounded-xl bg-violet-100 px-3 py-2 text-sm font-bold text-violet-700">
+            {data.assessment.latest.finalLevel ??
+              data.assessment.latest.cefrLevel ??
+              data.profile.englishLevel}
+          </div>
+        </div>
+
+        <h2 className="mt-5 text-2xl font-bold text-slate-950">
+          {data.assessment.latest.testName}
+        </h2>
+
+        <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+          Перегляньте сильні сторони та теми,
+          які варто додатково опрацювати.
+        </p>
+
+        <div className="mt-6 h-3 overflow-hidden rounded-full bg-violet-100">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-700"
+            style={{
+              width: `${Math.min(
+                100,
+                Math.max(
+                  0,
+                  data.assessment.latest
+                    .percentage,
+                ),
+              )}%`,
+            }}
+          />
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <Link
+            href={`/assessment/${encodeURIComponent(
+              data.assessment
+                .recommendedTestSlug,
+            )}`}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700"
+          >
+            Пройти тест
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+
+          <Link
+            href={`/assessment/${encodeURIComponent(
+              data.assessment.latest.testSlug,
+            )}`}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white px-5 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50"
+          >
+            Повторити цей тест
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+        <div className="rounded-2xl border border-emerald-100 bg-white p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+            Найсильніша категорія
+          </p>
+
+          <p className="mt-2 text-lg font-bold text-slate-950">
+            {getAssessmentCategoryLabel(
+              data.assessment
+                .strongestCategory,
+            )}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-amber-100 bg-white p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-600">
+            Варто покращити
+          </p>
+
+          <p className="mt-2 text-lg font-bold text-slate-950">
+            {getAssessmentCategoryLabel(
+              data.assessment.weakestCategory,
+            )}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-indigo-100 bg-white p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+            Середній час відповіді
+          </p>
+
+          <p className="mt-2 text-lg font-bold text-slate-950">
+            {formatResponseTime(
+              data.assessment.latest
+                .averageResponseTimeMs,
+            )}
+          </p>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div className="flex items-center gap-2 text-sm font-semibold text-violet-600">
+          <Target className="h-4 w-4" />
+          Оцінювання рівня
+        </div>
+
+        <h2 className="mt-3 text-2xl font-bold text-slate-950">
+          Перевірте свій рівень англійської
+        </h2>
+
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+          Пройдіть тест, щоб отримати
+          персональний результат, сильні сторони
+          та рекомендації.
+        </p>
+      </div>
+
+      <Link
+        href={`/assessment/${encodeURIComponent(
+          data.assessment.recommendedTestSlug,
+        )}`}
+        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700"
+      >
+        Почати тест
+        <ArrowRight className="h-4 w-4" />
+      </Link>
+    </div>
+  )}
+</section>
 <section className="grid gap-6 xl:grid-cols-[1.25fr_1fr]">
   <article className="overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-6 shadow-sm sm:p-7">
     <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <div className="flex items-center gap-2 text-sm font-semibold text-indigo-600">
           <Star className="h-4 w-4" />
-          Level progress
+          Рівень прогресу
         </div>
 
         <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
-          Level {data.profile.level}
+          Рівень {data.profile.level}
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Earn XP by chatting, speaking, and reviewing
-          vocabulary.
+          Заробляйте XP, спілкуючись у чаті, розмовляючи та поповнюючи словниковий запас.
         </p>
       </div>
 
@@ -370,7 +603,7 @@ const dailyGoalPercentage = Math.round(
 
       <div className="mt-4 flex flex-col gap-2 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <span>
-          Total:{" "}
+          Усього:{" "}
           <strong className="text-slate-800">
             {data.profile.xp} XP
           </strong>
@@ -378,7 +611,7 @@ const dailyGoalPercentage = Math.round(
 
         <span>
           {xpRemaining > 0
-            ? `${xpRemaining} XP until level ${
+            ? `${xpRemaining} XP до рівня ${
                 data.profile.level + 1
               }`
             : "Next level unlocked"}
@@ -392,11 +625,11 @@ const dailyGoalPercentage = Math.round(
       <div>
         <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
           <Target className="h-4 w-4" />
-          Daily goal
+          Щоденні завдання
         </div>
 
         <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
-          Today&apos;s plan
+          План на сьогодні
         </h2>
       </div>
 
@@ -485,11 +718,11 @@ const dailyGoalPercentage = Math.round(
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-slate-950">
-                Vocabulary progress
+                Розвиток словникового запасу
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Track how many saved words you have learned.
+                Відстежуйте, скільки збережених слів ви вивчили.
               </p>
             </div>
 
@@ -509,11 +742,11 @@ const dailyGoalPercentage = Math.round(
 
           <div className="mt-4 flex items-center justify-between text-sm">
             <span className="text-slate-500">
-              {data.stats.learned} learned
+              {data.stats.learned} вивчено
             </span>
 
             <span className="font-medium text-slate-700">
-              {data.stats.vocabulary} total
+              {data.stats.vocabulary} усього
             </span>
           </div>
 
@@ -521,7 +754,7 @@ const dailyGoalPercentage = Math.round(
             href="/vocabulary"
             className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700"
           >
-            View vocabulary
+            Переглянути словник
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -532,22 +765,21 @@ const dailyGoalPercentage = Math.round(
           </div>
 
           <h2 className="mt-5 text-xl font-semibold text-slate-950">
-            Daily review
+            Щоденні активності
           </h2>
 
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            You currently have{" "}
+            У вас зараз є{" "}
             <strong className="text-slate-800">
               {data.stats.dueToday}
             </strong>{" "}
-            vocabulary cards ready for review.
+            картки зі словниковим запасом, готові до повторення.
           </p>
 
           <Link
             href="/review"
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-          >
-            Start review
+          >Оглянути
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -556,11 +788,11 @@ const dailyGoalPercentage = Math.round(
       <section>
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-slate-950">
-            Continue learning
+            Продовжити навчання
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Choose what you would like to practice next.
+            Оберіть, що ви хочете практикувати далі.
           </p>
         </div>
 
@@ -589,7 +821,7 @@ const dailyGoalPercentage = Math.round(
                 </p>
 
                 <div className="mt-5 flex items-center gap-2 text-sm font-semibold text-indigo-600">
-                  Open
+                  Відкрити
                   <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                 </div>
               </Link>

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 export type ProgressReward = {
   xp: number;
@@ -24,13 +25,11 @@ export async function awardXp({
   amount,
 }: AwardXpOptions): Promise<ProgressReward> {
   if (!userId) {
-    throw new Error("User ID is required.");
+    throw new Error(API_ERRORS.userIdRequired);
   }
 
   if (!Number.isInteger(amount) || amount <= 0) {
-    throw new Error(
-      "XP amount must be a positive integer.",
-    );
+    throw new Error(API_ERRORS.invalidXpAmount);
   }
 
   const supabase = await createClient();
@@ -45,16 +44,14 @@ export async function awardXp({
 
   if (error) {
     console.error("AWARD XP ERROR:", error);
-    throw new Error("Failed to award XP.");
+    throw new Error(API_ERRORS.failedToAwardXp);
   }
 
   const rows = data as AwardXpRow[] | null;
   const progress = rows?.[0];
 
   if (!progress) {
-    throw new Error(
-      "XP reward did not return updated progress.",
-    );
+    throw new Error(API_ERRORS.missingUpdatedProgress);
   }
 
   return {

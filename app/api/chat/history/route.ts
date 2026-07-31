@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 export async function GET(request: Request) {
   try {
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
 
       if (!conversation) {
         return NextResponse.json(
-          { error: "Conversation not found" },
+          { error: API_ERRORS.conversationNotFound },
           { status: 404 },
         );
       }
@@ -89,7 +90,7 @@ export async function GET(request: Request) {
     console.error("CHAT HISTORY ERROR:", error);
 
     return NextResponse.json(
-      { error: "Failed to load chat history" },
+      { error: API_ERRORS.failedToLoadChatHistory },
       { status: 500 },
     );
   }

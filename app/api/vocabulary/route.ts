@@ -1,32 +1,33 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { API_ERRORS } from "@/lib/i18n/errors";
 
 const createVocabularySchema = z.object({
   word: z
     .string()
     .trim()
-    .min(1, "Word is required.")
-    .max(100, "Word is too long."),
+   .min(1, API_ERRORS.wordRequired)
+.max(100, "Слово не може містити більше 100 символів."),
 
   translation: z
     .string()
     .trim()
-    .max(300, "Translation is too long.")
+    .max(300, "Переклад не може містити більше 300 символів.")
     .optional()
     .default(""),
 
   meaning: z
     .string()
     .trim()
-    .max(1000, "Meaning is too long.")
+    .max(1000, "Пояснення не може містити більше 1000 символів.")
     .optional()
     .default(""),
 
   example: z
     .string()
     .trim()
-    .max(1000, "Example is too long.")
+    .max(1000, "Приклад не може містити більше 1000 символів.")
     .optional()
     .default(""),
 });
@@ -42,7 +43,7 @@ export async function GET() {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -77,7 +78,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        error: "Failed to load vocabulary.",
+        error: API_ERRORS.failedToLoadVocabulary,
       },
       {
         status: 500,
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: API_ERRORS.unauthorized },
         { status: 401 },
       );
     }
@@ -112,7 +113,7 @@ export async function POST(request: Request) {
         {
           error:
             validationResult.error.issues[0]?.message ||
-            "Invalid vocabulary data.",
+            API_ERRORS.invalidVocabularyData,
         },
         {
           status: 400,
@@ -142,7 +143,7 @@ export async function POST(request: Request) {
     if (existingWord) {
       return NextResponse.json(
         {
-          error: `"${word}" is already in your vocabulary.`,
+          error: `Слово "${word}" вже є у вашому словнику.`,
         },
         {
           status: 409,
@@ -181,7 +182,7 @@ export async function POST(request: Request) {
       if (insertError.code === "23505") {
         return NextResponse.json(
           {
-            error: `"${word}" is already in your vocabulary.`,
+            error: `Слово "${word}" вже є у вашому словнику.`,
           },
           {
             status: 409,
@@ -205,7 +206,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: "Failed to add word.",
+        error: API_ERRORS.failedToAddWord,
       },
       {
         status: 500,

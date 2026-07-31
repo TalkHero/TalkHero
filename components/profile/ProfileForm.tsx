@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Loader2, Save } from "lucide-react";
+import { UI_ERRORS } from "@/lib/i18n/errors";
 
 type EnglishLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
@@ -63,12 +64,8 @@ const LEVELS: {
   },
 ];
 
-export function ProfileForm({
-  initialProfile,
-}: ProfileFormProps) {
-  const [fullName, setFullName] = useState(
-    initialProfile.fullName,
-  );
+export function ProfileForm({ initialProfile }: ProfileFormProps) {
+  const [fullName, setFullName] = useState(initialProfile.fullName);
 
   const [nativeLanguage, setNativeLanguage] = useState(
     initialProfile.nativeLanguage,
@@ -78,10 +75,9 @@ export function ProfileForm({
     initialProfile.targetLanguage,
   );
 
-  const [englishLevel, setEnglishLevel] =
-    useState<EnglishLevel>(
-      initialProfile.englishLevel,
-    );
+  const [englishLevel, setEnglishLevel] = useState<EnglishLevel>(
+    initialProfile.englishLevel,
+  );
 
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -93,7 +89,7 @@ export function ProfileForm({
     }
 
     if (!fullName.trim()) {
-      setErrorMessage("Full name is required.");
+     setErrorMessage(UI_ERRORS.fullNameRequired);
       return;
     }
 
@@ -118,19 +114,15 @@ export function ProfileForm({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to update profile.",
-        );
+        throw new Error(data.error || "Не вдалося оновити профіль.");
       }
 
-      setSuccessMessage("Profile saved successfully.");
+      setSuccessMessage("Профіль успішно збережено.");
     } catch (error) {
       console.error("SAVE PROFILE ERROR:", error);
 
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Failed to update profile.",
+        error instanceof Error ? error.message : "Не вдалося оновити профіль.",
       );
     } finally {
       setSaving(false);
@@ -146,8 +138,7 @@ export function ProfileForm({
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Emma uses this information to personalize your
-            lessons.
+            Emma uses this information to personalize your lessons.
           </p>
         </div>
 
@@ -193,10 +184,7 @@ export function ProfileForm({
               className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             >
               {LANGUAGES.map((language) => (
-                <option
-                  key={language.value}
-                  value={language.value}
-                >
+                <option key={language.value} value={language.value}>
                   {language.label}
                 </option>
               ))}
@@ -222,10 +210,7 @@ export function ProfileForm({
               className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             >
               {LANGUAGES.map((language) => (
-                <option
-                  key={language.value}
-                  value={language.value}
-                >
+                <option key={language.value} value={language.value}>
                   {language.label}
                 </option>
               ))}
@@ -237,19 +222,18 @@ export function ProfileForm({
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-slate-900">
-            English level
+            Рівень англійської
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Emma will adapt vocabulary, grammar, corrections,
-            and explanations to this level.
+            Емма адаптуватиме лексику, граматику, виправлення та пояснення
+до цього рівня.
           </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {LEVELS.map((level) => {
-            const isSelected =
-              englishLevel === level.value;
+            const isSelected = englishLevel === level.value;
 
             return (
               <button
@@ -318,9 +302,7 @@ export function ProfileForm({
         )}
 
         {errorMessage && (
-          <p className="text-sm font-medium text-red-600">
-            {errorMessage}
-          </p>
+          <p className="text-sm font-medium text-red-600">{errorMessage}</p>
         )}
       </div>
     </div>

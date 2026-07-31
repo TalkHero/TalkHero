@@ -1,0 +1,543 @@
+[
+  {
+    "cefr_level": "A1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "My brother ___ breakfast at seven o'clock every morning.",
+    "passage": null,
+    "options": [
+      "has",
+      "have",
+      "having",
+      "is have"
+    ],
+    "correct_answer": "has",
+    "explanation_uk": "З підметом у третій особі однини (my brother) у Present Simple дієслово have змінюється на has.",
+    "difficulty": 2,
+    "discrimination": 1.1,
+    "estimated_time_seconds": 30,
+    "topic": "Present Simple: third-person singular",
+    "tags": [
+      "present-simple",
+      "third-person-singular",
+      "daily-routines"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-GRAMMAR-001"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Look! The children ___ in the garden now.",
+    "passage": null,
+    "options": [
+      "are playing",
+      "is playing",
+      "play",
+      "plays"
+    ],
+    "correct_answer": "are playing",
+    "explanation_uk": "Слово «now» та вигук «Look!» указують на дію, що відбувається зараз. Із підметом у множині «the children» вживаємо «are playing».",
+    "difficulty": 2,
+    "discrimination": 1.1,
+    "estimated_time_seconds": 30,
+    "topic": "Present continuous",
+    "tags": [
+      "present-continuous",
+      "actions-now",
+      "be"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-GRAMMAR-002"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Emma and Leo ___ from Canada.",
+    "passage": null,
+    "options": [
+      "am",
+      "is",
+      "are",
+      "be"
+    ],
+    "correct_answer": "are",
+    "explanation_uk": "Підмет «Emma and Leo» позначає двох людей, тому з дієсловом «to be» у теперішньому часі вживаємо форму «are».",
+    "difficulty": 1,
+    "discrimination": 0.9,
+    "estimated_time_seconds": 20,
+    "topic": "Present simple of be",
+    "tags": [
+      "verb to be",
+      "subject-verb agreement",
+      "plural subject"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-GRAMMAR-003"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "___ shoes here are very dirty.",
+    "passage": null,
+    "options": [
+      "These",
+      "This",
+      "That",
+      "It"
+    ],
+    "correct_answer": "These",
+    "explanation_uk": "«Shoes» — іменник у множині, а слово «here» указує, що взуття розташоване близько. Тому потрібно вжити «these».",
+    "difficulty": 2,
+    "discrimination": 1,
+    "estimated_time_seconds": 25,
+    "topic": "Demonstratives",
+    "tags": [
+      "demonstratives",
+      "these",
+      "plural-nouns"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-GRAMMAR-004"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Peter has a new bicycle. He rides ___ to school.",
+    "passage": null,
+    "options": [
+      "it",
+      "him",
+      "them",
+      "us"
+    ],
+    "correct_answer": "it",
+    "explanation_uk": "Слово «bicycle» позначає один предмет. Щоб не повторювати цей іменник, використовуємо об’єктний займенник «it».",
+    "difficulty": 2,
+    "discrimination": 1,
+    "estimated_time_seconds": 30,
+    "topic": "Object pronouns",
+    "tags": [
+      "object-pronouns",
+      "it",
+      "reference"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-GRAMMAR-005"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "Tom and I ___ students at this school.",
+    "passage": null,
+    "options": [
+      "am",
+      "is",
+      "are",
+      "be"
+    ],
+    "correct_answer": "are",
+    "explanation_uk": "Підмет «Tom and I» означає «ми», тому в теперішньому часі потрібна форма дієслова «to be» — «are». Правильне речення: «Tom and I are students at this school.»",
+    "difficulty": 1,
+    "discrimination": 1,
+    "estimated_time_seconds": 20,
+    "topic": "Present simple of the verb to be",
+    "tags": [
+      "verb to be",
+      "present simple",
+      "plural subject"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-GRAMMAR-006"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "How many ___ are in the classroom?",
+    "passage": null,
+    "options": [
+      "chairs",
+      "chair",
+      "chaires",
+      "chair's"
+    ],
+    "correct_answer": "chairs",
+    "explanation_uk": "Після «How many» вживаємо злічуваний іменник у множині. Правильна форма множини слова «chair» — «chairs».",
+    "difficulty": 2,
+    "discrimination": 1.2,
+    "estimated_time_seconds": 25,
+    "topic": "Plural nouns",
+    "tags": [
+      "plural-nouns",
+      "how-many",
+      "countable-nouns"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-GRAMMAR-007"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "grammar",
+    "question_type": "multiple_choice",
+    "prompt": "___ the window, please. It is cold outside.",
+    "passage": null,
+    "options": [
+      "Close",
+      "Closes",
+      "Closing",
+      "To close"
+    ],
+    "correct_answer": "Close",
+    "explanation_uk": "У наказовому реченні використовуємо початкову форму дієслова без «to». Тому правильний варіант — «Close».",
+    "difficulty": 2,
+    "discrimination": 1.1,
+    "estimated_time_seconds": 25,
+    "topic": "Imperatives",
+    "tags": [
+      "imperatives",
+      "base-form",
+      "instructions"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-GRAMMAR-008"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "It is raining outside. Take an ___ with you.",
+    "passage": null,
+    "options": [
+      "umbrella",
+      "camera",
+      "plate",
+      "blanket"
+    ],
+    "correct_answer": "umbrella",
+    "explanation_uk": "Під час дощу беруть парасолю (umbrella), щоб не намокнути.",
+    "difficulty": 1,
+    "discrimination": 0.9,
+    "estimated_time_seconds": 25,
+    "topic": "weather",
+    "tags": [
+      "meaning-in-context",
+      "weather",
+      "everyday-objects"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-VOCABULARY-001"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "I always ___ my teeth before I go to bed.",
+    "passage": null,
+    "options": [
+      "brush",
+      "cook",
+      "draw",
+      "carry"
+    ],
+    "correct_answer": "brush",
+    "explanation_uk": "Англійською правильно казати “brush my teeth” — «чистити зуби».",
+    "difficulty": 2,
+    "discrimination": 1,
+    "estimated_time_seconds": 25,
+    "topic": "daily routines",
+    "tags": [
+      "collocations",
+      "daily-routine",
+      "personal-care"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-VOCABULARY-002"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "You want to know the price of a T-shirt. What do you ask?",
+    "passage": null,
+    "options": [
+      "How much is it?",
+      "What time is it?",
+      "Where are you from?",
+      "How old is it?"
+    ],
+    "correct_answer": "How much is it?",
+    "explanation_uk": "Фразу “How much is it?” використовують, щоб запитати ціну товару.",
+    "difficulty": 1,
+    "discrimination": 0.8,
+    "estimated_time_seconds": 30,
+    "topic": "shopping",
+    "tags": [
+      "common-phrases",
+      "shopping",
+      "price"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-VOCABULARY-003"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "My father's sister is my ___.",
+    "passage": null,
+    "options": [
+      "aunt",
+      "daughter",
+      "mother",
+      "grandmother"
+    ],
+    "correct_answer": "aunt",
+    "explanation_uk": "Сестра батька — це тітка (aunt).",
+    "difficulty": 2,
+    "discrimination": 1.1,
+    "estimated_time_seconds": 25,
+    "topic": "family",
+    "tags": [
+      "topic-vocabulary",
+      "family",
+      "relationships"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-VOCABULARY-004"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "The room is dark. Please ___ the light.",
+    "passage": null,
+    "options": [
+      "turn on",
+      "sit down",
+      "look for",
+      "come in"
+    ],
+    "correct_answer": "turn on",
+    "explanation_uk": "Фразове дієслово “turn on” означає увімкнути світло або електричний пристрій.",
+    "difficulty": 3,
+    "discrimination": 1.2,
+    "estimated_time_seconds": 35,
+    "topic": "home",
+    "tags": [
+      "phrasal-verbs",
+      "home",
+      "instructions"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-VOCABULARY-005"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "After the long walk, Mia wants a glass of water because she is ___.",
+    "passage": null,
+    "options": [
+      "thirsty",
+      "angry",
+      "busy",
+      "young"
+    ],
+    "correct_answer": "thirsty",
+    "explanation_uk": "Людина, яка хоче пити, є спраглою (thirsty).",
+    "difficulty": 2,
+    "discrimination": 1,
+    "estimated_time_seconds": 30,
+    "topic": "feelings and needs",
+    "tags": [
+      "meaning-in-context",
+      "adjectives",
+      "basic-needs"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-VOCABULARY-006"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "vocabulary",
+    "question_type": "multiple_choice",
+    "prompt": "Ben is tired. He wants to ___ a rest.",
+    "passage": null,
+    "options": [
+      "have",
+      "make",
+      "play",
+      "do"
+    ],
+    "correct_answer": "have",
+    "explanation_uk": "Правильна відповідь — «have», оскільки англійською вживають сталий вираз «have a rest», що означає «відпочити».",
+    "difficulty": 2,
+    "discrimination": 1,
+    "estimated_time_seconds": 25,
+    "topic": "Daily activities",
+    "tags": [
+      "collocations",
+      "common phrases",
+      "word choice"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-VOCABULARY-007"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What is the Riverside Market notice mainly telling shoppers about?",
+    "passage": "Riverside Market\nThis weekend only:\nSaturday: Open from 8:00 a.m. to 12:00 p.m.\nSunday: Closed\nFresh bread is half price on Saturday morning.",
+    "options": [
+      "Special weekend hours and a bread sale",
+      "A new market opening on Sunday",
+      "A change in bread ingredients",
+      "Jobs at the market"
+    ],
+    "correct_answer": "Special weekend hours and a bread sale",
+    "explanation_uk": "Оголошення повідомляє про особливий графік роботи магазину на вихідних і про знижку на свіжий хліб.",
+    "difficulty": 2,
+    "discrimination": 1.05,
+    "estimated_time_seconds": 45,
+    "topic": "Shopping notice",
+    "tags": [
+      "main idea",
+      "opening hours",
+      "market"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-READING-001"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "Which product costs less on Saturday morning?",
+    "passage": "Riverside Market\nThis weekend only:\nSaturday: Open from 8:00 a.m. to 12:00 p.m.\nSunday: Closed\nFresh bread is half price on Saturday morning.",
+    "options": [
+      "Fresh bread",
+      "Orange juice",
+      "Chocolate cake",
+      "Breakfast cereal"
+    ],
+    "correct_answer": "Fresh bread",
+    "explanation_uk": "В оголошенні прямо сказано, що в суботу вранці свіжий хліб продають за половину ціни.",
+    "difficulty": 1,
+    "discrimination": 0.9,
+    "estimated_time_seconds": 30,
+    "topic": "Shopping notice",
+    "tags": [
+      "detail",
+      "prices",
+      "food"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-READING-002"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "Why is Nina at Sara's house?",
+    "passage": "Hi Dad,\nI am at Sara's house. We are making a poster for science class. I will take the number 6 bus home and arrive at about 5:30. Please don't wait for me at school.\nNina",
+    "options": [
+      "To make a science poster",
+      "To have dinner with Sara",
+      "To watch a film",
+      "To look for her bus ticket"
+    ],
+    "correct_answer": "To make a science poster",
+    "explanation_uk": "Ніна пише, що вони із Сарою роблять плакат для уроку природознавства.",
+    "difficulty": 1,
+    "discrimination": 0.95,
+    "estimated_time_seconds": 35,
+    "topic": "After-school activities",
+    "tags": [
+      "detail",
+      "school project",
+      "personal note"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-READING-003"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What time does the library close today?",
+    "passage": "LIBRARY NOTICE\nToday, the library is open from 9:00 a.m. to 4:00 p.m. You can return books at the front desk. The library is closed tomorrow.",
+    "options": [
+      "At 9:00 a.m.",
+      "At 12:00 p.m.",
+      "At 4:00 p.m.",
+      "At 5:00 p.m."
+    ],
+    "correct_answer": "At 4:00 p.m.",
+    "explanation_uk": "В оголошенні сказано, що сьогодні бібліотека працює з 9:00 до 16:00. Отже, вона зачиняється о 16:00.",
+    "difficulty": 1,
+    "discrimination": 0.9,
+    "estimated_time_seconds": 30,
+    "topic": "Library opening hours",
+    "tags": [
+      "notice",
+      "time",
+      "library",
+      "detail"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-READING-004"
+  },
+  {
+    "cefr_level": "A1",
+    "category": "reading",
+    "question_type": "reading_choice",
+    "prompt": "What are Omar and his mother probably going to do next?",
+    "passage": "Omar puts a towel and his blue swimsuit in a bag. He puts on his sandals. His mother says, “The pool closes at six, so we need to leave now.”",
+    "options": [
+      "Go swimming",
+      "Buy new shoes",
+      "Clean the kitchen",
+      "Visit a library"
+    ],
+    "correct_answer": "Go swimming",
+    "explanation_uk": "Омар кладе в сумку рушник і купальний костюм, а мама говорить про басейн. Отже, вони, найімовірніше, йдуть плавати.",
+    "difficulty": 2,
+    "discrimination": 1.1,
+    "estimated_time_seconds": 40,
+    "topic": "Leisure activities",
+    "tags": [
+      "inference",
+      "swimming",
+      "daily life"
+    ],
+    "source": "generated",
+    "status": "published",
+    "question_code": "A1-READING-005"
+  }
+]

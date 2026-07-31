@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-07-27T09:59:21.623Z",
+  "level": "B1",
+  "source_file": "C:\\TalkHero\\web\\question-bank\\B1\\english-b1.json",
+  "semantic_validation_enabled": false,
+  "similarity_threshold": null,
+  "statistics": {
+    "total_questions": 50,
+    "categories": {
+      "grammar": 15,
+      "vocabulary": 15,
+      "reading": 10,
+      "cloze": 5,
+      "use_of_english": 5
+    },
+    "average_difficulty": 3,
+    "estimated_duration_minutes": 33
+  },
+  "summary": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "quality_score": 100,
+  "status": "passed",
+  "issues": []
+}

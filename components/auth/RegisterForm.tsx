@@ -17,7 +17,7 @@ export function RegisterForm() {
 
   async function handleRegister() {
     if (!email || !password || !fullName) {
-      alert("Please fill in all fields.");
+      alert("Заповніть усі поля.");
       return;
     }
 
@@ -36,12 +36,12 @@ export function RegisterForm() {
     setLoading(false);
 
     if (error) {
-      alert(error.message);
+      alert("Не вдалося створити акаунт. Перевірте введені дані.");
       return;
     }
 
     alert(
-      "Account created successfully! Please check your email to confirm your account.",
+      "Акаунт успішно створено. Перевірте електронну пошту та підтвердьте реєстрацію.",
     );
 
     router.push("/login");
@@ -50,7 +50,7 @@ export function RegisterForm() {
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
       <h1 className="mb-2 text-3xl font-bold">
-        Create account
+        Створити акаунт
       </h1>
 
       <p className="mb-6 text-slate-500">
@@ -67,7 +67,7 @@ export function RegisterForm() {
 
         <input
           className="w-full rounded-lg border p-3"
-          placeholder="Email"
+          placeholder="Електронна пошта"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -75,7 +75,7 @@ export function RegisterForm() {
 
         <input
           className="w-full rounded-lg border p-3"
-          placeholder="Password"
+          placeholder="Пароль"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -86,7 +86,7 @@ export function RegisterForm() {
           disabled={loading}
           onClick={handleRegister}
         >
-          {loading ? "Creating..." : "Create account"}
+          {loading ? "Створення..." : "Створити акаунт"}
         </Button>
       </div>
     </div>

@@ -51,8 +51,7 @@ export function EnglishLevelSelector({
   const [selectedLevel, setSelectedLevel] =
     useState<EnglishLevel>(initialLevel);
 
-  const [savedLevel, setSavedLevel] =
-    useState<EnglishLevel>(initialLevel);
+  const [savedLevel, setSavedLevel] = useState<EnglishLevel>(initialLevel);
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -77,20 +76,18 @@ export function EnglishLevelSelector({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to update English level",
-        );
+        throw new Error(data.error || "Не вдалося оновити рівень англійської.");
       }
 
       setSavedLevel(selectedLevel);
-      setMessage("English level saved successfully.");
+      setMessage("Рівень англійської успішно збережено.");
     } catch (error) {
       console.error("SAVE ENGLISH LEVEL ERROR:", error);
 
       setMessage(
         error instanceof Error
           ? error.message
-          : "Failed to save English level.",
+          : "Не вдалося зберегти рівень англійської.",
       );
     } finally {
       setSaving(false);
@@ -102,13 +99,11 @@ export function EnglishLevelSelector({
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-slate-900">
-          English level
-        </h2>
+        <h2 className="text-xl font-semibold text-slate-900">Рівень англійської</h2>
 
         <p className="mt-1 text-sm text-slate-500">
-          Emma will automatically adapt vocabulary, grammar,
-          corrections, and explanations to your level.
+          Емма автоматично адаптуватиме лексику, граматику, виправлення та
+пояснення до вашого рівня.
         </p>
       </div>
 
@@ -142,9 +137,7 @@ export function EnglishLevelSelector({
                 </div>
 
                 <div>
-                  <p className="font-medium text-slate-900">
-                    {level.title}
-                  </p>
+                  <p className="font-medium text-slate-900">{level.title}</p>
 
                   <p className="mt-1 text-sm text-slate-500">
                     {level.description}
@@ -163,14 +156,10 @@ export function EnglishLevelSelector({
           disabled={saving || !hasChanges}
           className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {saving ? "Saving..." : "Save level"}
+          {saving ? "Збереження..." : "Зберегти рівень"}
         </button>
 
-        {message && (
-          <p className="text-sm text-slate-600">
-            {message}
-          </p>
-        )}
+        {message && <p className="text-sm text-slate-600">{message}</p>}
       </div>
     </section>
   );

@@ -91,7 +91,7 @@ const toastTimeoutRef = useRef<number | undefined>(
         if (selectedText.length > 100) {
           showToast(
             "error",
-            "Select a shorter word or phrase.",
+            "Виберіть коротше слово або фразу.",
           );
 
           setSelectedWord(null);
@@ -156,7 +156,7 @@ const toastTimeoutRef = useRef<number | undefined>(
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to save word.",
+          data.error || "Не вдалося зберегти слово.",
         );
       }
 
@@ -165,17 +165,17 @@ const toastTimeoutRef = useRef<number | undefined>(
       if (data.alreadyExists) {
         showToast(
           "success",
-          `"${data.vocabularyItem.word}" is already in your vocabulary.`,
+          `"${data.vocabularyItem.word}" вже є у вашому словнику.`,
         );
       } else {
         showToast(
           "success",
-          `"${data.vocabularyItem.word}" saved to Vocabulary.`,
+          `Слово "${data.vocabularyItem.word}" додано до словника.`,
         );
       }
     } catch (error) {
       console.error(
-        "SAVE SELECTED WORD ERROR:",
+        "Помилка збережжня:",
         error,
       );
 
@@ -183,7 +183,7 @@ const toastTimeoutRef = useRef<number | undefined>(
         "error",
         error instanceof Error
           ? error.message
-          : `Failed to save "${wordToSave}".`,
+          : `Не вдалося зберегти "${wordToSave}".`,
       );
     } finally {
       setSavingSelectedWord(false);
