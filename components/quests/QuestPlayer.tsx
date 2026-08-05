@@ -1,12 +1,23 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
+import { Loader2, RotateCcw } from "lucide-react";
 
 import { AIFeedbackCard } from "./AIFeedbackCard";
 import { MissionHUD } from "./MissionHUD";
 import { SceneRenderer } from "./SceneRenderer";
 import { useQuest } from "./hooks/useQuest";
 import { CompletionScene } from "./scenes/CompletionScene";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export type QuestPlayerProps = {
   campaignSlug: string;
@@ -30,12 +41,7 @@ export function QuestPlayer({
       episodeSlug,
       questSlug,
     });
-  }, [
-    campaignSlug,
-    episodeSlug,
-    questSlug,
-    startQuest,
-  ]);
+  }, [campaignSlug, episodeSlug, questSlug, startQuest]);
 
   useEffect(() => {
     if (quest.completed) {
@@ -56,35 +62,46 @@ export function QuestPlayer({
       <div
         role="status"
         aria-live="polite"
-        className="flex min-h-56 items-center justify-center rounded-3xl border border-slate-200 bg-white p-8 text-slate-600 shadow-sm"
+        className="mx-auto flex min-h-[360px] w-full max-w-4xl items-center justify-center px-4 py-8 sm:px-6"
       >
-        Завантаження місії…
+        <Card className="w-full max-w-sm">
+          <CardContent className="flex items-center justify-center gap-3">
+            <Loader2
+              className="size-5 animate-spin text-primary"
+              aria-hidden="true"
+            />
+
+            <span className="text-sm text-muted-foreground">
+              Завантажуємо місію…
+            </span>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (quest.error && !quest.scene) {
     return (
-      <div
-        role="alert"
-        className="space-y-4 rounded-3xl border border-red-200 bg-red-50 p-6"
-      >
-        <h2 className="text-lg font-semibold text-red-800">
-          Не вдалося відкрити місію
-        </h2>
+      <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
+        <Card className="border-destructive/20 bg-destructive-soft">
+          <CardHeader>
+            <CardTitle className="text-destructive">
+              Не вдалося відкрити місію
+            </CardTitle>
 
-        <p className="text-red-700">
-          {quest.error}
-        </p>
+            <CardDescription className="text-red-700 dark:text-red-300">
+              {quest.error}
+            </CardDescription>
+          </CardHeader>
 
-        <button
-          type="button"
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
-          onClick={restartQuest}
-        >
-          Спробувати ще раз
-        </button>
-      </div>
+          <CardFooter className="border-destructive/10">
+            <Button type="button" variant="destructive" onClick={restartQuest}>
+              <RotateCcw aria-hidden="true" />
+              Спробувати ще раз
+            </Button>
+          </CardFooter>
+        </Card>
+      </main>
     );
   }
 
@@ -101,13 +118,11 @@ export function QuestPlayer({
     );
   }
 
-  const livingNPC =
-    quest.scene?.metadata
-      .aiConversation === true;
+  const livingNPC = quest.scene?.metadata.aiConversation === true;
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 sm:px-6">
-      {quest.quest && quest.progress && (
+    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+      {quest.quest && quest.progress ? (
         <MissionHUD
           quest={quest.quest}
           progress={quest.progress}
@@ -115,19 +130,18 @@ export function QuestPlayer({
           xpEarned={quest.xpEarned}
           coinsEarned={quest.coinsEarned}
         />
-      )}
+      ) : null}
 
-      {quest.error && (
-        <div
+      {quest.error ? (
+        <Card
           role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="border-destructive/20 bg-destructive-soft"
         >
-          <span className="font-semibold">
-            Помилка:
-          </span>{" "}
-          {quest.error}
-        </div>
-      )}
+          <CardContent className="py-4 text-sm text-red-700 dark:text-red-300">
+            <span className="font-semibold">Помилка:</span> {quest.error}
+          </CardContent>
+        </Card>
+      ) : null}
 
       <SceneRenderer
         scene={quest.scene}
@@ -145,20 +159,13 @@ export function QuestPlayer({
         }}
       />
 
-      {!livingNPC &&
-        quest.evaluation?.feedback && (
-          <AIFeedbackCard
-  feedback={
-    quest.evaluation.feedback
-  }
-  isCorrect={
-    quest.evaluation.isCorrect
-  }
-  grade={
-    quest.evaluation.grade
-  }
-/>
-        )}
+      {!livingNPC && quest.evaluation?.feedback ? (
+        <AIFeedbackCard
+          feedback={quest.evaluation.feedback}
+          isCorrect={quest.evaluation.isCorrect}
+          grade={quest.evaluation.grade}
+        />
+      ) : null}
     </main>
   );
 }

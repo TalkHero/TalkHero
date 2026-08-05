@@ -1,9 +1,14 @@
-"use client";
+﻿"use client";
 
-import type {
-  PublicQuestScene,
-  QuestSceneEvaluation,
-} from "@/lib/quests";
+import type { PublicQuestScene, QuestSceneEvaluation } from "@/lib/quests";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 import { AIConversationScene } from "./scenes/AIConversationScene";
 import { SCENE_REGISTRY } from "./SceneRegistry";
@@ -27,9 +32,7 @@ export function SceneRenderer({
     return null;
   }
 
-  if (
-    scene.metadata.aiConversation === true
-  ) {
+  if (scene.metadata.aiConversation === true) {
     return (
       <AIConversationScene
         scene={scene}
@@ -40,26 +43,28 @@ export function SceneRenderer({
     );
   }
 
-  const SceneComponent =
-    SCENE_REGISTRY[scene.sceneType];
+  const SceneComponent = SCENE_REGISTRY[scene.sceneType];
 
   if (!SceneComponent) {
     return (
-      <section
-        role="alert"
-        className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900"
-      >
-        <h2 className="font-semibold">
-          Цей тип сцени ще не підтримується
-        </h2>
+      <Card role="alert" className="border-warning/20 bg-warning-soft">
+        <CardHeader>
+          <CardTitle className="text-amber-800 dark:text-amber-200">
+            Цей тип сцени ще не підтримується
+          </CardTitle>
 
-        <p className="mt-2 text-sm">
+          <CardDescription className="text-amber-700 dark:text-amber-300">
+            Рушій не знайшов компонент для відображення поточної сцени.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="pt-0 text-sm text-amber-800 dark:text-amber-200">
           Тип сцени:{" "}
-          <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono">
+          <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono dark:bg-amber-950">
             {scene.sceneType}
           </code>
-        </p>
-      </section>
+        </CardContent>
+      </Card>
     );
   }
 
