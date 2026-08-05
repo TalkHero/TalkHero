@@ -1,11 +1,6 @@
-"use client";
+﻿"use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type UseNPCSpeechOptions = {
   text: string;
@@ -22,17 +17,15 @@ export function useNPCSpeech({
   voice,
   instructions,
 }: UseNPCSpeechOptions) {
-  const audioRef =
-    useRef<HTMLAudioElement | null>(null);
-  const objectUrlRef =
-    useRef<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [loading, setLoading] =
-    useState(false);
-  const [playing, setPlaying] =
-    useState(false);
-  const [error, setError] =
-    useState<string | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+
+  const [loading, setLoading] = useState(false);
+
+  const [playing, setPlaying] = useState(false);
+
+  const [error, setError] = useState<string | null>(null);
 
   const cleanupAudio = useCallback(() => {
     if (audioRef.current) {
@@ -42,9 +35,8 @@ export function useNPCSpeech({
     }
 
     if (objectUrlRef.current) {
-      URL.revokeObjectURL(
-        objectUrlRef.current,
-      );
+      URL.revokeObjectURL(objectUrlRef.current);
+
       objectUrlRef.current = null;
     }
 
@@ -66,9 +58,8 @@ export function useNPCSpeech({
 
   const play = useCallback(async () => {
     if (!voice || !text.trim()) {
-      setError(
-        "Для цього персонажа голос ще не налаштовано.",
-      );
+      setError("Для цього персонажа озвучення ще не налаштовано.");
+
       return;
     }
 
@@ -81,35 +72,29 @@ export function useNPCSpeech({
     setError(null);
 
     try {
-      const response = await fetch(
-        "/api/tts",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            text,
-            voice,
-            instructions,
-          }),
+      const response = await fetch("/api/tts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          text,
+          voice,
+          instructions,
+        }),
+      });
 
       if (!response.ok) {
-        let message =
-          "Не вдалося завантажити озвучення.";
+        let message = "Не вдалося завантажити озвучення.";
 
         try {
-          const result =
-            (await response.json()) as TTSFailure;
+          const result = (await response.json()) as TTSFailure;
 
           if (result.error) {
             message = result.error;
           }
         } catch {
-          // Сервер міг повернути не JSON.
+          // Сервер міг повернути відповідь не у форматі JSON.
         }
 
         throw new Error(message);
@@ -118,31 +103,22 @@ export function useNPCSpeech({
       cleanupAudio();
 
       const blob = await response.blob();
-      const objectUrl =
-        URL.createObjectURL(blob);
+      const objectUrl = URL.createObjectURL(blob);
+
       const audio = new Audio(objectUrl);
 
       objectUrlRef.current = objectUrl;
       audioRef.current = audio;
 
-      audio.addEventListener(
-        "play",
-        () => setPlaying(true),
-        { once: true },
-      );
+      audio.addEventListener("play", () => setPlaying(true), { once: true });
 
-      audio.addEventListener(
-        "ended",
-        cleanupAudio,
-        { once: true },
-      );
+      audio.addEventListener("ended", cleanupAudio, { once: true });
 
       audio.addEventListener(
         "error",
         () => {
-          setError(
-            "Браузер не зміг відтворити аудіо.",
-          );
+          setError("Браузеру не вдалося відтворити аудіо.");
+
           cleanupAudio();
         },
         { once: true },
@@ -160,14 +136,7 @@ export function useNPCSpeech({
     } finally {
       setLoading(false);
     }
-  }, [
-    cleanupAudio,
-    instructions,
-    playing,
-    stop,
-    text,
-    voice,
-  ]);
+  }, [cleanupAudio, instructions, playing, stop, text, voice]);
 
   return {
     loading,
