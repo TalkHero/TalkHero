@@ -1,0 +1,412 @@
+{
+  "campaignSlug": "english-basics",
+  "episodeSlug": "first-contact",
+  "slug": "clothes-shop",
+  "title": "At the Clothes Shop",
+  "description": "Find a T-shirt, ask for the right size and colour, try it on and pay.",
+  "questType": "conversation",
+  "cefrLevel": "A1",
+  "orderIndex": 10,
+  "estimatedMinutes": 10,
+  "xpReward": 70,
+  "coinReward": 24,
+  "act": {
+    "code": "main",
+    "title": "Shopping for clothes",
+    "description": "Choose an item, try it on and complete the purchase."
+  },
+  "adventure": {
+    "slug": "london-first-day",
+    "location": "clothes-shop"
+  },
+  "metadata": {
+    "templateCategory": "shopping",
+    "staticTest": true
+  },
+  "scenes": [
+    {
+      "code": "intro",
+      "type": "narration",
+      "speaker": "Емма",
+      "content": "Ви зайшли до магазину одягу. Потрібно знайти футболку, попросити потрібний розмір і колір, приміряти її та оплатити покупку.",
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "encouraging"
+      }
+    },
+    {
+      "code": "assistant-greeting",
+      "type": "dialogue",
+      "speaker": "Chloe",
+      "content": "Hello! Can I help you find something?",
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕",
+        "emotion": "friendly"
+      }
+    },
+    {
+      "code": "looking-choice",
+      "type": "choice",
+      "speaker": "Chloe",
+      "content": "Choose the correct response.",
+      "prompt": "Ви шукаєте футболку.",
+      "options": [
+        {
+          "id": "tshirt",
+          "text": "Yes, I'm looking for a T-shirt.",
+          "value": "tshirt"
+        },
+        {
+          "id": "ticket",
+          "text": "I need a return ticket.",
+          "value": "ticket"
+        },
+        {
+          "id": "medicine",
+          "text": "I have a headache.",
+          "value": "medicine"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "tshirt"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви чітко пояснили, що шукаєте.",
+        "feedbackIncorrect": "Оберіть фразу про футболку."
+      },
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕",
+        "goal": "state what you are looking for"
+      }
+    },
+    {
+      "code": "colour-dialogue",
+      "type": "dialogue",
+      "speaker": "Chloe",
+      "content": "Of course. What colour would you like?",
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕"
+      }
+    },
+    {
+      "code": "colour-input",
+      "type": "input",
+      "speaker": "Chloe",
+      "content": "What colour would you like?",
+      "prompt": "Напишіть, що ви хотіли б синю футболку.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I would like a blue T-shirt",
+          "I'd like a blue T-shirt",
+          "A blue T-shirt please",
+          "A blue T-shirt, please"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ви правильно назвали колір.",
+        "feedbackIncorrect": "Спробуйте: I'd like a blue T-shirt."
+      },
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕",
+        "goal": "choose a colour"
+      }
+    },
+    {
+      "code": "size-dialogue",
+      "type": "dialogue",
+      "speaker": "Chloe",
+      "content": "What size do you need?",
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕"
+      }
+    },
+    {
+      "code": "size-choice",
+      "type": "choice",
+      "speaker": "Chloe",
+      "content": "Choose the correct answer.",
+      "prompt": "Вам потрібен середній розмір.",
+      "options": [
+        {
+          "id": "medium",
+          "text": "Medium, please.",
+          "value": "medium"
+        },
+        {
+          "id": "platform",
+          "text": "Platform five, please.",
+          "value": "platform"
+        },
+        {
+          "id": "prescription",
+          "text": "Do I need a prescription?",
+          "value": "prescription"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "medium"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно — medium означає середній розмір.",
+        "feedbackIncorrect": "Оберіть Medium, please."
+      },
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕",
+        "goal": "choose a size"
+      }
+    },
+    {
+      "code": "stock-dialogue",
+      "type": "dialogue",
+      "speaker": "Chloe",
+      "content": "Here you are. This one is medium.",
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕"
+      }
+    },
+    {
+      "code": "try-on-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Чи можу я це приміряти?",
+      "prompt": "Перекладіть англійською.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Can I try it on",
+          "Can I try it on?",
+          "Could I try it on",
+          "Could I try it on?"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Відмінно! Це природне питання в магазині одягу.",
+        "feedbackIncorrect": "Спробуйте: Can I try it on?"
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "goal": "ask to try on clothes"
+      }
+    },
+    {
+      "code": "fitting-room-dialogue",
+      "type": "dialogue",
+      "speaker": "Chloe",
+      "content": "Certainly. The fitting room is over there, next to the mirrors.",
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕"
+      }
+    },
+    {
+      "code": "fitting-room-choice",
+      "type": "choice",
+      "speaker": "Chloe",
+      "content": "Where is the fitting room?",
+      "prompt": "Оберіть правильну відповідь.",
+      "options": [
+        {
+          "id": "mirrors",
+          "text": "Next to the mirrors.",
+          "value": "mirrors"
+        },
+        {
+          "id": "checkout",
+          "text": "At the checkout.",
+          "value": "checkout"
+        },
+        {
+          "id": "entrance",
+          "text": "Outside the entrance.",
+          "value": "entrance"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "mirrors"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Так, примірочна знаходиться біля дзеркал.",
+        "feedbackIncorrect": "Оберіть Next to the mirrors."
+      },
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕",
+        "goal": "understand fitting room location"
+      }
+    },
+    {
+      "code": "fit-dialogue",
+      "type": "dialogue",
+      "speaker": "Chloe",
+      "content": "How does it fit?",
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕"
+      }
+    },
+    {
+      "code": "fit-input",
+      "type": "input",
+      "speaker": "Chloe",
+      "content": "How does it fit?",
+      "prompt": "Напишіть, що футболка трохи завелика.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "It is a little too big",
+          "It's a little too big",
+          "It is slightly too big",
+          "It's slightly too big"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Добре! Ви правильно описали посадку одягу.",
+        "feedbackIncorrect": "Спробуйте: It's a little too big."
+      },
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕",
+        "goal": "describe the fit"
+      }
+    },
+    {
+      "code": "smaller-dialogue",
+      "type": "dialogue",
+      "speaker": "Chloe",
+      "content": "No problem. I can bring you a small one.",
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕"
+      }
+    },
+    {
+      "code": "buy-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Я візьму її.",
+      "prompt": "Перекладіть англійською.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I will take it",
+          "I'll take it"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! I'll take it означає, що ви вирішили купити товар.",
+        "feedbackIncorrect": "Спробуйте: I'll take it."
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "goal": "confirm the purchase"
+      }
+    },
+    {
+      "code": "payment-dialogue",
+      "type": "dialogue",
+      "speaker": "Chloe",
+      "content": "Great. That will be twenty pounds. Cash or card?",
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕"
+      }
+    },
+    {
+      "code": "payment-choice",
+      "type": "choice",
+      "speaker": "Chloe",
+      "content": "Choose your payment method.",
+      "prompt": "Ви платите карткою.",
+      "options": [
+        {
+          "id": "card",
+          "text": "By card, please.",
+          "value": "card"
+        },
+        {
+          "id": "fitting",
+          "text": "Where is the fitting room?",
+          "value": "fitting"
+        },
+        {
+          "id": "size",
+          "text": "Do you have this in medium?",
+          "value": "size"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "card"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ви обрали оплату карткою.",
+        "feedbackIncorrect": "Оберіть By card, please."
+      },
+      "metadata": {
+        "role": "Sales assistant",
+        "avatar": "👕",
+        "goal": "pay for the item"
+      }
+    },
+    {
+      "code": "summary",
+      "type": "completion",
+      "speaker": "Емма",
+      "content": "Ви знайшли футболку, обрали колір і розмір, приміряли її, попросили менший розмір та оплатили покупку.",
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🎉",
+        "emotion": "celebrating",
+        "learnedWords": [
+          "T-shirt",
+          "size",
+          "medium",
+          "small",
+          "fitting room",
+          "try on",
+          "too big",
+          "I'll take it",
+          "receipt"
+        ]
+      }
+    }
+  ]
+}

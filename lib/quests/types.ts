@@ -1,4 +1,4 @@
-export type QuestCefrLevel =
+﻿export type QuestCefrLevel =
   | "A1"
   | "A2"
   | "B1"
@@ -23,6 +23,8 @@ export type QuestSceneType =
   | "dialogue"
   | "choice"
   | "input"
+  | "translate"
+  | "voice"
   | "completion";
 
 export type QuestRunStatus =
@@ -38,7 +40,43 @@ export type QuestRunEventType =
   | "scene_completed"
   | "quest_completed";
 
-export type QuestJsonObject = Record<string, unknown>;
+export type QuestJsonObject =
+  Record<string, unknown>;
+
+export type LearningFeedbackCategory =
+  | "grammar"
+  | "vocabulary"
+  | "politeness"
+  | "pronunciation"
+  | "natural"
+  | "culture";
+
+export type LearningFeedback = {
+  encouragement: string;
+
+  naturalAnswer?: string;
+
+  explanation: string;
+
+  remember?: string;
+
+  npcReply?: string;
+
+  category?: LearningFeedbackCategory;
+
+  errorType?:
+    | "grammar"
+    | "vocabulary"
+    | "word_order"
+    | "naturalness"
+    | "politeness"
+    | "relevance"
+    | "none";
+
+  originalFragment?: string;
+
+  correctedFragment?: string;
+};
 
 export type QuestSceneOption = {
   id: string;
@@ -55,10 +93,8 @@ export type QuestExpectedAnswer = {
   caseSensitive?: boolean;
 };
 
-export type QuestBranchingConfig = Record<
-  string,
-  string
->;
+export type QuestBranchingConfig =
+  Record<string, string>;
 
 export type QuestEvaluationConfig = {
   mode?:
@@ -67,13 +103,11 @@ export type QuestEvaluationConfig = {
     | "contains"
     | "manual"
     | "ai";
-
   points?: number;
   allowRetry?: boolean;
   maxAttempts?: number;
   feedbackCorrect?: string;
   feedbackIncorrect?: string;
-
   metadata?: QuestJsonObject;
 };
 
@@ -147,10 +181,12 @@ export type QuestSceneRecord = {
   content: string;
   prompt: string | null;
   options: QuestSceneOption[];
-  expected_answer: QuestExpectedAnswer | null;
+  expected_answer:
+    QuestExpectedAnswer | null;
   next_scene_code: string | null;
   branching: QuestBranchingConfig;
-  evaluation_config: QuestEvaluationConfig;
+  evaluation_config:
+    QuestEvaluationConfig;
   metadata: QuestJsonObject;
   created_at: string;
   updated_at: string;
@@ -182,7 +218,8 @@ export type QuestRunEventRecord = {
   scene_code: string;
   event_type: QuestRunEventType;
   user_input: unknown;
-  evaluation: QuestJsonObject | null;
+  evaluation:
+    QuestJsonObject | null;
   is_correct: boolean | null;
   score_awarded: number | null;
   response_time_ms: number | null;
@@ -260,11 +297,28 @@ export type StartedQuest = {
   scene: PublicQuestScene;
 };
 
+export type QuestEvaluationGrade =
+  | "correct"
+  | "almost"
+  | "incorrect";
+
 export type QuestSceneEvaluation = {
   isCorrect: boolean | null;
+
+  grade:
+    | QuestEvaluationGrade
+    | null;
+
   scoreAwarded: number;
-  feedback: string | null;
+
+  feedback:
+    | string
+    | LearningFeedback
+    | null;
+
   nextSceneCode: string | null;
+
+  metadata: QuestJsonObject;
 };
 
 export type SubmitQuestSceneResult = {
@@ -277,3 +331,4 @@ export type SubmitQuestSceneResult = {
   evaluation: QuestSceneEvaluation;
   scene: PublicQuestScene | null;
 };
+

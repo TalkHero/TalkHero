@@ -1,0 +1,364 @@
+{
+  "campaignSlug": "english-basics",
+  "episodeSlug": "first-contact",
+  "slug": "restaurant",
+  "title": "At the Restaurant",
+  "description": "Reserve a table, order a meal, ask about ingredients and request the bill.",
+  "questType": "conversation",
+  "cefrLevel": "A2",
+  "orderIndex": 4,
+  "estimatedMinutes": 12,
+  "xpReward": 75,
+  "coinReward": 25,
+  "act": {
+    "code": "main",
+    "title": "Dinner in London",
+    "description": "Speak with the waiter and complete your meal."
+  },
+  "adventure": {
+    "slug": "london-first-day",
+    "location": "restaurant"
+  },
+  "metadata": {
+    "templateCategory": "food",
+    "staticTest": true
+  },
+  "scenes": [
+    {
+      "code": "intro",
+      "type": "narration",
+      "speaker": "Емма",
+      "content": "Ви прийшли до ресторану. Потрібно отримати столик, зробити замовлення, уточнити склад страви та попросити рахунок.",
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "encouraging"
+      }
+    },
+    {
+      "code": "waiter-greeting",
+      "type": "dialogue",
+      "speaker": "James",
+      "content": "Good evening. Do you have a reservation?",
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️",
+        "emotion": "friendly"
+      }
+    },
+    {
+      "code": "reservation-choice",
+      "type": "choice",
+      "speaker": "James",
+      "content": "Choose the correct response.",
+      "prompt": "У вас немає бронювання.",
+      "options": [
+        {
+          "id": "no-reservation",
+          "text": "No, I don't. Do you have a table for one?",
+          "value": "no-reservation"
+        },
+        {
+          "id": "hotel",
+          "text": "I have a hotel reservation.",
+          "value": "hotel"
+        },
+        {
+          "id": "airport",
+          "text": "Where is gate B16?",
+          "value": "airport"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "no-reservation"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви чітко пояснили, що не маєте бронювання.",
+        "feedbackIncorrect": "Оберіть фразу про столик без бронювання."
+      },
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️",
+        "goal": "ask for a table"
+      }
+    },
+    {
+      "code": "table-dialogue",
+      "type": "dialogue",
+      "speaker": "James",
+      "content": "Certainly. Please follow me. Here is the menu.",
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️"
+      }
+    },
+    {
+      "code": "starter-input",
+      "type": "input",
+      "speaker": "James",
+      "content": "Would you like a starter?",
+      "prompt": "Напишіть, що ви хотіли б томатний суп.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I would like the tomato soup",
+          "I'd like the tomato soup",
+          "The tomato soup please",
+          "Tomato soup please"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ви природно замовили першу страву.",
+        "feedbackIncorrect": "Спробуйте: I'd like the tomato soup."
+      },
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️",
+        "goal": "order a starter"
+      }
+    },
+    {
+      "code": "main-dialogue",
+      "type": "dialogue",
+      "speaker": "James",
+      "content": "And what would you like for your main course?",
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️"
+      }
+    },
+    {
+      "code": "main-choice",
+      "type": "choice",
+      "speaker": "James",
+      "content": "Choose a polite main-course order.",
+      "prompt": "Ви хочете курку з овочами.",
+      "options": [
+        {
+          "id": "chicken",
+          "text": "Could I have the chicken with vegetables, please?",
+          "value": "chicken"
+        },
+        {
+          "id": "ticket",
+          "text": "A single ticket, please.",
+          "value": "ticket"
+        },
+        {
+          "id": "room",
+          "text": "I need a room for one night.",
+          "value": "room"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "chicken"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Це ввічливе замовлення основної страви.",
+        "feedbackIncorrect": "Оберіть фразу про курку з овочами."
+      },
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️",
+        "goal": "order main course"
+      }
+    },
+    {
+      "code": "allergy-dialogue",
+      "type": "dialogue",
+      "speaker": "James",
+      "content": "Of course. Do you have any allergies?",
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️"
+      }
+    },
+    {
+      "code": "allergy-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "У мене алергія на горіхи.",
+      "prompt": "Перекладіть англійською.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I am allergic to nuts",
+          "I'm allergic to nuts",
+          "I have a nut allergy"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Відмінно! Ви правильно повідомили про алергію.",
+        "feedbackIncorrect": "Спробуйте: I'm allergic to nuts."
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "goal": "state allergy"
+      }
+    },
+    {
+      "code": "drink-dialogue",
+      "type": "dialogue",
+      "speaker": "James",
+      "content": "Thank you for telling me. What would you like to drink?",
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️"
+      }
+    },
+    {
+      "code": "drink-input",
+      "type": "input",
+      "speaker": "James",
+      "content": "What would you like to drink?",
+      "prompt": "Замовте негазовану воду.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Still water please",
+          "Still water, please",
+          "I would like still water",
+          "I'd like still water"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Добре! Still water означає негазовану воду.",
+        "feedbackIncorrect": "Спробуйте: Still water, please."
+      },
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️",
+        "goal": "order a drink"
+      }
+    },
+    {
+      "code": "dessert-dialogue",
+      "type": "dialogue",
+      "speaker": "James",
+      "content": "Would you like to see the dessert menu?",
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️"
+      }
+    },
+    {
+      "code": "dessert-choice",
+      "type": "choice",
+      "speaker": "James",
+      "content": "Choose a polite refusal.",
+      "prompt": "Ви не хочете десерт.",
+      "options": [
+        {
+          "id": "no-dessert",
+          "text": "No, thank you. I'm full.",
+          "value": "no-dessert"
+        },
+        {
+          "id": "platform",
+          "text": "Which platform is it?",
+          "value": "platform"
+        },
+        {
+          "id": "passport",
+          "text": "Here is my passport.",
+          "value": "passport"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "no-dessert"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ви ввічливо відмовилися.",
+        "feedbackIncorrect": "Оберіть No, thank you. I'm full."
+      },
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️",
+        "goal": "decline dessert"
+      }
+    },
+    {
+      "code": "bill-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Можна рахунок, будь ласка?",
+      "prompt": "Перекладіть англійською.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Can I have the bill please",
+          "Can I have the bill, please",
+          "Could I have the bill please",
+          "Could I have the bill, please",
+          "The bill please",
+          "The bill, please"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Це стандартне прохання принести рахунок.",
+        "feedbackIncorrect": "Спробуйте: Could I have the bill, please?"
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "goal": "ask for the bill"
+      }
+    },
+    {
+      "code": "final-dialogue",
+      "type": "dialogue",
+      "speaker": "James",
+      "content": "Certainly. Here is your bill. Thank you for visiting us!",
+      "metadata": {
+        "role": "Waiter",
+        "avatar": "🍽️",
+        "emotion": "happy"
+      }
+    },
+    {
+      "code": "summary",
+      "type": "completion",
+      "speaker": "Емма",
+      "content": "Ви отримали столик, замовили страви й напій, повідомили про алергію та попросили рахунок.",
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🎉",
+        "emotion": "celebrating",
+        "learnedWords": [
+          "reservation",
+          "starter",
+          "main course",
+          "allergic",
+          "still water",
+          "dessert",
+          "bill"
+        ]
+      }
+    }
+  ]
+}

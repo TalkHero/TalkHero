@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
+import type { KeyboardEvent } from "react";
 import type { PublicQuestScene } from "@/lib/quests";
 
-type Props = {
+import { SceneShell } from "./SceneShell";
+
+type InputSceneProps = {
   scene: PublicQuestScene;
   loading?: boolean;
   onSubmit: (value: unknown) => Promise<void>;
@@ -16,8 +22,12 @@ export function InputScene({
   scene,
   loading = false,
   onSubmit,
-}: Props) {
+}: InputSceneProps) {
   const [value, setValue] = useState("");
+
+  useEffect(() => {
+    setValue("");
+  }, [scene.id]);
 
   const trimmed = value.trim();
 
@@ -27,15 +37,15 @@ export function InputScene({
     !loading;
 
   async function handleSubmit() {
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      return;
+    }
 
     await onSubmit(trimmed);
-
-    setValue("");
   }
 
   async function handleKeyDown(
-    event: React.KeyboardEvent<HTMLTextAreaElement>,
+    event: KeyboardEvent<HTMLTextAreaElement>,
   ) {
     if (
       event.key === "Enter" &&
@@ -47,54 +57,52 @@ export function InputScene({
   }
 
   return (
-    <div className="space-y-6">
+    <SceneShell
+      title={scene.prompt}
+      description={scene.content}
+      footer={
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-sm text-slate-500">
+            {value.length} із {MAX_LENGTH} символів
+          </span>
 
-      <div>
-
-        <h2 className="text-xl font-semibold">
-          {scene.prompt}
-        </h2>
-
-        {scene.content && (
-          <p className="mt-2 text-gray-600">
-            {scene.content}
-          </p>
-        )}
-
-      </div>
+          <button
+            type="button"
+            disabled={!canSubmit}
+            onClick={() => {
+              void handleSubmit();
+            }}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loading
+              ? "Надсилання…"
+              : "Надіслати"}
+          </button>
+        </div>
+      }
+    >
+      <label
+        htmlFor={`quest-answer-${scene.id}`}
+        className="sr-only"
+      >
+        Ваша відповідь
+      </label>
 
       <textarea
+        id={`quest-answer-${scene.id}`}
         value={value}
         disabled={loading}
         onChange={(event) =>
           setValue(event.target.value)
         }
-        onKeyDown={handleKeyDown}
+        onKeyDown={(event) => {
+          void handleKeyDown(event);
+        }}
         rows={6}
-        placeholder="Type your answer..."
+        placeholder="Введіть відповідь…"
         maxLength={MAX_LENGTH}
-        className="w-full rounded-xl border border-gray-300 p-4 outline-none transition focus:border-blue-500"
+        className="w-full resize-y rounded-2xl border border-slate-300 bg-white p-4 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70"
       />
-
-      <div className="flex items-center justify-between">
-
-        <span className="text-sm text-gray-500">
-          {trimmed.length}/{MAX_LENGTH}
-        </span>
-
-        <button
-          type="button"
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-          className="rounded-lg bg-blue-600 px-5 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {loading
-            ? "Sending..."
-            : "Send"}
-        </button>
-
-      </div>
-
-    </div>
+    </SceneShell>
   );
 }

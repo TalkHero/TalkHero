@@ -239,20 +239,29 @@ export function evaluateStaticScene({
   }
 
   if (mode === "manual") {
-    return {
-      mode,
-      isCorrect: null,
-      scoreAwarded: 0,
-      feedback: null,
-      nextSceneCode:
-        scene.next_scene_code,
-      normalizedInput: userInput,
-      metadata: {
-        attemptNumber,
-        requiresManualReview: true,
-      },
-    };
-  }
+  return {
+    mode,
+
+    isCorrect: null,
+
+    grade: null,
+
+    scoreAwarded: 0,
+
+    feedback: null,
+
+    nextSceneCode:
+      scene.next_scene_code,
+
+    normalizedInput:
+      userInput,
+
+    metadata: {
+      attemptNumber,
+      requiresManualReview: true,
+    },
+  };
+}
 
   const acceptedAnswers =
     getAcceptedAnswers(
@@ -302,6 +311,9 @@ export function evaluateStaticScene({
   return {
     mode,
     isCorrect,
+    grade: isCorrect
+      ? "correct"
+      : "incorrect",
     scoreAwarded: isCorrect ? points : 0,
     feedback: isCorrect
       ? scene.evaluation_config

@@ -1,6 +1,11 @@
 import "server-only";
 
 import { completeQuest } from "./completion";
+import {
+  listRecentConversationMessages,
+  recordConversationMessage,
+  toConversationHistoryJson,
+} from "./conversation-messages";
 import { QuestEngineError } from "./errors";
 import { evaluateQuestScene } from "./evaluation";
 import { resolveNextScene } from "./progression";
@@ -36,24 +41,39 @@ export type SubmitQuestSceneInput = {
 
 type AttemptMap = Record<string, number>;
 
-function asJsonObject(value: unknown): QuestJsonObject {
-  if (value && typeof value === "object" && !Array.isArray(value)) {
+function asJsonObject(
+  value: unknown,
+): QuestJsonObject {
+  if (
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+  ) {
     return value as QuestJsonObject;
   }
 
   return {};
 }
 
-function getAttemptMap(state: QuestJsonObject): AttemptMap {
+function getAttemptMap(
+  state: QuestJsonObject,
+): AttemptMap {
   const raw = state.sceneAttempts;
 
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+  if (
+    !raw ||
+    typeof raw !== "object" ||
+    Array.isArray(raw)
+  ) {
     return {};
   }
 
   const attempts: AttemptMap = {};
 
-  for (const [key, value] of Object.entries(raw)) {
+  for (
+    const [key, value]
+    of Object.entries(raw)
+  ) {
     if (
       typeof value === "number" &&
       Number.isInteger(value) &&
@@ -77,22 +97,37 @@ function createUpdatedState({
   attemptNumber: number;
   nextScene: QuestSceneRecord | null;
 }): QuestJsonObject {
-  const currentState = asJsonObject(run.state);
-  const attempts = getAttemptMap(currentState);
+  const currentState =
+    asJsonObject(run.state);
+
+  const attempts =
+    getAttemptMap(currentState);
+
+  const {
+    conversationHistory:
+      _conversationHistory,
+    ...persistentState
+  } = currentState;
 
   return {
-    ...currentState,
+    ...persistentState,
     sceneAttempts: {
       ...attempts,
       [scene.id]: attemptNumber,
     },
-    currentActId: nextScene?.act_id ?? scene.act_id,
-    lastCompletedSceneId: scene.id,
-    lastCompletedSceneCode: scene.scene_code,
+    currentActId:
+      nextScene?.act_id ??
+      scene.act_id,
+    lastCompletedSceneId:
+      scene.id,
+    lastCompletedSceneCode:
+      scene.scene_code,
   };
 }
 
-function sanitizeScore(value: number): number {
+function sanitizeScore(
+  value: number,
+): number {
   if (!Number.isFinite(value)) {
     return 0;
   }
@@ -118,9 +153,15 @@ function buildProgress({
   }
 
   return {
-    current: Math.min(completedSceneCount + 1, totalScenes),
+    current: Math.min(
+      completedSceneCount + 1,
+      totalScenes,
+    ),
     total: totalScenes,
-    completed: Math.min(completedSceneCount, totalScenes),
+    completed: Math.min(
+      completedSceneCount,
+      totalScenes,
+    ),
   };
 }
 
@@ -133,17 +174,28 @@ function shouldRetryScene({
   evaluation: QuestSceneEvaluationResult;
   attemptNumber: number;
 }): boolean {
+  const aiConversation =
+    scene.metadata?.aiConversation === true;
+
+  if (aiConversation) {
+    return (
+      evaluation.metadata?.goalReached !== true
+    );
+  }
+
   if (evaluation.isCorrect !== false) {
     return false;
   }
 
-  const allowRetry = scene.evaluation_config?.allowRetry ?? false;
+  const allowRetry =
+    scene.evaluation_config?.allowRetry ?? false;
 
   if (!allowRetry) {
     return false;
   }
 
-  const maxAttempts = scene.evaluation_config?.maxAttempts;
+  const maxAttempts =
+    scene.evaluation_config?.maxAttempts;
 
   if (
     typeof maxAttempts !== "number" ||
@@ -156,13 +208,150 @@ function shouldRetryScene({
   return attemptNumber < maxAttempts;
 }
 
-function toPublicEvaluation(evaluation: QuestSceneEvaluationResult) {
+function toPublicEvaluation(
+  evaluation:
+    QuestSceneEvaluationResult,
+) {
   return {
-    isCorrect: evaluation.isCorrect,
-    scoreAwarded: evaluation.scoreAwarded,
-    feedback: evaluation.feedback,
-    nextSceneCode: evaluation.nextSceneCode,
-  };
+  isCorrect:
+    evaluation.isCorrect,
+
+  grade:
+    evaluation.grade,
+
+  scoreAwarded:
+    evaluation.scoreAwarded,
+
+  feedback:
+    evaluation.feedback,
+
+  nextSceneCode:
+    evaluation.nextSceneCode,
+
+  metadata:
+    evaluation.metadata,
+};
+}
+
+function getMetadataString(
+  metadata: QuestJsonObject,
+  key: string,
+): string | null {
+  const value = metadata[key];
+
+  return typeof value === "string" &&
+    value.trim()
+    ? value.trim()
+    : null;
+}
+
+function getAiNpcReply(
+  evaluation:
+    QuestSceneEvaluationResult,
+): string | null {
+  const value =
+    evaluation.metadata?.npcReply;
+
+  return typeof value === "string" &&
+    value.trim()
+    ? value.trim()
+    : null;
+}
+
+async function saveSubmittedConversation({
+  run,
+  scene,
+  userInput,
+  evaluation,
+  attemptNumber,
+}: {
+  run: QuestRunRecord;
+  scene: QuestSceneRecord;
+  userInput: unknown;
+  evaluation:
+    QuestSceneEvaluationResult;
+  attemptNumber: number;
+}): Promise<void> {
+  const passive =
+    scene.scene_type === "dialogue" ||
+    scene.scene_type === "narration" ||
+    scene.scene_type === "completion";
+
+  if (passive) {
+    await recordConversationMessage({
+      runId: run.id,
+      sceneId: scene.id,
+      messageKey:
+        `scene:${scene.id}:npc`,
+      role: "npc",
+      speaker:
+        scene.speaker ??
+        "Оповідач",
+      content: scene.content,
+      metadata: {
+        sceneCode:
+          scene.scene_code,
+        passive: true,
+      },
+    });
+
+    return;
+  }
+
+  if (
+    typeof userInput === "string" &&
+    userInput.trim()
+  ) {
+    await recordConversationMessage({
+      runId: run.id,
+      sceneId: scene.id,
+      messageKey:
+        `scene:${scene.id}:attempt:${attemptNumber}:user`,
+      role: "user",
+      speaker: "Користувач",
+      content: userInput,
+      metadata: {
+        sceneCode:
+          scene.scene_code,
+        attemptNumber,
+        evaluationMode:
+          evaluation.mode,
+      },
+    });
+  }
+
+  if (evaluation.mode === "ai") {
+    const npcReply =
+      getAiNpcReply(evaluation);
+
+    if (npcReply) {
+      await recordConversationMessage({
+        runId: run.id,
+        sceneId: scene.id,
+        messageKey:
+          `scene:${scene.id}:attempt:${attemptNumber}:npc-ai`,
+        role: "npc",
+        speaker:
+          scene.speaker ??
+          getMetadataString(
+            scene.metadata,
+            "role",
+          ) ??
+          "Персонаж",
+        content: npcReply,
+        metadata: {
+          sceneCode:
+            scene.scene_code,
+          attemptNumber,
+          generatedByAI: true,
+          scorePercent:
+            evaluation.metadata
+              ?.scorePercent ??
+            null,
+        },
+      });
+    }
+  }
 }
 
 async function recordSubmissionEvent({
@@ -176,18 +365,63 @@ async function recordSubmissionEvent({
   run: QuestRunRecord;
   scene: QuestSceneRecord;
   userInput: unknown;
-  evaluation: QuestSceneEvaluationResult;
+  evaluation:
+    QuestSceneEvaluationResult;
   responseTimeMs: number | null;
   attemptNumber: number;
 }): Promise<void> {
-  const evaluationJson: QuestJsonObject = {
-    mode: evaluation.mode,
-    isCorrect: evaluation.isCorrect,
-    scoreAwarded: evaluation.scoreAwarded,
-    feedback: evaluation.feedback,
-    nextSceneCode: evaluation.nextSceneCode,
-    normalizedInput: evaluation.normalizedInput,
-    metadata: evaluation.metadata,
+  const evaluationJson = {
+  mode: evaluation.mode,
+
+  isCorrect: evaluation.isCorrect,
+
+  grade: evaluation.grade,
+
+  scoreAwarded: evaluation.scoreAwarded,
+
+  feedback: evaluation.feedback,
+
+  nextSceneCode: evaluation.nextSceneCode,
+
+  normalizedInput: evaluation.normalizedInput,
+
+  metadata: evaluation.metadata,
+};
+
+    async function recordSubmissionEvent({
+  run,
+  scene,
+  userInput,
+  evaluation,
+  responseTimeMs,
+  attemptNumber,
+}: {
+  run: QuestRunRecord;
+  scene: QuestSceneRecord;
+  userInput: unknown;
+  evaluation:
+    QuestSceneEvaluationResult;
+  responseTimeMs: number | null;
+  attemptNumber: number;
+}): Promise<void> {
+  const evaluationJson:
+    QuestJsonObject = {
+    mode:
+      evaluation.mode,
+    isCorrect:
+      evaluation.isCorrect,
+    grade:
+      evaluation.grade,
+    scoreAwarded:
+      evaluation.scoreAwarded,
+    feedback:
+      evaluation.feedback,
+    nextSceneCode:
+      evaluation.nextSceneCode,
+    normalizedInput:
+      evaluation.normalizedInput,
+    metadata:
+      evaluation.metadata,
   };
 
   await recordQuestEvent({
@@ -198,15 +432,22 @@ async function recordSubmissionEvent({
         ? "choice_selected"
         : "answer_submitted",
     userInput,
-    evaluation: evaluationJson,
-    isCorrect: evaluation.isCorrect,
-    scoreAwarded: evaluation.scoreAwarded,
+    evaluation:
+      evaluationJson,
+    isCorrect:
+      evaluation.isCorrect,
+    scoreAwarded:
+      evaluation.scoreAwarded,
     responseTimeMs,
     metadata: {
       attemptNumber,
-      evaluationMode: evaluation.mode,
+      evaluationMode:
+        evaluation.mode,
+      grade:
+        evaluation.grade,
     },
   });
+}
 }
 
 export async function submitQuestScene({
@@ -230,9 +471,15 @@ export async function submitQuestScene({
     );
   }
 
-  const run = await loadQuestRun(runId, userId);
+  const run =
+    await loadQuestRun(
+      runId,
+      userId,
+    );
 
-  if (run.status !== "in_progress") {
+  if (
+    run.status !== "in_progress"
+  ) {
     throw new QuestEngineError(
       "SCENE_SUBMIT_FAILED",
       "Quest run is not in progress",
@@ -243,36 +490,121 @@ export async function submitQuestScene({
     );
   }
 
-  const quest = await loadQuestById(run.quest_id);
-  const { acts, scenes } = await loadQuestStructure(run.quest_id);
-  const currentScene = findCurrentScene(run, scenes);
+  const quest =
+    await loadQuestById(
+      run.quest_id,
+    );
 
-  const runState = asJsonObject(run.state);
-  const attemptMap = getAttemptMap(runState);
-  const attemptNumber = (attemptMap[currentScene.id] ?? 0) + 1;
+  const { acts, scenes } =
+    await loadQuestStructure(
+      run.quest_id,
+    );
 
-  const evaluation = await evaluateQuestScene(
-    {
-      scene: currentScene,
-      userInput,
-      attemptNumber,
-      runState,
-    },
-    {
-      aiEvaluator,
-    },
-  );
+  const currentScene =
+    findCurrentScene(
+      run,
+      scenes,
+    );
 
-  const normalizedEvaluation: QuestSceneEvaluationResult = {
-    ...evaluation,
-    scoreAwarded: sanitizeScore(evaluation.scoreAwarded),
+  const persistentRunState =
+    asJsonObject(run.state);
+
+  const conversationMessages =
+    await listRecentConversationMessages(
+      run.id,
+      16,
+    );
+
+  const runState:
+    QuestJsonObject = {
+    ...persistentRunState,
+    conversationHistory:
+      toConversationHistoryJson(
+        conversationMessages,
+      ),
   };
+
+  const attemptMap =
+    getAttemptMap(
+      persistentRunState,
+    );
+
+  const attemptNumber =
+    (
+      attemptMap[
+        currentScene.id
+      ] ?? 0
+    ) + 1;
+
+  const isPassiveScene =
+    currentScene.scene_type ===
+      "dialogue" ||
+    currentScene.scene_type ===
+      "narration" ||
+    currentScene.scene_type ===
+      "completion";
+
+  const evaluation:
+    QuestSceneEvaluationResult =
+    isPassiveScene
+      ? {
+          mode: "manual",
+
+          isCorrect: null,
+
+          grade: null,
+
+          scoreAwarded: 0,
+
+          feedback: null,
+
+          nextSceneCode:
+            currentScene.next_scene_code,
+
+          normalizedInput: null,
+
+          metadata: {
+            attemptNumber,
+            passiveScene: true,
+          },
+        }
+      : await evaluateQuestScene(
+          {
+            scene:
+              currentScene,
+            userInput,
+            attemptNumber,
+            runState,
+          },
+          {
+            aiEvaluator,
+          },
+        );
+
+  const normalizedEvaluation:
+    QuestSceneEvaluationResult = {
+    ...evaluation,
+    scoreAwarded:
+      sanitizeScore(
+        evaluation.scoreAwarded,
+      ),
+  };
+
+  await saveSubmittedConversation({
+    run,
+    scene: currentScene,
+    userInput,
+    evaluation:
+      normalizedEvaluation,
+    attemptNumber,
+  });
 
   await recordSubmissionEvent({
     run,
     scene: currentScene,
     userInput,
-    evaluation: normalizedEvaluation,
+    evaluation:
+      normalizedEvaluation,
     responseTimeMs,
     attemptNumber,
   });
@@ -280,90 +612,135 @@ export async function submitQuestScene({
   if (
     shouldRetryScene({
       scene: currentScene,
-      evaluation: normalizedEvaluation,
+      evaluation:
+        normalizedEvaluation,
       attemptNumber,
     })
   ) {
-    const retryState = createUpdatedState({
-      run,
-      scene: currentScene,
-      attemptNumber,
-      nextScene: currentScene,
-    });
+    const retryState =
+      createUpdatedState({
+        run,
+        scene:
+          currentScene,
+        attemptNumber,
+        nextScene:
+          currentScene,
+      });
 
-    const updatedRun = await updateQuestRun({
-      runId: run.id,
-      state: retryState,
-    });
+    const updatedRun =
+      await updateQuestRun({
+        runId: run.id,
+        state:
+          retryState,
+      });
 
     await recordQuestEvent({
       runId: run.id,
-      scene: currentScene,
-      eventType: "scene_presented",
+      scene:
+        currentScene,
+      eventType:
+        "scene_presented",
       metadata: {
         resumed: false,
         retry: true,
-        attemptNumber: attemptNumber + 1,
-        actId: currentScene.act_id,
-        orderIndex: currentScene.order_index,
+        attemptNumber:
+          attemptNumber + 1,
+        actId:
+          currentScene.act_id,
+        orderIndex:
+          currentScene.order_index,
       },
     });
 
     return {
       runId: run.id,
       completed: false,
-      score: updatedRun.score,
-      xpEarned: updatedRun.xp_earned,
-      coinsEarned: updatedRun.coins_earned,
-      progress: buildProgress({
-        completedSceneCount: updatedRun.completed_scene_count,
-        totalScenes: scenes.length,
-        completed: false,
-      }),
-      evaluation: toPublicEvaluation(normalizedEvaluation),
-      scene: mapPublicScene(currentScene),
+      score:
+        updatedRun.score,
+      xpEarned:
+        updatedRun.xp_earned,
+      coinsEarned:
+        updatedRun.coins_earned,
+      progress:
+        buildProgress({
+          completedSceneCount:
+            updatedRun
+              .completed_scene_count,
+          totalScenes:
+            scenes.length,
+          completed: false,
+        }),
+      evaluation:
+        toPublicEvaluation(
+          normalizedEvaluation,
+        ),
+      scene:
+        mapPublicScene(
+          currentScene,
+        ),
     };
   }
 
   const nextSceneCode =
-    normalizedEvaluation.nextSceneCode ??
-    currentScene.next_scene_code;
+    normalizedEvaluation
+      .nextSceneCode ??
+    currentScene
+      .next_scene_code;
 
-  const progression = resolveNextScene({
-    currentScene,
-    acts,
-    scenes,
-    nextSceneCode,
-  });
+  const progression =
+    resolveNextScene({
+      currentScene,
+      acts,
+      scenes,
+      nextSceneCode,
+    });
 
   const nextScore =
-    run.score + normalizedEvaluation.scoreAwarded;
+    run.score +
+    normalizedEvaluation
+      .scoreAwarded;
 
-  const completedSceneCount = Math.min(
-    run.completed_scene_count + 1,
-    scenes.length,
-  );
+  const completedSceneCount =
+    Math.min(
+      run.completed_scene_count + 1,
+      scenes.length,
+    );
 
-  const nextState = createUpdatedState({
-    run,
-    scene: currentScene,
-    attemptNumber,
-    nextScene: progression.nextScene,
-  });
+  const nextState =
+    createUpdatedState({
+      run,
+      scene:
+        currentScene,
+      attemptNumber,
+      nextScene:
+        progression.nextScene,
+    });
 
   await recordQuestEvent({
     runId: run.id,
     scene: currentScene,
-    eventType: "scene_completed",
+    eventType:
+      "scene_completed",
     userInput,
-    evaluation: {
-      mode: normalizedEvaluation.mode,
-      feedback: normalizedEvaluation.feedback,
-      nextSceneCode,
-      metadata: normalizedEvaluation.metadata,
-    },
-    isCorrect: normalizedEvaluation.isCorrect,
-    scoreAwarded: normalizedEvaluation.scoreAwarded,
+   evaluation: {
+    mode:
+      normalizedEvaluation.mode,
+
+    grade:
+      normalizedEvaluation.grade,
+
+    feedback:
+      normalizedEvaluation.feedback,
+
+    nextSceneCode,
+
+    metadata:
+      normalizedEvaluation.metadata,
+},
+    isCorrect:
+      normalizedEvaluation.isCorrect,
+    scoreAwarded:
+      normalizedEvaluation.scoreAwarded,
     responseTimeMs,
     metadata: {
       attemptNumber,
@@ -371,69 +748,109 @@ export async function submitQuestScene({
     },
   });
 
-  if (progression.completed || !progression.nextScene) {
-    const completion = await completeQuest({
-      run,
-      finalScene: currentScene,
-      score: nextScore,
-      xpEarned: quest.xp_reward,
-      coinsEarned: quest.coin_reward,
-      completedSceneCount,
-    });
+  if (
+    progression.completed ||
+    !progression.nextScene
+  ) {
+    const completion =
+      await completeQuest({
+        run,
+        finalScene:
+          currentScene,
+        score:
+          nextScore,
+        xpEarned:
+          quest.xp_reward,
+        coinsEarned:
+          quest.coin_reward,
+        completedSceneCount,
+      });
 
     return {
       runId: run.id,
       completed: true,
-      score: completion.score,
-      xpEarned: completion.xpEarned,
-      coinsEarned: completion.coinsEarned,
-      progress: buildProgress({
-        completedSceneCount,
-        totalScenes: scenes.length,
-        completed: true,
-      }),
-      evaluation: toPublicEvaluation(normalizedEvaluation),
+      score:
+        completion.score,
+      xpEarned:
+        completion.xpEarned,
+      coinsEarned:
+        completion.coinsEarned,
+      progress:
+        buildProgress({
+          completedSceneCount,
+          totalScenes:
+            scenes.length,
+          completed: true,
+        }),
+      evaluation:
+        toPublicEvaluation(
+          normalizedEvaluation,
+        ),
       scene: null,
     };
   }
 
-  const nextScene = progression.nextScene;
+  const nextScene =
+    progression.nextScene;
 
-  const updatedRun = await updateQuestRun({
-    runId: run.id,
-    currentSceneId: nextScene.id,
-    currentSceneCode: nextScene.scene_code,
-    completedSceneCount,
-    score: nextScore,
-    state: nextState,
-  });
+  const updatedRun =
+    await updateQuestRun({
+      runId: run.id,
+      currentSceneId:
+        nextScene.id,
+      currentSceneCode:
+        nextScene.scene_code,
+      completedSceneCount,
+      score:
+        nextScore,
+      state:
+        nextState,
+    });
 
   await recordQuestEvent({
     runId: run.id,
     scene: nextScene,
-    eventType: "scene_presented",
+    eventType:
+      "scene_presented",
     metadata: {
       resumed: false,
       retry: false,
-      actId: nextScene.act_id,
-      orderIndex: nextScene.order_index,
-      previousSceneId: currentScene.id,
-      previousSceneCode: currentScene.scene_code,
+      actId:
+        nextScene.act_id,
+      orderIndex:
+        nextScene.order_index,
+      previousSceneId:
+        currentScene.id,
+      previousSceneCode:
+        currentScene.scene_code,
     },
   });
 
   return {
     runId: run.id,
     completed: false,
-    score: updatedRun.score,
-    xpEarned: updatedRun.xp_earned,
-    coinsEarned: updatedRun.coins_earned,
-    progress: buildProgress({
-      completedSceneCount: updatedRun.completed_scene_count,
-      totalScenes: scenes.length,
-      completed: false,
-    }),
-    evaluation: toPublicEvaluation(normalizedEvaluation),
-    scene: mapPublicScene(nextScene),
+    score:
+      updatedRun.score,
+    xpEarned:
+      updatedRun.xp_earned,
+    coinsEarned:
+      updatedRun.coins_earned,
+    progress:
+      buildProgress({
+        completedSceneCount:
+          updatedRun
+            .completed_scene_count,
+        totalScenes:
+          scenes.length,
+        completed: false,
+      }),
+    evaluation:
+      toPublicEvaluation(
+        normalizedEvaluation,
+      ),
+    scene:
+      mapPublicScene(
+        nextScene,
+      ),
   };
 }

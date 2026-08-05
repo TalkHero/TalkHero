@@ -1,0 +1,518 @@
+{
+  "campaignSlug": "english-basics",
+  "episodeSlug": "first-contact",
+  "slug": "pharmacy",
+  "title": "At the Pharmacy",
+  "description": "Describe symptoms, choose medicine, understand dosage instructions and pay.",
+  "questType": "conversation",
+  "cefrLevel": "A1",
+  "orderIndex": 7,
+  "estimatedMinutes": 11,
+  "xpReward": 75,
+  "coinReward": 25,
+  "act": {
+    "code": "main",
+    "title": "At the pharmacy",
+    "description": "Ask a pharmacist for suitable medicine."
+  },
+  "adventure": {
+    "slug": "london-first-day",
+    "location": "pharmacy"
+  },
+  "metadata": {
+    "templateCategory": "health",
+    "staticTest": true
+  },
+  "scenes": [
+    {
+      "code": "intro",
+      "type": "narration",
+      "speaker": "Емма",
+      "content": "Ви зайшли до аптеки. Потрібно описати симптоми, обрати ліки, зрозуміти інструкцію та оплатити покупку.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "encouraging",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "greeting",
+      "type": "dialogue",
+      "speaker": "Emma",
+      "content": "Good afternoon. How can I help you?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "friendly",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "opening-choice",
+      "type": "choice",
+      "speaker": "Emma",
+      "content": "Choose the most suitable response.",
+      "prompt": "У вас болить голова.",
+      "options": [
+        {
+          "id": "headache",
+          "text": "I have a headache.",
+          "value": "headache"
+        },
+        {
+          "id": "ticket",
+          "text": "I need a train ticket.",
+          "value": "ticket"
+        },
+        {
+          "id": "reservation",
+          "text": "I have a reservation.",
+          "value": "reservation"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "headache"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви чітко назвали симптом.",
+        "feedbackIncorrect": "Оберіть фразу I have a headache."
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "describe symptom",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "symptom-question",
+      "type": "dialogue",
+      "speaker": "Emma",
+      "content": "How long have you had it?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "duration-input",
+      "type": "input",
+      "speaker": "Emma",
+      "content": "How long have you had the headache?",
+      "prompt": "Напишіть, що головний біль триває зранку.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Since this morning",
+          "I have had it since this morning",
+          "I've had it since this morning"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Добре! Ви правильно назвали тривалість.",
+        "feedbackIncorrect": "Спробуйте: Since this morning."
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "state duration",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "cough-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "У мене також є кашель.",
+      "prompt": "Перекладіть англійською.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I also have a cough",
+          "I have a cough too",
+          "I also have cough"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ви додали ще один симптом.",
+        "feedbackIncorrect": "Спробуйте: I also have a cough."
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "neutral",
+        "goal": "describe another symptom",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "prescription-question",
+      "type": "dialogue",
+      "speaker": "Emma",
+      "content": "Are you taking any other medicine?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "medicine-choice",
+      "type": "choice",
+      "speaker": "Emma",
+      "content": "Choose the safest simple answer.",
+      "prompt": "Ви зараз не приймаєте інших ліків.",
+      "options": [
+        {
+          "id": "none",
+          "text": "No, I am not taking any other medicine.",
+          "value": "none"
+        },
+        {
+          "id": "platform",
+          "text": "The train leaves from platform five.",
+          "value": "platform"
+        },
+        {
+          "id": "dessert",
+          "text": "I would like the dessert menu.",
+          "value": "dessert"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "none"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Це чітка відповідь фармацевту.",
+        "feedbackIncorrect": "Оберіть відповідь про інші ліки."
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "answer medicine question",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "recommendation",
+      "type": "dialogue",
+      "speaker": "Emma",
+      "content": "I recommend these painkillers. You do not need a prescription.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "helpful",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "tablets-input",
+      "type": "input",
+      "speaker": "Emma",
+      "content": "Would you like these tablets?",
+      "prompt": "Напишіть, що ви візьмете ці таблетки.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I will take these tablets",
+          "I'll take these tablets",
+          "I would like these tablets",
+          "I'd like these tablets"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Добре! Ви підтвердили вибір ліків.",
+        "feedbackIncorrect": "Спробуйте: I'll take these tablets."
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "accept medicine",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "instructions",
+      "type": "dialogue",
+      "speaker": "Emma",
+      "content": "Take one tablet twice a day after meals.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "frequency-choice",
+      "type": "choice",
+      "speaker": "Emma",
+      "content": "How often should you take the medicine?",
+      "prompt": "Оберіть правильну частоту.",
+      "options": [
+        {
+          "id": "twice",
+          "text": "Twice a day.",
+          "value": "twice"
+        },
+        {
+          "id": "once-week",
+          "text": "Once a week.",
+          "value": "once-week"
+        },
+        {
+          "id": "three-hours",
+          "text": "Every three hours.",
+          "value": "three-hours"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "twice"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Так, ліки потрібно приймати двічі на день.",
+        "feedbackIncorrect": "Оберіть Twice a day."
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "understand dosage",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "instruction-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Чи потрібно приймати їх після їжі?",
+      "prompt": "Перекладіть англійською.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Should I take them after meals",
+          "Should I take them after meals?",
+          "Do I need to take them after meals",
+          "Do I need to take them after meals?"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Відмінно! Ви уточнили важливу інструкцію.",
+        "feedbackIncorrect": "Спробуйте: Should I take them after meals?"
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "neutral",
+        "goal": "confirm instructions",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "payment-dialogue",
+      "type": "dialogue",
+      "speaker": "Emma",
+      "content": "Yes, after meals. That will be eight pounds fifty.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "payment-choice",
+      "type": "choice",
+      "speaker": "Emma",
+      "content": "Choose a polite payment response.",
+      "prompt": "Ви платите карткою.",
+      "options": [
+        {
+          "id": "card",
+          "text": "By card, please.",
+          "value": "card"
+        },
+        {
+          "id": "cashier",
+          "text": "Where is the museum?",
+          "value": "cashier"
+        },
+        {
+          "id": "taxi",
+          "text": "Please take me to the station.",
+          "value": "taxi"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "card"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви назвали спосіб оплати.",
+        "feedbackIncorrect": "Оберіть By card, please."
+      },
+      "metadata": {
+        "role": "Pharmacist",
+        "avatar": "💊",
+        "emotion": "neutral",
+        "goal": "pay for medicine",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "summary",
+      "type": "completion",
+      "speaker": "Емма",
+      "content": "Ви описали симптоми, обрали ліки, зрозуміли дозування та оплатили покупку.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🎉",
+        "emotion": "celebrating",
+        "goal": "",
+        "learnedWords": [
+          "headache",
+          "cough",
+          "painkiller",
+          "prescription",
+          "tablet",
+          "twice a day",
+          "after meals"
+        ]
+      }
+    }
+  ]
+}

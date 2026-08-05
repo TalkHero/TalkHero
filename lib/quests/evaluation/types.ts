@@ -28,6 +28,12 @@ export type QuestSceneEvaluationResult = {
 
   normalizedInput: unknown;
   metadata: QuestJsonObject;
+
+  grade:
+  | "correct"
+  | "almost"
+  | "incorrect"
+  | null;
 };
 
 export type AiQuestSceneEvaluator = (

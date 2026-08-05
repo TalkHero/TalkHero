@@ -1,0 +1,501 @@
+{
+  "campaignSlug": "english-basics",
+  "episodeSlug": "first-contact",
+  "slug": "taxi",
+  "title": "Taxi Ride",
+  "description": "Give a destination and address, discuss the route and pay for a taxi ride.",
+  "questType": "conversation",
+  "cefrLevel": "A1",
+  "orderIndex": 8,
+  "estimatedMinutes": 10,
+  "xpReward": 70,
+  "coinReward": 24,
+  "act": {
+    "code": "main",
+    "title": "A London taxi ride",
+    "description": "Reach your destination and complete the fare."
+  },
+  "adventure": {
+    "slug": "london-first-day",
+    "location": "taxi"
+  },
+  "metadata": {
+    "templateCategory": "transport",
+    "staticTest": true
+  },
+  "scenes": [
+    {
+      "code": "intro",
+      "type": "narration",
+      "speaker": "Емма",
+      "content": "Ви сідаєте в лондонське таксі. Потрібно назвати адресу, уточнити час і ціну, а наприкінці оплатити поїздку.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "encouraging",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "driver-greeting",
+      "type": "dialogue",
+      "speaker": "George",
+      "content": "Hello. Where would you like to go?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "friendly",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "destination-choice",
+      "type": "choice",
+      "speaker": "George",
+      "content": "Choose the correct destination request.",
+      "prompt": "Ви їдете до British Museum.",
+      "options": [
+        {
+          "id": "museum",
+          "text": "Please take me to the British Museum.",
+          "value": "museum"
+        },
+        {
+          "id": "medicine",
+          "text": "I need some painkillers.",
+          "value": "medicine"
+        },
+        {
+          "id": "parcel",
+          "text": "I would like to send this parcel.",
+          "value": "parcel"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "museum"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви чітко назвали місце призначення.",
+        "feedbackIncorrect": "Оберіть фразу про British Museum."
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "state destination",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "address-question",
+      "type": "dialogue",
+      "speaker": "George",
+      "content": "Do you have the exact address?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "address-input",
+      "type": "input",
+      "speaker": "George",
+      "content": "What is the address?",
+      "prompt": "Напишіть адресу: Great Russell Street.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Great Russell Street",
+          "It is on Great Russell Street",
+          "It's on Great Russell Street"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Добре! Ви надали адресу.",
+        "feedbackIncorrect": "Спробуйте: Great Russell Street."
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "give address",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "time-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Скільки часу займе поїздка?",
+      "prompt": "Перекладіть англійською.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "How long will the journey take",
+          "How long will the journey take?",
+          "How long will it take",
+          "How long will it take?"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Це природне запитання про тривалість.",
+        "feedbackIncorrect": "Спробуйте: How long will it take?"
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "neutral",
+        "goal": "ask journey time",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "time-answer",
+      "type": "dialogue",
+      "speaker": "George",
+      "content": "It should take about twenty minutes, depending on traffic.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "traffic-choice",
+      "type": "choice",
+      "speaker": "George",
+      "content": "What may change the journey time?",
+      "prompt": "Оберіть правильну відповідь.",
+      "options": [
+        {
+          "id": "traffic",
+          "text": "Traffic.",
+          "value": "traffic"
+        },
+        {
+          "id": "breakfast",
+          "text": "Breakfast.",
+          "value": "breakfast"
+        },
+        {
+          "id": "passport",
+          "text": "A passport.",
+          "value": "passport"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "traffic"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Так, час залежить від дорожнього руху.",
+        "feedbackIncorrect": "Оберіть Traffic."
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "understand traffic",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "route-dialogue",
+      "type": "dialogue",
+      "speaker": "George",
+      "content": "There is heavy traffic ahead. I can take a different route.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "route-input",
+      "type": "input",
+      "speaker": "George",
+      "content": "Would you like me to take a different route?",
+      "prompt": "Погодьтеся на інший маршрут.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Yes please take a different route",
+          "Yes, please take a different route",
+          "Yes that is fine",
+          "Yes, that is fine"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви погодилися змінити маршрут.",
+        "feedbackIncorrect": "Спробуйте: Yes, please take a different route."
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "approve alternate route",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "price-dialogue",
+      "type": "dialogue",
+      "speaker": "George",
+      "content": "We are almost there. The fare is eighteen pounds.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "fare-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Чи можу я заплатити карткою?",
+      "prompt": "Перекладіть англійською.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Can I pay by card",
+          "Can I pay by card?",
+          "Could I pay by card",
+          "Could I pay by card?"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Відмінно! Ви уточнили спосіб оплати.",
+        "feedbackIncorrect": "Спробуйте: Can I pay by card?"
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "neutral",
+        "goal": "ask card payment",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "card-answer",
+      "type": "dialogue",
+      "speaker": "George",
+      "content": "Yes, card is fine.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "receipt-choice",
+      "type": "choice",
+      "speaker": "George",
+      "content": "Would you like a receipt?",
+      "prompt": "Вам потрібна квитанція.",
+      "options": [
+        {
+          "id": "receipt",
+          "text": "Yes, please.",
+          "value": "receipt"
+        },
+        {
+          "id": "platform",
+          "text": "Platform three, please.",
+          "value": "platform"
+        },
+        {
+          "id": "prescription",
+          "text": "Do I need a prescription?",
+          "value": "prescription"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "receipt"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Так, це ввічлива коротка відповідь.",
+        "feedbackIncorrect": "Оберіть Yes, please."
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "neutral",
+        "goal": "request receipt",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "final-dialogue",
+      "type": "dialogue",
+      "speaker": "George",
+      "content": "Here is your receipt. Have a great day!",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Taxi driver",
+        "avatar": "🚕",
+        "emotion": "happy",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "summary",
+      "type": "completion",
+      "speaker": "Емма",
+      "content": "Ви назвали місце й адресу, уточнили тривалість, погодили маршрут, оплатили поїздку та отримали квитанцію.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🎉",
+        "emotion": "celebrating",
+        "goal": "",
+        "learnedWords": [
+          "destination",
+          "address",
+          "traffic",
+          "route",
+          "fare",
+          "pay by card",
+          "receipt"
+        ]
+      }
+    }
+  ]
+}

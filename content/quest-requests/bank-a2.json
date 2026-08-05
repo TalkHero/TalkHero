@@ -1,0 +1,37 @@
+{
+  "theme": "Bank",
+  "title": "At the Bank",
+  "slug": "bank",
+  "category": "services",
+  "cefrLevel": "A2",
+  "sceneCount": 16,
+  "npc": {
+    "name": "Olivia",
+    "role": "Bank clerk",
+    "personality": "professional and patient",
+    "avatar": "🏦"
+  },
+  "situation": "The learner visits a London bank to exchange money, ask about fees, provide identification and confirm the transaction.",
+  "learningGoal": "Complete a simple currency-exchange transaction politely and understand the key conditions.",
+  "vocabulary": [
+    "exchange rate",
+    "fee",
+    "cash",
+    "identification",
+    "receipt",
+    "transaction"
+  ],
+  "grammar": [
+    "I'd like to...",
+    "Could you tell me...?",
+    "How much...?",
+    "Do I need...?"
+  ],
+  "campaignSlug": "english-basics",
+  "episodeSlug": "first-contact",
+  "adventureSlug": "london-first-day",
+  "orderIndex": 6,
+  "estimatedMinutes": 12,
+  "xpReward": 75,
+  "coinReward": 25
+}

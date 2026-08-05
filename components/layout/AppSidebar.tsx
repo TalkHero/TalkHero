@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   Brain,
+  Gamepad2,
   LayoutDashboard,
   MessageCircle,
   Mic,
@@ -17,7 +18,15 @@ type AppSidebarProps = {
   onClose: () => void;
 };
 
-const NAVIGATION = [
+type NavigationItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{
+    className?: string;
+  }>;
+};
+
+const NAVIGATION: NavigationItem[] = [
   {
     href: "/dashboard",
     label: "Головна",
@@ -30,8 +39,13 @@ const NAVIGATION = [
   },
   {
     href: "/speaking",
-    label: "Говоріння",
+    label: "Розмовна практика",
     icon: Mic,
+  },
+  {
+    href: "/adventure",
+    label: "Пригода",
+    icon: Gamepad2,
   },
   {
     href: "/vocabulary",
@@ -45,7 +59,7 @@ const NAVIGATION = [
   },
 ];
 
-const ACCOUNT_NAVIGATION = [
+const ACCOUNT_NAVIGATION: NavigationItem[] = [
   {
     href: "/profile",
     label: "Профіль",
@@ -59,13 +73,7 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
 
-  function renderLink(item: {
-    href: string;
-    label: string;
-    icon: React.ComponentType<{
-      className?: string;
-    }>;
-  }) {
+  function renderLink(item: NavigationItem) {
     const Icon = item.icon;
 
     const active =
@@ -77,6 +85,7 @@ export function AppSidebar({
         key={item.href}
         href={item.href}
         onClick={onClose}
+        aria-current={active ? "page" : undefined}
         className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
           active
             ? "bg-indigo-600 text-white shadow-sm"
@@ -89,6 +98,7 @@ export function AppSidebar({
               ? "text-white"
               : "text-slate-400 group-hover:text-slate-700"
           }`}
+          aria-hidden="true"
         />
 
         <span>{item.label}</span>
@@ -101,7 +111,7 @@ export function AppSidebar({
       {open && (
         <button
           type="button"
-          aria-label="Close navigation"
+          aria-label="Закрити навігацію"
           onClick={onClose}
           className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
         />
@@ -128,7 +138,7 @@ export function AppSidebar({
               </p>
 
               <p className="text-xs text-slate-400">
-                Навчайся з Emma
+                Навчайся з Еммою
               </p>
             </div>
           </Link>
@@ -137,9 +147,9 @@ export function AppSidebar({
             type="button"
             onClick={onClose}
             className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 lg:hidden"
-            aria-label="Close menu"
+            aria-label="Закрити меню"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -149,7 +159,7 @@ export function AppSidebar({
               Навчання
             </p>
 
-            <nav className="space-y-1">
+            <nav aria-label="Основна навігація" className="space-y-1">
               {NAVIGATION.map(renderLink)}
             </nav>
           </div>
@@ -159,7 +169,7 @@ export function AppSidebar({
               Акаунт
             </p>
 
-            <nav className="space-y-1">
+            <nav aria-label="Навігація акаунта" className="space-y-1">
               {ACCOUNT_NAVIGATION.map(renderLink)}
             </nav>
           </div>
@@ -171,11 +181,12 @@ export function AppSidebar({
               </p>
 
               <p className="mt-2 text-sm font-semibold">
-                Збережи свою серію
+                Збережіть свою серію
               </p>
 
               <p className="mt-1 text-xs leading-5 text-slate-300">
-                Пройдіть чат, сесію розмови або повторіть словниковий запас сьогодні.
+                Поспілкуйтеся в чаті, пройдіть розмовну практику
+                або повторіть слова сьогодні.
               </p>
 
               <Link
@@ -183,7 +194,7 @@ export function AppSidebar({
                 onClick={onClose}
                 className="mt-4 flex w-full items-center justify-center rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold transition hover:bg-white/20"
               >
-                Почати огляд
+                Почати повторення
               </Link>
             </div>
           </div>

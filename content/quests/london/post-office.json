@@ -1,0 +1,521 @@
+{
+  "campaignSlug": "english-basics",
+  "episodeSlug": "first-contact",
+  "slug": "post-office",
+  "title": "At the Post Office",
+  "description": "Send an international parcel, choose delivery, complete a form and get tracking.",
+  "questType": "conversation",
+  "cefrLevel": "A2",
+  "orderIndex": 9,
+  "estimatedMinutes": 12,
+  "xpReward": 80,
+  "coinReward": 27,
+  "act": {
+    "code": "main",
+    "title": "Sending a parcel",
+    "description": "Send a tracked parcel to another country."
+  },
+  "adventure": {
+    "slug": "london-first-day",
+    "location": "post-office"
+  },
+  "metadata": {
+    "templateCategory": "services",
+    "staticTest": true
+  },
+  "scenes": [
+    {
+      "code": "intro",
+      "type": "narration",
+      "speaker": "Емма",
+      "content": "Ви прийшли на пошту, щоб відправити посилку в Україну. Потрібно назвати країну, обрати спосіб доставки, заповнити форму й оплатити.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "encouraging",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "clerk-greeting",
+      "type": "dialogue",
+      "speaker": "Henry",
+      "content": "Good morning. What would you like to send?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "friendly",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "item-choice",
+      "type": "choice",
+      "speaker": "Henry",
+      "content": "Choose the correct answer.",
+      "prompt": "Ви хочете відправити посилку.",
+      "options": [
+        {
+          "id": "parcel",
+          "text": "I would like to send this parcel.",
+          "value": "parcel"
+        },
+        {
+          "id": "taxi",
+          "text": "Please take me to the hotel.",
+          "value": "taxi"
+        },
+        {
+          "id": "tablets",
+          "text": "I need these tablets.",
+          "value": "tablets"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "parcel"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви пояснили мету візиту.",
+        "feedbackIncorrect": "Оберіть фразу про відправлення посилки."
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "send parcel",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "destination-question",
+      "type": "dialogue",
+      "speaker": "Henry",
+      "content": "Which country are you sending it to?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "country-input",
+      "type": "input",
+      "speaker": "Henry",
+      "content": "Where is the parcel going?",
+      "prompt": "Напишіть, що посилка прямує до України.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "It is going to Ukraine",
+          "It's going to Ukraine",
+          "To Ukraine"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Добре! Ви назвали країну призначення.",
+        "feedbackIncorrect": "Спробуйте: It's going to Ukraine."
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "state destination country",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "cost-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Скільки коштує доставка?",
+      "prompt": "Перекладіть англійською.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "How much is the delivery",
+          "How much is the delivery?",
+          "How much does delivery cost",
+          "How much does delivery cost?",
+          "How much is postage"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ви правильно запитали про вартість.",
+        "feedbackIncorrect": "Спробуйте: How much does delivery cost?"
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "neutral",
+        "goal": "ask postage cost",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "options-dialogue",
+      "type": "dialogue",
+      "speaker": "Henry",
+      "content": "Standard delivery is twelve pounds. Express delivery is twenty-two pounds.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "delivery-choice",
+      "type": "choice",
+      "speaker": "Henry",
+      "content": "Which option is cheaper?",
+      "prompt": "Оберіть дешевший спосіб доставки.",
+      "options": [
+        {
+          "id": "standard",
+          "text": "Standard delivery.",
+          "value": "standard"
+        },
+        {
+          "id": "express",
+          "text": "Express delivery.",
+          "value": "express"
+        },
+        {
+          "id": "collection",
+          "text": "Hotel collection.",
+          "value": "collection"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "standard"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Standard delivery дешевша.",
+        "feedbackIncorrect": "Оберіть Standard delivery."
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "choose delivery type",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "arrival-dialogue",
+      "type": "dialogue",
+      "speaker": "Henry",
+      "content": "Standard delivery usually takes seven to ten working days.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "arrival-input",
+      "type": "input",
+      "speaker": "Henry",
+      "content": "Do you have any questions?",
+      "prompt": "Запитайте, коли посилка прибуде.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "When will the parcel arrive",
+          "When will the parcel arrive?",
+          "When should the parcel arrive",
+          "When should the parcel arrive?"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви уточнили строк доставки.",
+        "feedbackIncorrect": "Спробуйте: When will the parcel arrive?"
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "ask arrival time",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "form-dialogue",
+      "type": "dialogue",
+      "speaker": "Henry",
+      "content": "Please complete this customs form and write the recipient’s address clearly.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "contents-choice",
+      "type": "choice",
+      "speaker": "Henry",
+      "content": "What information belongs on the customs form?",
+      "prompt": "Оберіть правильну інформацію.",
+      "options": [
+        {
+          "id": "contents",
+          "text": "The contents and value of the parcel.",
+          "value": "contents"
+        },
+        {
+          "id": "platform",
+          "text": "The train platform.",
+          "value": "platform"
+        },
+        {
+          "id": "medicine",
+          "text": "The medicine dosage.",
+          "value": "medicine"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "contents"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Так, потрібно вказати вміст і вартість посилки.",
+        "feedbackIncorrect": "Оберіть інформацію про вміст і вартість."
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "understand customs form",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "tracking-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Чи є номер для відстеження?",
+      "prompt": "Перекладіть англійською.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Is there a tracking number",
+          "Is there a tracking number?",
+          "Does it have a tracking number",
+          "Does it have a tracking number?",
+          "Can I have a tracking number"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Відмінно! Ви запитали про відстеження.",
+        "feedbackIncorrect": "Спробуйте: Is there a tracking number?"
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "neutral",
+        "goal": "ask tracking number",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "payment-dialogue",
+      "type": "dialogue",
+      "speaker": "Henry",
+      "content": "Yes. The tracking number is on your receipt. The total is twelve pounds.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "payment-choice",
+      "type": "choice",
+      "speaker": "Henry",
+      "content": "How would you like to pay?",
+      "prompt": "Ви платите карткою.",
+      "options": [
+        {
+          "id": "card",
+          "text": "By card, please.",
+          "value": "card"
+        },
+        {
+          "id": "taxi",
+          "text": "Take a different route.",
+          "value": "taxi"
+        },
+        {
+          "id": "allergy",
+          "text": "I am allergic to nuts.",
+          "value": "allergy"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "card"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Ви назвали спосіб оплати.",
+        "feedbackIncorrect": "Оберіть By card, please."
+      },
+      "metadata": {
+        "role": "Postal clerk",
+        "avatar": "📮",
+        "emotion": "neutral",
+        "goal": "pay postage",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "summary",
+      "type": "completion",
+      "speaker": "Емма",
+      "content": "Ви відправили посилку, обрали доставку, заповнили митну форму, отримали номер відстеження й оплатили послугу.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🎉",
+        "emotion": "celebrating",
+        "goal": "",
+        "learnedWords": [
+          "parcel",
+          "postage",
+          "standard delivery",
+          "express delivery",
+          "customs form",
+          "recipient",
+          "tracking number"
+        ]
+      }
+    }
+  ]
+}

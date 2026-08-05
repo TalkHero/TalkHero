@@ -2,15 +2,16 @@
 
 import { useEffect } from "react";
 
+import { AIFeedbackCard } from "./AIFeedbackCard";
+import { MissionHUD } from "./MissionHUD";
 import { SceneRenderer } from "./SceneRenderer";
-import { CompletionScene } from "./scenes/CompletionScene";
 import { useQuest } from "./hooks/useQuest";
+import { CompletionScene } from "./scenes/CompletionScene";
 
 export type QuestPlayerProps = {
   campaignSlug: string;
   episodeSlug: string;
   questSlug: string;
-
   onComplete?: () => void;
 };
 
@@ -21,9 +22,10 @@ export function QuestPlayer({
   onComplete,
 }: QuestPlayerProps) {
   const quest = useQuest();
+  const { startQuest } = quest;
 
   useEffect(() => {
-    void quest.startQuest({
+    void startQuest({
       campaignSlug,
       episodeSlug,
       questSlug,
@@ -32,47 +34,55 @@ export function QuestPlayer({
     campaignSlug,
     episodeSlug,
     questSlug,
+    startQuest,
   ]);
 
   useEffect(() => {
     if (quest.completed) {
       onComplete?.();
     }
-  }, [
-    quest.completed,
-    onComplete,
-  ]);
+  }, [quest.completed, onComplete]);
+
+  const restartQuest = () => {
+    void startQuest({
+      campaignSlug,
+      episodeSlug,
+      questSlug,
+    });
+  };
 
   if (quest.loading) {
     return (
-      <div className="flex items-center justify-center rounded-xl border p-8">
-        Loading quest...
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex min-h-56 items-center justify-center rounded-3xl border border-slate-200 bg-white p-8 text-slate-600 shadow-sm"
+      >
+        Завантаження місії…
       </div>
     );
   }
 
-  if (quest.error) {
+  if (quest.error && !quest.scene) {
     return (
-      <div className="space-y-4 rounded-xl border border-red-300 bg-red-50 p-6">
-        <h2 className="text-lg font-semibold text-red-700">
-          Quest error
+      <div
+        role="alert"
+        className="space-y-4 rounded-3xl border border-red-200 bg-red-50 p-6"
+      >
+        <h2 className="text-lg font-semibold text-red-800">
+          Не вдалося відкрити місію
         </h2>
 
-        <p className="text-red-600">
+        <p className="text-red-700">
           {quest.error}
         </p>
 
         <button
-          className="rounded-lg bg-red-600 px-4 py-2 text-white"
-          onClick={() =>
-            void quest.startQuest({
-              campaignSlug,
-              episodeSlug,
-              questSlug,
-            })
-          }
+          type="button"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
+          onClick={restartQuest}
         >
-          Retry
+          Спробувати ще раз
         </button>
       </div>
     );
@@ -80,46 +90,54 @@ export function QuestPlayer({
 
   if (quest.completed) {
     return (
-      <CompletionScene />
+      <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
+        <CompletionScene
+          score={quest.score}
+          xpEarned={quest.xpEarned}
+          coinsEarned={quest.coinsEarned}
+          onRestart={restartQuest}
+        />
+      </main>
     );
   }
 
+  const livingNPC =
+    quest.scene?.metadata
+      .aiConversation === true;
+
   return (
-    <div className="space-y-6">
+    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 sm:px-6">
+      {quest.quest && quest.progress && (
+        <MissionHUD
+          quest={quest.quest}
+          progress={quest.progress}
+          score={quest.score}
+          xpEarned={quest.xpEarned}
+          coinsEarned={quest.coinsEarned}
+        />
+      )}
 
-      {quest.progress && (
-        <div>
-          <div className="mb-2 flex justify-between text-sm">
-            <span>
-              Progress
-            </span>
-
-            <span>
-              {quest.progress.current}
-              {" / "}
-              {quest.progress.total}
-            </span>
-          </div>
-
-          <div className="h-2 overflow-hidden rounded bg-gray-200">
-            <div
-              className="h-full bg-blue-600 transition-all"
-              style={{
-                width: `${(quest.progress.current / quest.progress.total) * 100}%`,
-              }}
-            />
-          </div>
+      {quest.error && (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          <span className="font-semibold">
+            Помилка:
+          </span>{" "}
+          {quest.error}
         </div>
       )}
 
       <SceneRenderer
         scene={quest.scene}
+        evaluation={quest.evaluation}
         loading={quest.submitting}
-        onContinue={() =>
-          quest.submitAnswer({
+        onContinue={() => {
+          void quest.submitAnswer({
             userInput: null,
-          })
-        }
+          });
+        }}
         onSubmit={async (value) => {
           await quest.submitAnswer({
             userInput: value,
@@ -127,20 +145,20 @@ export function QuestPlayer({
         }}
       />
 
-      <div className="flex gap-6 text-sm text-gray-600">
-        <span>
-          Score: {quest.score}
-        </span>
-
-        <span>
-          XP: {quest.xpEarned}
-        </span>
-
-        <span>
-          Coins: {quest.coinsEarned}
-        </span>
-      </div>
-
-    </div>
+      {!livingNPC &&
+        quest.evaluation?.feedback && (
+          <AIFeedbackCard
+  feedback={
+    quest.evaluation.feedback
+  }
+  isCorrect={
+    quest.evaluation.isCorrect
+  }
+  grade={
+    quest.evaluation.grade
+  }
+/>
+        )}
+    </main>
   );
 }

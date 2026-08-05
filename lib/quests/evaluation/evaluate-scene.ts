@@ -1,5 +1,6 @@
 import { QuestEngineError } from "../errors";
 
+import { evaluateAIScene } from "./evaluate-ai-scene";
 import { evaluateStaticScene } from "./evaluate-static-scene";
 
 import type {
@@ -13,13 +14,15 @@ function resolveMode(
   input: EvaluateQuestSceneInput,
 ): QuestSceneEvaluationMode {
   return (
-    input.scene.evaluation_config?.mode ??
+    input.scene.evaluation_config
+      ?.mode ??
     "exact"
   );
 }
 
 function validateAiResult(
-  result: QuestSceneEvaluationResult,
+  result:
+    QuestSceneEvaluationResult,
 ): QuestSceneEvaluationResult {
   if (
     typeof result.scoreAwarded !==
@@ -43,7 +46,8 @@ function validateAiResult(
 
 export async function evaluateQuestScene(
   input: EvaluateQuestSceneInput,
-  options: EvaluateQuestSceneOptions = {},
+  options:
+    EvaluateQuestSceneOptions = {},
 ): Promise<QuestSceneEvaluationResult> {
   const mode = resolveMode(input);
 
@@ -51,25 +55,22 @@ export async function evaluateQuestScene(
     return evaluateStaticScene(input);
   }
 
-  if (!options.aiEvaluator) {
-    throw new QuestEngineError(
-      "SCENE_SUBMIT_FAILED",
-      "AI evaluator is not configured",
-      {
-        sceneId: input.scene.id,
-        sceneCode:
-          input.scene.scene_code,
-      },
-    );
-  }
+  const evaluator =
+    options.aiEvaluator ??
+    evaluateAIScene;
 
   try {
     const result =
-      await options.aiEvaluator(input);
+      await evaluator(input);
 
-    return validateAiResult(result);
+    return validateAiResult(
+      result,
+    );
   } catch (error) {
-    if (error instanceof QuestEngineError) {
+    if (
+      error instanceof
+      QuestEngineError
+    ) {
       throw error;
     }
 
@@ -82,7 +83,8 @@ export async function evaluateQuestScene(
       "SCENE_SUBMIT_FAILED",
       "Failed to evaluate AI scene",
       {
-        sceneId: input.scene.id,
+        sceneId:
+          input.scene.id,
         sceneCode:
           input.scene.scene_code,
       },

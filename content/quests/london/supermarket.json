@@ -1,0 +1,361 @@
+{
+  "campaignSlug": "english-basics",
+  "episodeSlug": "first-contact",
+  "slug": "supermarket",
+  "title": "At the Supermarket",
+  "description": "Find products, ask about prices, understand quantities and pay at the checkout.",
+  "questType": "conversation",
+  "cefrLevel": "A1",
+  "orderIndex": 5,
+  "estimatedMinutes": 10,
+  "xpReward": 65,
+  "coinReward": 22,
+  "act": {
+    "code": "main",
+    "title": "Shopping for groceries",
+    "description": "Find everything on your shopping list and pay."
+  },
+  "adventure": {
+    "slug": "london-first-day",
+    "location": "supermarket"
+  },
+  "metadata": {
+    "templateCategory": "shopping",
+    "staticTest": true
+  },
+  "scenes": [
+    {
+      "code": "intro",
+      "type": "narration",
+      "speaker": "Емма",
+      "content": "Ви зайшли до супермаркету. Потрібно знайти продукти, уточнити ціну й кількість та оплатити покупки.",
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "emotion": "encouraging"
+      }
+    },
+    {
+      "code": "assistant-greeting",
+      "type": "dialogue",
+      "speaker": "Grace",
+      "content": "Hello. Can I help you find something?",
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒",
+        "emotion": "friendly"
+      }
+    },
+    {
+      "code": "bread-choice",
+      "type": "choice",
+      "speaker": "Grace",
+      "content": "Choose the correct way to ask for bread.",
+      "prompt": "Ви шукаєте хліб.",
+      "options": [
+        {
+          "id": "bread",
+          "text": "Excuse me, where can I find the bread?",
+          "value": "bread"
+        },
+        {
+          "id": "hotel",
+          "text": "I have a hotel reservation.",
+          "value": "hotel"
+        },
+        {
+          "id": "airport",
+          "text": "When does boarding start?",
+          "value": "airport"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "bread"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Це ввічливе запитання про розташування товару.",
+        "feedbackIncorrect": "Оберіть фразу про хліб."
+      },
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒",
+        "goal": "find bread"
+      }
+    },
+    {
+      "code": "aisle-dialogue",
+      "type": "dialogue",
+      "speaker": "Grace",
+      "content": "The bread is in aisle five, next to the bakery.",
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒"
+      }
+    },
+    {
+      "code": "aisle-choice",
+      "type": "choice",
+      "speaker": "Grace",
+      "content": "Which aisle should you go to?",
+      "prompt": "Оберіть правильний прохід.",
+      "options": [
+        {
+          "id": "five",
+          "text": "Aisle five.",
+          "value": "five"
+        },
+        {
+          "id": "four",
+          "text": "Aisle four.",
+          "value": "four"
+        },
+        {
+          "id": "six",
+          "text": "Aisle six.",
+          "value": "six"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "five"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Так, хліб знаходиться в проході номер п’ять.",
+        "feedbackIncorrect": "Оберіть Aisle five."
+      },
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒",
+        "goal": "understand aisle"
+      }
+    },
+    {
+      "code": "milk-input",
+      "type": "input",
+      "speaker": "Grace",
+      "content": "Do you need anything else?",
+      "prompt": "Запитайте, де знаходиться молоко.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Where is the milk",
+          "Where can I find the milk",
+          "Could you tell me where the milk is"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Добре! Ви правильно запитали про молоко.",
+        "feedbackIncorrect": "Спробуйте: Where can I find the milk?"
+      },
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒",
+        "goal": "find milk"
+      }
+    },
+    {
+      "code": "milk-dialogue",
+      "type": "dialogue",
+      "speaker": "Grace",
+      "content": "It is in the refrigerated section at the back of the store.",
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒"
+      }
+    },
+    {
+      "code": "quantity-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Мені потрібні два літри молока.",
+      "prompt": "Перекладіть англійською.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I need two litres of milk",
+          "I need two liters of milk",
+          "Two litres of milk please",
+          "Two liters of milk please"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ви правильно назвали кількість.",
+        "feedbackIncorrect": "Спробуйте: I need two litres of milk."
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "goal": "state quantity"
+      }
+    },
+    {
+      "code": "price-dialogue",
+      "type": "dialogue",
+      "speaker": "Grace",
+      "content": "This brand is on special offer today.",
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒"
+      }
+    },
+    {
+      "code": "price-input",
+      "type": "input",
+      "speaker": "Grace",
+      "content": "Would you like to know the price?",
+      "prompt": "Запитайте, скільки це коштує.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "How much is it",
+          "How much does it cost",
+          "What is the price",
+          "What's the price"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Правильно! Це природне запитання про ціну.",
+        "feedbackIncorrect": "Спробуйте: How much is it?"
+      },
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒",
+        "goal": "ask price"
+      }
+    },
+    {
+      "code": "price-answer",
+      "type": "dialogue",
+      "speaker": "Grace",
+      "content": "It is two pounds fifty.",
+      "metadata": {
+        "role": "Shop assistant",
+        "avatar": "🛒"
+      }
+    },
+    {
+      "code": "checkout-choice",
+      "type": "choice",
+      "speaker": "Cashier",
+      "content": "Would you like a bag?",
+      "prompt": "Вам потрібен пакет.",
+      "options": [
+        {
+          "id": "bag",
+          "text": "Yes, please.",
+          "value": "bag"
+        },
+        {
+          "id": "platform",
+          "text": "Platform four, please.",
+          "value": "platform"
+        },
+        {
+          "id": "room",
+          "text": "A single room, please.",
+          "value": "room"
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "bag"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 10,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Так, це коротка й ввічлива відповідь.",
+        "feedbackIncorrect": "Оберіть Yes, please."
+      },
+      "metadata": {
+        "role": "Cashier",
+        "avatar": "🧾",
+        "goal": "request a bag"
+      }
+    },
+    {
+      "code": "payment-dialogue",
+      "type": "dialogue",
+      "speaker": "Cashier",
+      "content": "That will be twelve pounds eighty. Cash or card?",
+      "metadata": {
+        "role": "Cashier",
+        "avatar": "🧾"
+      }
+    },
+    {
+      "code": "payment-translate",
+      "type": "translate",
+      "speaker": "Емма",
+      "content": "Я заплачу карткою.",
+      "prompt": "Перекладіть англійською.",
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I will pay by card",
+          "I'll pay by card",
+          "By card please",
+          "By card, please"
+        ]
+      },
+      "evaluation": {
+        "mode": "case_insensitive",
+        "points": 15,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Відмінно! Ви правильно назвали спосіб оплати.",
+        "feedbackIncorrect": "Спробуйте: I'll pay by card."
+      },
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🙂",
+        "goal": "pay by card"
+      }
+    },
+    {
+      "code": "final-dialogue",
+      "type": "dialogue",
+      "speaker": "Cashier",
+      "content": "Payment approved. Here is your receipt. Have a nice day!",
+      "metadata": {
+        "role": "Cashier",
+        "avatar": "🧾",
+        "emotion": "happy"
+      }
+    },
+    {
+      "code": "summary",
+      "type": "completion",
+      "speaker": "Емма",
+      "content": "Ви знайшли потрібні продукти, уточнили кількість і ціну, попросили пакет та оплатили покупки.",
+      "metadata": {
+        "role": "Ваш наставник",
+        "avatar": "🎉",
+        "emotion": "celebrating",
+        "learnedWords": [
+          "aisle",
+          "bakery",
+          "refrigerated section",
+          "litre",
+          "special offer",
+          "receipt"
+        ]
+      }
+    }
+  ]
+}

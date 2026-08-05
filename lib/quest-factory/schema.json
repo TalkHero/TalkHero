@@ -1,0 +1,323 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "campaignSlug": {
+      "type": "string"
+    },
+    "episodeSlug": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "questType": {
+      "type": "string",
+      "enum": [
+        "conversation",
+        "story",
+        "grammar",
+        "vocabulary",
+        "speaking"
+      ]
+    },
+    "cefrLevel": {
+      "type": "string",
+      "enum": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1",
+        "C2"
+      ]
+    },
+    "orderIndex": {
+      "type": "integer"
+    },
+    "estimatedMinutes": {
+      "type": "integer"
+    },
+    "xpReward": {
+      "type": "integer"
+    },
+    "coinReward": {
+      "type": "integer"
+    },
+    "act": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "title",
+        "description"
+      ]
+    },
+    "adventure": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "slug",
+        "location"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "templateCategory": {
+          "type": "string"
+        },
+        "staticTest": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "templateCategory",
+        "staticTest"
+      ]
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 18,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "narration",
+              "dialogue",
+              "choice",
+              "input",
+              "translate",
+              "voice",
+              "completion"
+            ]
+          },
+          "speaker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "text",
+                "value"
+              ]
+            }
+          },
+          "expectedAnswer": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "optionId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "acceptedAnswers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "caseSensitive": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "optionId",
+                  "value",
+                  "acceptedAnswers",
+                  "caseSensitive"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evaluation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "exact",
+                  "case_insensitive",
+                  "contains",
+                  "manual"
+                ]
+              },
+              "points": {
+                "type": "integer"
+              },
+              "allowRetry": {
+                "type": "boolean"
+              },
+              "maxAttempts": {
+                "type": "integer"
+              },
+              "feedbackCorrect": {
+                "type": "string"
+              },
+              "feedbackIncorrect": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "mode",
+              "points",
+              "allowRetry",
+              "maxAttempts",
+              "feedbackCorrect",
+              "feedbackIncorrect"
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "avatar": {
+                "type": "string"
+              },
+              "emotion": {
+                "type": "string"
+              },
+              "goal": {
+                "type": "string"
+              },
+              "learnedWords": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "role",
+              "avatar",
+              "emotion",
+              "goal",
+              "learnedWords"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "type",
+          "speaker",
+          "content",
+          "prompt",
+          "options",
+          "expectedAnswer",
+          "evaluation",
+          "metadata"
+        ]
+      }
+    }
+  },
+  "required": [
+    "campaignSlug",
+    "episodeSlug",
+    "slug",
+    "title",
+    "description",
+    "questType",
+    "cefrLevel",
+    "orderIndex",
+    "estimatedMinutes",
+    "xpReward",
+    "coinReward",
+    "act",
+    "adventure",
+    "metadata",
+    "scenes"
+  ]
+}

@@ -1,0 +1,24 @@
+Додайте над QuestSceneEvaluation:
+
+export type LearningFeedbackCategory =
+  | "grammar"
+  | "vocabulary"
+  | "politeness"
+  | "pronunciation"
+  | "natural"
+  | "culture";
+
+export type LearningFeedback = {
+  encouragement: string;
+  naturalAnswer?: string;
+  explanation: string;
+  remember?: string;
+  npcReply?: string;
+  category?: LearningFeedbackCategory;
+};
+
+У QuestSceneEvaluation замініть:
+feedback: string | null;
+
+на:
+feedback: string | LearningFeedback | null;

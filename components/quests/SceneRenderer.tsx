@@ -2,70 +2,73 @@
 
 import type {
   PublicQuestScene,
+  QuestSceneEvaluation,
 } from "@/lib/quests";
 
-import { ChoiceScene } from "./scenes/ChoiceScene";
-import { CompletionScene } from "./scenes/CompletionScene";
-import { DialogueScene } from "./scenes/DialogueScene";
-import { InputScene } from "./scenes/InputScene";
+import { AIConversationScene } from "./scenes/AIConversationScene";
+import { SCENE_REGISTRY } from "./SceneRegistry";
 
 export type SceneRendererProps = {
   scene: PublicQuestScene | null;
-
+  evaluation?: QuestSceneEvaluation | null;
   loading?: boolean;
-
   onContinue: () => void;
-
-  onSubmit: (
-    value: unknown,
-  ) => Promise<void>;
+  onSubmit: (value: unknown) => Promise<void>;
 };
 
 export function SceneRenderer({
   scene,
+  evaluation = null,
   loading = false,
   onContinue,
   onSubmit,
 }: SceneRendererProps) {
   if (!scene) {
-    return <CompletionScene />;
+    return null;
   }
 
-  switch (scene.sceneType) {
-    case "dialogue":
-      return (
-        <DialogueScene
-          scene={scene}
-          loading={loading}
-          onContinue={onContinue}
-        />
-      );
-
-    case "choice":
-      return (
-        <ChoiceScene
-          scene={scene}
-          loading={loading}
-          onSubmit={onSubmit}
-        />
-      );
-
-    case "input":
-      return (
-        <InputScene
-          scene={scene}
-          loading={loading}
-          onSubmit={onSubmit}
-        />
-      );
-
-    default:
-      return (
-        <div className="rounded-xl border border-red-300 bg-red-50 p-6 text-red-700">
-          Unsupported scene type:
-          {" "}
-          {scene.sceneType}
-        </div>
-      );
+  if (
+    scene.metadata.aiConversation === true
+  ) {
+    return (
+      <AIConversationScene
+        scene={scene}
+        evaluation={evaluation}
+        loading={loading}
+        onSubmit={onSubmit}
+      />
+    );
   }
+
+  const SceneComponent =
+    SCENE_REGISTRY[scene.sceneType];
+
+  if (!SceneComponent) {
+    return (
+      <section
+        role="alert"
+        className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900"
+      >
+        <h2 className="font-semibold">
+          Цей тип сцени ще не підтримується
+        </h2>
+
+        <p className="mt-2 text-sm">
+          Тип сцени:{" "}
+          <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono">
+            {scene.sceneType}
+          </code>
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <SceneComponent
+      scene={scene}
+      loading={loading}
+      onContinue={onContinue}
+      onSubmit={onSubmit}
+    />
+  );
 }

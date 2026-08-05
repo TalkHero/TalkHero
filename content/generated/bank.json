@@ -1,0 +1,406 @@
+{
+  "campaignSlug": "english-basics",
+  "episodeSlug": "first-contact",
+  "slug": "bank",
+  "title": "At the Bank",
+  "description": "Practice exchanging money at a bank in London, asking about fees and providing identification.",
+  "questType": "conversation",
+  "cefrLevel": "A2",
+  "orderIndex": 6,
+  "estimatedMinutes": 12,
+  "xpReward": 75,
+  "coinReward": 25,
+  "act": {
+    "code": "banking",
+    "title": "Banking Basics",
+    "description": "Learn to communicate effectively during a currency exchange."
+  },
+  "adventure": {
+    "slug": "london-first-day",
+    "location": "London"
+  },
+  "metadata": {
+    "templateCategory": "static",
+    "staticTest": true
+  },
+  "scenes": [
+    {
+      "code": "narration-01",
+      "type": "narration",
+      "speaker": null,
+      "content": "You enter a bank in London, feeling a bit unsure but ready to exchange some money.",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "",
+        "avatar": "🏦",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "dialogue-01",
+      "type": "dialogue",
+      "speaker": "Olivia",
+      "content": "Welcome to our bank! How can I help you today?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "bank clerk",
+        "avatar": "🏦",
+        "emotion": "professional",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "choice-01",
+      "type": "choice",
+      "speaker": null,
+      "content": "How would you like to respond?",
+      "prompt": "Виберіть правильний варіант, щоб відповісти Оліві.",
+      "options": [
+        {
+          "id": "1",
+          "text": "I'd like to exchange some cash please.",
+          "value": "I'd like to exchange some cash please."
+        },
+        {
+          "id": "2",
+          "text": "I want to exchange money.",
+          "value": "I want to exchange money."
+        },
+        {
+          "id": "3",
+          "text": "Can I exchange currency?",
+          "value": "Can I exchange currency."
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "1"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 1,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Конструкція “I'd like to...” звучить ввічливо й природно, тому добре підходить для розмови в банку.",
+        "feedbackIncorrect": "Природніше англійською: I'd like to exchange some cash, please.\n\nЧому саме так: “I'd like to...” звучить ввічливіше, ніж “I want to...”, тому його частіше застосовують у сервісних ситуаціях.\n\nЗапам'ятайте: “I'd like to...” — ввічливий початок запиту."
+      },
+      "metadata": {
+        "role": "",
+        "avatar": "💬",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "dialogue-02",
+      "type": "dialogue",
+      "speaker": "Olivia",
+      "content": "Sure! What currency would you like to exchange?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "bank clerk",
+        "avatar": "🏦",
+        "emotion": "professional",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "input-01",
+      "type": "input",
+      "speaker": null,
+      "content": "Sure! What currency would you like to exchange?",
+      "prompt": "Напишіть англійською, що ви хочете обміняти євро.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "I want to exchange Euros.",
+          "I'd like to exchange euros.",
+          "I would like to exchange Euros."
+        ]
+      },
+      "evaluation": {
+        "mode": "ai",
+        "points": 1,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ваша відповідь вводить чітку інформацію про валюту, яку ви хочете обміняти.",
+        "feedbackIncorrect": "Природніше англійською: I'd like to exchange Euros.\n\nЧому саме так: Підхід “I'd like to...” звучить більше ввічливо у банківських розмовах, а також легко запам'ятати.\n\nЗапам'ятайте: “I'd like to...” — універсальне ввічливе ввідення запиту."
+      },
+      "metadata": {
+        "role": "",
+        "avatar": "💬",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "dialogue-03",
+      "type": "dialogue",
+      "speaker": "Olivia",
+      "content": "Great! The exchange rate today is 1 Euro to 0.87 Pounds. Do you want to know about fees?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "bank clerk",
+        "avatar": "🏦",
+        "emotion": "professional",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "choice-02",
+      "type": "choice",
+      "speaker": null,
+      "content": "What would you like to reply?",
+      "prompt": "Виберіть правильний варіант, щоб відповісти Оліві.",
+      "options": [
+        {
+          "id": "1",
+          "text": "How much is the fee for this transaction?",
+          "value": "How much is the fee for this transaction?"
+        },
+        {
+          "id": "2",
+          "text": "Do I need to pay the fee?",
+          "value": "Do I need to pay the fee?"
+        },
+        {
+          "id": "3",
+          "text": "What is it in fees?",
+          "value": "What is it in fees."
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "1"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 1,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Це правильний запит про вартість обслуговування. Це звучить також дуже природно.",
+        "feedbackIncorrect": "Природніше англійською: How much is the fee for this transaction?\n\nЧому саме так: Питання про суму стосується вартості послуги і звучить чіткіше. Також воно ввічливо просить про деталі про оплату.\n\nЗапам'ятайте: “How much is the fee...?” — корисний вираз для запитів про витрати."
+      },
+      "metadata": {
+        "role": "",
+        "avatar": "💬",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "dialogue-04",
+      "type": "dialogue",
+      "speaker": "Olivia",
+      "content": "The fee is 5% of your total amount. Do you have your identification with you?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "bank clerk",
+        "avatar": "🏦",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "input-02",
+      "type": "input",
+      "speaker": null,
+      "content": "The fee is 5% of your total amount. Do you have your identification with you?",
+      "prompt": "Напишіть англійською, що ви надаєте своє посвідчення особи.",
+      "options": [],
+      "expectedAnswer": {
+        "acceptedAnswers": [
+          "Here is my ID.",
+          "Here is my identification.",
+          "Yes, here is my identification."
+        ]
+      },
+      "evaluation": {
+        "mode": "ai",
+        "points": 1,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ваша відповідь точно передає, що ви надаєте документ.",
+        "feedbackIncorrect": "Природніше англійською: Here is my identification.\n\nЧому саме так: “Here is...” — це природний спосіб передати щось співрозмовнику, включаючи документи чи картки.\n\nЗапам'ятайте: “Here is...” — звучить природно, коли ви щось передаєте."
+      },
+      "metadata": {
+        "role": "",
+        "avatar": "💬",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "dialogue-05",
+      "type": "dialogue",
+      "speaker": "Olivia",
+      "content": "Thank you! This will help with your transaction. Would you like a receipt?",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "bank clerk",
+        "avatar": "🏦",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "choice-03",
+      "type": "choice",
+      "speaker": null,
+      "content": "What is your response?",
+      "prompt": "Виберіть правильний варіант, щоб відповісти Оліві.",
+      "options": [
+        {
+          "id": "1",
+          "text": "Yes, I would like a receipt, please.",
+          "value": "Yes, I would like a receipt, please."
+        },
+        {
+          "id": "2",
+          "text": "I want a receipt.",
+          "value": "I want a receipt."
+        },
+        {
+          "id": "3",
+          "text": "Can I get a receipt?",
+          "value": "Can I get a receipt."
+        }
+      ],
+      "expectedAnswer": {
+        "optionId": "1"
+      },
+      "evaluation": {
+        "mode": "exact",
+        "points": 1,
+        "allowRetry": true,
+        "maxAttempts": 2,
+        "feedbackCorrect": "Чудово! Ваша відповідь звучить ввічливо та професійно, що важливо в банківських ситуаціях.",
+        "feedbackIncorrect": "Природніше англійською: Yes, I'd like a receipt, please.\n\nЧому саме так: Конструкція “I'd like...” звучить м'якше й ввічливіше, ніж “I want...”, тому так зазвичай висловлюють бажання в сервісних ситуаціях.\n\nЗапам'ятайте: “I'd like to...” — універсальний ввічливий початок запиту."
+      },
+      "metadata": {
+        "role": "",
+        "avatar": "💬",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "dialogue-06",
+      "type": "dialogue",
+      "speaker": "Olivia",
+      "content": "All done! Here is your receipt. Thank you for visiting our bank!",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "bank clerk",
+        "avatar": "🏦",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    },
+    {
+      "code": "summary",
+      "type": "completion",
+      "speaker": null,
+      "content": "You successfully completed your currency exchange at the bank!",
+      "prompt": null,
+      "options": [],
+      "expectedAnswer": null,
+      "evaluation": {
+        "mode": "manual",
+        "points": 0,
+        "allowRetry": false,
+        "maxAttempts": 1,
+        "feedbackCorrect": "",
+        "feedbackIncorrect": ""
+      },
+      "metadata": {
+        "role": "",
+        "avatar": "💬",
+        "emotion": "neutral",
+        "goal": "",
+        "learnedWords": []
+      }
+    }
+  ]
+}

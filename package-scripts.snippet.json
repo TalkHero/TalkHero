@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "generate:quest": "node scripts/generate-ai-quest.mjs",
+    "build:generated-quests": "node scripts/build-quests.mjs content/generated supabase/migrations/202608020002_seed_ai_generated_quests.sql"
+  }
+}
