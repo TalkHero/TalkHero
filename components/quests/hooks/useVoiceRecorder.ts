@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-type RecorderState =
-  | "idle"
-  | "requesting"
-  | "recording"
-  | "processing";
+type RecorderState = "idle" | "requesting" | "recording" | "processing";
 
 type TranscriptionResponse = {
   text?: string;
@@ -19,9 +10,7 @@ type TranscriptionResponse = {
 };
 
 function chooseMimeType(): string {
-  if (
-    typeof MediaRecorder === "undefined"
-  ) {
+  if (typeof MediaRecorder === "undefined") {
     return "";
   }
 
@@ -32,16 +21,10 @@ function chooseMimeType(): string {
     "audio/mp4",
   ];
 
-  return (
-    candidates.find((type) =>
-      MediaRecorder.isTypeSupported(type),
-    ) ?? ""
-  );
+  return candidates.find((type) => MediaRecorder.isTypeSupported(type)) ?? "";
 }
 
-function extensionForMimeType(
-  mimeType: string,
-): string {
+function extensionForMimeType(mimeType: string): string {
   if (mimeType.includes("ogg")) {
     return "ogg";
   }
@@ -54,34 +37,23 @@ function extensionForMimeType(
 }
 
 export function useVoiceRecorder() {
-  const recorderRef =
-    useRef<MediaRecorder | null>(null);
-  const streamRef =
-    useRef<MediaStream | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const startedAtRef =
-    useRef<number | null>(null);
+  const startedAtRef = useRef<number | null>(null);
 
-  const [state, setState] =
-    useState<RecorderState>("idle");
-  const [error, setError] =
-    useState<string | null>(null);
-  const [durationSeconds, setDurationSeconds] =
-    useState(0);
+  const [state, setState] = useState<RecorderState>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [durationSeconds, setDurationSeconds] = useState(0);
 
   const stopTracks = useCallback(() => {
-    streamRef.current
-      ?.getTracks()
-      .forEach((track) => track.stop());
+    streamRef.current?.getTracks().forEach((track) => track.stop());
 
     streamRef.current = null;
   }, []);
 
   const reset = useCallback(() => {
-    if (
-      recorderRef.current &&
-      recorderRef.current.state !== "inactive"
-    ) {
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
       recorderRef.current.stop();
     }
 
@@ -103,11 +75,7 @@ export function useVoiceRecorder() {
       const startedAt = startedAtRef.current;
 
       if (startedAt) {
-        setDurationSeconds(
-          Math.floor(
-            (Date.now() - startedAt) / 1000,
-          ),
-        );
+        setDurationSeconds(Math.floor((Date.now() - startedAt) / 1000));
       }
     }, 250);
 
@@ -130,23 +98,20 @@ export function useVoiceRecorder() {
       !navigator.mediaDevices?.getUserMedia ||
       typeof MediaRecorder === "undefined"
     ) {
-      setError(
-        "Цей браузер не підтримує запис голосу.",
-      );
+      setError("Цей браузер не підтримує запис голосу.");
       return;
     }
 
     setState("requesting");
 
     try {
-      const stream =
-        await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-          },
-        });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
 
       streamRef.current = stream;
 
@@ -161,14 +126,11 @@ export function useVoiceRecorder() {
       chunksRef.current = [];
       recorderRef.current = recorder;
 
-      recorder.addEventListener(
-        "dataavailable",
-        (event) => {
-          if (event.data.size > 0) {
-            chunksRef.current.push(event.data);
-          }
-        },
-      );
+      recorder.addEventListener("dataavailable", (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      });
 
       recorder.start(250);
       startedAtRef.current = Date.now();
@@ -179,8 +141,7 @@ export function useVoiceRecorder() {
       setState("idle");
 
       const message =
-        caught instanceof DOMException &&
-        caught.name === "NotAllowedError"
+        caught instanceof DOMException && caught.name === "NotAllowedError"
           ? "Дозвольте браузеру використовувати мікрофон."
           : "Не вдалося розпочати запис голосу.";
 
@@ -188,111 +149,80 @@ export function useVoiceRecorder() {
     }
   }, [stopTracks]);
 
-  const stopAndTranscribe =
-    useCallback(async (): Promise<
-      string | null
-    > => {
-      const recorder = recorderRef.current;
+  const stopAndTranscribe = useCallback(async (): Promise<string | null> => {
+    const recorder = recorderRef.current;
 
-      if (
-        !recorder ||
-        recorder.state === "inactive"
-      ) {
-        return null;
-      }
+    if (!recorder || recorder.state === "inactive") {
+      return null;
+    }
 
-      setState("processing");
-      setError(null);
+    setState("processing");
+    setError(null);
 
-      return await new Promise((resolve) => {
-        recorder.addEventListener(
-          "stop",
-          async () => {
-            try {
-              stopTracks();
+    return await new Promise((resolve) => {
+      recorder.addEventListener(
+        "stop",
+        async () => {
+          try {
+            stopTracks();
 
-              const mimeType =
-                recorder.mimeType ||
-                "audio/webm";
+            const mimeType = recorder.mimeType || "audio/webm";
 
-              const blob = new Blob(
-                chunksRef.current,
-                {
-                  type: mimeType,
-                },
-              );
+            const blob = new Blob(chunksRef.current, {
+              type: mimeType,
+            });
 
-              if (blob.size === 0) {
-                throw new Error(
-                  "Запис виявився порожнім.",
-                );
-              }
-
-              const formData = new FormData();
-              const extension =
-                extensionForMimeType(mimeType);
-
-              formData.append(
-                "audio",
-                blob,
-                `voice-answer.${extension}`,
-              );
-
-              const response = await fetch(
-                "/api/stt",
-                {
-                  method: "POST",
-                  body: formData,
-                },
-              );
-
-              const result =
-                (await response.json()) as TranscriptionResponse;
-
-              if (!response.ok) {
-                throw new Error(
-                  result.error ||
-                    "Не вдалося розпізнати голос.",
-                );
-              }
-
-              const text =
-                result.text?.trim() ?? "";
-
-              if (!text) {
-                throw new Error(
-                  "Не вдалося розпізнати слова.",
-                );
-              }
-
-              resolve(text);
-            } catch (caught) {
-              setError(
-                caught instanceof Error
-                  ? caught.message
-                  : "Сталася невідома помилка.",
-              );
-              resolve(null);
-            } finally {
-              recorderRef.current = null;
-              chunksRef.current = [];
-              startedAtRef.current = null;
-              setState("idle");
-              setDurationSeconds(0);
+            if (blob.size === 0) {
+              throw new Error("Запис виявився порожнім.");
             }
-          },
-          { once: true },
-        );
 
-        recorder.stop();
-      });
-    }, [stopTracks]);
+            const formData = new FormData();
+            const extension = extensionForMimeType(mimeType);
+
+            formData.append("audio", blob, `voice-answer.${extension}`);
+
+            const response = await fetch("/api/stt", {
+              method: "POST",
+              body: formData,
+            });
+
+            const result = (await response.json()) as TranscriptionResponse;
+
+            if (!response.ok) {
+              throw new Error(result.error || "Не вдалося розпізнати голос.");
+            }
+
+            const text = result.text?.trim() ?? "";
+
+            if (!text) {
+              throw new Error("Не вдалося розпізнати слова.");
+            }
+
+            resolve(text);
+          } catch (caught) {
+            setError(
+              caught instanceof Error
+                ? caught.message
+                : "Сталася невідома помилка.",
+            );
+            resolve(null);
+          } finally {
+            recorderRef.current = null;
+            chunksRef.current = [];
+            startedAtRef.current = null;
+            setState("idle");
+            setDurationSeconds(0);
+          }
+        },
+        { once: true },
+      );
+
+      recorder.stop();
+    });
+  }, [stopTracks]);
 
   const cancel = useCallback(() => {
-    if (
-      recorderRef.current &&
-      recorderRef.current.state !== "inactive"
-    ) {
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
       recorderRef.current.addEventListener(
         "stop",
         () => {

@@ -1,31 +1,25 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type SpeechStatus = "idle" | "speaking" | "paused";
 
-function splitTextIntoChunks(text: string) {
-  const normalizedText = text
-    .replace(/\s+/g, " ")
-    .trim();
+function splitTextIntoChunks(text: string): string[] {
+  const normalizedText = text.replace(/\s+/g, " ").trim();
 
   if (!normalizedText) {
     return [];
   }
 
-  const chunks =
-    normalizedText.match(/[^.!?,;:]+[.!?,;:]?|.+$/g) ?? [
-      normalizedText,
-    ];
+  const chunks = normalizedText.match(/[^.!?,;:]+[.!?,;:]?|.+$/g) ?? [
+    normalizedText,
+  ];
 
-  return chunks
-    .map((chunk) => chunk.trim())
-    .filter(Boolean);
+  return chunks.map((chunk) => chunk.trim()).filter(Boolean);
 }
 
 export function useSpeechSynthesis() {
-  const [status, setStatus] =
-    useState<SpeechStatus>("idle");
+  const [status, setStatus] = useState<SpeechStatus>("idle");
 
   const [lastText, setLastText] = useState("");
 
@@ -36,8 +30,7 @@ export function useSpeechSynthesis() {
   const pausedByUserRef = useRef(false);
 
   const isSupported =
-    typeof window !== "undefined" &&
-    "speechSynthesis" in window;
+    typeof window !== "undefined" && "speechSynthesis" in window;
 
   const stop = useCallback(() => {
     if (!isSupported) {
@@ -53,118 +46,122 @@ export function useSpeechSynthesis() {
     setStatus("idle");
   }, [isSupported]);
 
-  const speakCurrentChunk = useCallback(
+  const speakFromCurrentPosition = useCallback(
     (sessionId: number) => {
       if (!isSupported) {
         return;
       }
 
-      if (sessionId !== sessionIdRef.current) {
-        return;
-      }
-
-      const chunks = chunksRef.current;
-      const chunkIndex = chunkIndexRef.current;
-
-      if (chunkIndex >= chunks.length) {
-        characterIndexRef.current = 0;
-        setStatus("idle");
-        return;
-      }
-
-      const fullChunk = chunks[chunkIndex];
-      const startIndex = characterIndexRef.current;
-
-      const remainingText = fullChunk.slice(startIndex).trim();
-
-      if (!remainingText) {
-        chunkIndexRef.current += 1;
-        characterIndexRef.current = 0;
-        speakCurrentChunk(sessionId);
-        return;
-      }
-
-      const utterance = new SpeechSynthesisUtterance(
-        remainingText,
-      );
-
-      utterance.lang = "en-GB";
-      utterance.rate = 0.95;
-      utterance.pitch = 1;
-
-      utterance.onboundary = (event) => {
+      function playNextChunk(): void {
         if (sessionId !== sessionIdRef.current) {
           return;
         }
 
-        if (typeof event.charIndex === "number") {
-          characterIndexRef.current =
-            startIndex + event.charIndex;
-        }
-      };
+        const chunks = chunksRef.current;
+        const chunkIndex = chunkIndexRef.current;
 
-      utterance.onend = () => {
-        if (sessionId !== sessionIdRef.current) {
+        if (chunkIndex >= chunks.length) {
+          characterIndexRef.current = 0;
+          setStatus("idle");
           return;
         }
 
-        if (pausedByUserRef.current) {
+        const fullChunk = chunks[chunkIndex];
+
+        const startIndex = characterIndexRef.current;
+
+        const remainingText = fullChunk.slice(startIndex).trim();
+
+        if (!remainingText) {
+          chunkIndexRef.current += 1;
+          characterIndexRef.current = 0;
+          playNextChunk();
           return;
         }
 
-        chunkIndexRef.current += 1;
-        characterIndexRef.current = 0;
+        const utterance = new SpeechSynthesisUtterance(remainingText);
 
-        speakCurrentChunk(sessionId);
-      };
+        utterance.lang = "en-GB";
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
 
-      utterance.onerror = (event) => {
-        if (sessionId !== sessionIdRef.current) {
-          return;
-        }
+        utterance.onboundary = (event) => {
+          if (sessionId !== sessionIdRef.current) {
+            return;
+          }
 
-        if (
-          event.error === "canceled" ||
-          event.error === "interrupted"
-        ) {
-          return;
-        }
+          if (typeof event.charIndex === "number") {
+            characterIndexRef.current = startIndex + event.charIndex;
+          }
+        };
 
-        console.error(
-          "SPEECH SYNTHESIS ERROR:",
-          event.error,
-        );
+        utterance.onend = () => {
+          if (sessionId !== sessionIdRef.current) {
+            return;
+          }
 
-        setStatus("idle");
-      };
+          if (pausedByUserRef.current) {
+            return;
+          }
 
-      window.speechSynthesis.speak(utterance);
+          chunkIndexRef.current += 1;
+          characterIndexRef.current = 0;
+
+          playNextChunk();
+        };
+
+        utterance.onerror = (event) => {
+          if (sessionId !== sessionIdRef.current) {
+            return;
+          }
+
+          if (event.error === "canceled" || event.error === "interrupted") {
+            return;
+          }
+
+          console.error("SPEECH SYNTHESIS ERROR:", event.error);
+
+          setStatus("idle");
+        };
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      playNextChunk();
     },
     [isSupported],
   );
 
   const speak = useCallback(
     (text: string) => {
-      if (!isSupported || !text.trim()) {
+      const normalizedText = text.trim();
+
+      if (!isSupported || !normalizedText) {
         return;
       }
 
       window.speechSynthesis.cancel();
 
+      const chunks = splitTextIntoChunks(normalizedText);
+
+      if (chunks.length === 0) {
+        return;
+      }
+
       const newSessionId = sessionIdRef.current + 1;
 
       sessionIdRef.current = newSessionId;
       pausedByUserRef.current = false;
-      chunksRef.current = splitTextIntoChunks(text);
+      chunksRef.current = chunks;
       chunkIndexRef.current = 0;
       characterIndexRef.current = 0;
 
-      setLastText(text);
+      setLastText(normalizedText);
       setStatus("speaking");
 
-      speakCurrentChunk(newSessionId);
+      speakFromCurrentPosition(newSessionId);
     },
-    [isSupported, speakCurrentChunk],
+    [isSupported, speakFromCurrentPosition],
   );
 
   const pause = useCallback(() => {
@@ -180,11 +177,7 @@ export function useSpeechSynthesis() {
   }, [isSupported, status]);
 
   const resume = useCallback(() => {
-    if (
-      !isSupported ||
-      status !== "paused" ||
-      !lastText
-    ) {
+    if (!isSupported || status !== "paused" || !lastText) {
       return;
     }
 
@@ -194,13 +187,8 @@ export function useSpeechSynthesis() {
     pausedByUserRef.current = false;
     setStatus("speaking");
 
-    speakCurrentChunk(newSessionId);
-  }, [
-    isSupported,
-    lastText,
-    speakCurrentChunk,
-    status,
-  ]);
+    speakFromCurrentPosition(newSessionId);
+  }, [isSupported, lastText, speakFromCurrentPosition, status]);
 
   const repeat = useCallback(() => {
     if (!lastText) {
