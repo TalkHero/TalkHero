@@ -1,5 +1,6 @@
-"use client";
+﻿"use client";
 
+import type { ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,9 +10,13 @@ import {
   LayoutDashboard,
   MessageCircle,
   Mic,
+  Settings,
   UserRound,
   X,
 } from "lucide-react";
+
+import { TalkHeroWordmark } from "@/components/brand/TalkHeroWordmark";
+import { cn } from "@/lib/utils";
 
 type AppSidebarProps = {
   open: boolean;
@@ -21,12 +26,14 @@ type AppSidebarProps = {
 type NavigationItem = {
   href: string;
   label: string;
-  icon: React.ComponentType<{
+  icon: ComponentType<{
     className?: string;
+    "aria-hidden"?: boolean | "true" | "false";
   }>;
+  activePrefixes?: string[];
 };
 
-const NAVIGATION: NavigationItem[] = [
+const MAIN_NAVIGATION: NavigationItem[] = [
   {
     href: "/dashboard",
     label: "Головна",
@@ -34,18 +41,19 @@ const NAVIGATION: NavigationItem[] = [
   },
   {
     href: "/chat",
-    label: "Чат з Еммою",
+    label: "Чат",
     icon: MessageCircle,
-  },
-  {
-    href: "/speaking",
-    label: "Розмовна практика",
-    icon: Mic,
   },
   {
     href: "/adventure",
     label: "Пригода",
     icon: Gamepad2,
+    activePrefixes: ["/adventure", "/quests"],
+  },
+  {
+    href: "/speaking",
+    label: "Розмовна практика",
+    icon: Mic,
   },
   {
     href: "/vocabulary",
@@ -54,7 +62,7 @@ const NAVIGATION: NavigationItem[] = [
   },
   {
     href: "/review",
-    label: "Щоденне повторення",
+    label: "Повторення",
     icon: Brain,
   },
 ];
@@ -65,20 +73,30 @@ const ACCOUNT_NAVIGATION: NavigationItem[] = [
     label: "Профіль",
     icon: UserRound,
   },
+  {
+    href: "/settings",
+    label: "Налаштування",
+    icon: Settings,
+  },
 ];
 
-export function AppSidebar({
-  open,
-  onClose,
-}: AppSidebarProps) {
+function isNavigationItemActive(
+  pathname: string,
+  item: NavigationItem,
+): boolean {
+  const prefixes = item.activePrefixes ?? [item.href];
+
+  return prefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+export function AppSidebar({ open, onClose }: AppSidebarProps) {
   const pathname = usePathname();
 
   function renderLink(item: NavigationItem) {
     const Icon = item.icon;
-
-    const active =
-      pathname === item.href ||
-      pathname.startsWith(`${item.href}/`);
+    const active = isNavigationItemActive(pathname, item);
 
     return (
       <Link
@@ -86,18 +104,21 @@ export function AppSidebar({
         href={item.href}
         onClick={onClose}
         aria-current={active ? "page" : undefined}
-        className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+        className={cn(
+          "talkhero-focus group flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5",
+          "text-sm font-medium transition-colors duration-150",
           active
-            ? "bg-indigo-600 text-white shadow-sm"
-            : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-        }`}
+            ? "bg-primary-soft text-primary"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
       >
         <Icon
-          className={`h-5 w-5 shrink-0 ${
+          className={cn(
+            "size-5 shrink-0 transition-colors",
             active
-              ? "text-white"
-              : "text-slate-400 group-hover:text-slate-700"
-          }`}
+              ? "text-primary"
+              : "text-muted-foreground group-hover:text-foreground",
+          )}
           aria-hidden="true"
         />
 
@@ -108,91 +129,88 @@ export function AppSidebar({
 
   return (
     <>
-      {open && (
+      {open ? (
         <button
           type="button"
           aria-label="Закрити навігацію"
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-[2px] lg:hidden"
         />
-      )}
+      ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
+        aria-label="Основна навігація"
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col",
+          "border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+          "transition-transform duration-200",
+          "lg:static lg:z-auto lg:translate-x-0",
+          open ? "translate-x-0" : "-translate-x-full",
+        )}
       >
-        <div className="flex h-20 items-center justify-between border-b border-slate-100 px-5">
-          <Link
-            href="/dashboard"
-            onClick={onClose}
-            className="flex items-center gap-3"
-          >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-xl shadow-lg shadow-indigo-200">
-              🎓
-            </div>
-
-            <div>
-              <p className="text-lg font-bold tracking-tight text-slate-950">
-                TalkHero
-              </p>
-
-              <p className="text-xs text-slate-400">
-                Навчайся з Еммою
-              </p>
-            </div>
-          </Link>
+        <div className="flex h-20 shrink-0 items-center justify-between border-b border-sidebar-border px-5">
+          <TalkHeroWordmark className="leading-none" showTagline />
 
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 lg:hidden"
             aria-label="Закрити меню"
+            className={cn(
+              "talkhero-focus flex size-10 items-center justify-center rounded-md",
+              "text-muted-foreground transition-colors",
+              "hover:bg-muted hover:text-foreground lg:hidden",
+            )}
           >
-            <X className="h-5 w-5" aria-hidden="true" />
+            <X className="size-5" aria-hidden="true" />
           </button>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5">
           <div>
-            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Навчання
             </p>
 
-            <nav aria-label="Основна навігація" className="space-y-1">
-              {NAVIGATION.map(renderLink)}
+            <nav aria-label="Навчальні розділи" className="space-y-1">
+              {MAIN_NAVIGATION.map(renderLink)}
             </nav>
           </div>
 
           <div className="mt-8">
-            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Акаунт
+            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Обліковий запис
             </p>
 
-            <nav aria-label="Навігація акаунта" className="space-y-1">
+            <nav
+              aria-label="Налаштування облікового запису"
+              className="space-y-1"
+            >
               {ACCOUNT_NAVIGATION.map(renderLink)}
             </nav>
           </div>
 
           <div className="mt-auto pt-8">
-            <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 to-indigo-950 p-4 text-white">
-              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-300">
+            <div className="rounded-xl border border-primary/10 bg-primary-soft p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
                 Щоденна практика
               </p>
 
-              <p className="mt-2 text-sm font-semibold">
-                Збережіть свою серію
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                Закріпіть вивчене
               </p>
 
-              <p className="mt-1 text-xs leading-5 text-slate-300">
-                Поспілкуйтеся в чаті, пройдіть розмовну практику
-                або повторіть слова сьогодні.
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Повторіть слова, які вже готові до наступного тренування.
               </p>
 
               <Link
                 href="/review"
                 onClick={onClose}
-                className="mt-4 flex w-full items-center justify-center rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold transition hover:bg-white/20"
+                className={cn(
+                  "talkhero-focus mt-4 flex min-h-10 w-full items-center justify-center",
+                  "rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground",
+                  "transition-colors hover:bg-primary-hover",
+                )}
               >
                 Почати повторення
               </Link>
