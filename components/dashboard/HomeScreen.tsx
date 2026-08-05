@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
+  BookOpen,
   BookOpenCheck,
   Flame,
   Gamepad2,
@@ -12,119 +13,34 @@ import {
   MessageCircle,
   Mic,
   RotateCcw,
-  Sparkles,
   Star,
   Target,
   Trophy,
 } from "lucide-react";
 
-type DashboardData = {
-  profile: {
-    fullName: string;
-    englishLevel: string;
-    xp: number;
-    level: number;
-    streak: number;
-  };
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import type { DashboardData } from "@/lib/dashboard/types";
 
-  stats: {
-    conversations: number;
-    vocabulary: number;
-    learned: number;
-    dueToday: number;
-    speakingToday: number;
-  };
+const ADVENTURE_HREF = "/adventure/london-first-day/coffee-shop";
 
-  assessment: {
-    hasAssessment: boolean;
-
-    latest: {
-      attemptId: string;
-      testSlug: string;
-      testName: string;
-      cefrLevel: string | null;
-      finalLevel: string | null;
-      percentage: number;
-      passed: boolean | null;
-      completedAt: string;
-      averageResponseTimeMs: number | null;
-    } | null;
-
-    categories: Array<{
-      category: string;
-      answered: number;
-      correct: number;
-      percentage: number;
-      averageResponseTimeMs: number | null;
-    }>;
-
-    strongestCategory: string | null;
-    weakestCategory: string | null;
-    recommendedTestSlug: string;
-  };
-};
-
-type ModeCardProps = {
+type LearningMode = {
   href: string;
   title: string;
   description: string;
   actionLabel: string;
   icon: typeof MessageCircle;
   iconClassName: string;
-  cardClassName: string;
 };
-
-const ADVENTURE_HREF =
-  "/quests/english-basics/first-contact/coffee-shop";
-
-function ModeCard({
-  href,
-  title,
-  description,
-  actionLabel,
-  icon: Icon,
-  iconClassName,
-  cardClassName,
-}: ModeCardProps) {
-  return (
-    <Link
-      href={href}
-      className={[
-        "group relative overflow-hidden rounded-3xl border p-6 shadow-sm",
-        "transition duration-200 hover:-translate-y-1 hover:shadow-lg",
-        "focus-visible:outline-none focus-visible:ring-2",
-        "focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
-        cardClassName,
-      ].join(" ")}
-    >
-      <div
-        className={[
-          "flex h-14 w-14 items-center justify-center rounded-2xl",
-          "transition duration-200 group-hover:scale-105",
-          iconClassName,
-        ].join(" ")}
-      >
-        <Icon className="h-7 w-7" aria-hidden="true" />
-      </div>
-
-      <h2 className="mt-6 text-xl font-bold text-slate-950">
-        {title}
-      </h2>
-
-      <p className="mt-2 min-h-12 text-sm leading-6 text-slate-600">
-        {description}
-      </p>
-
-      <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
-        {actionLabel}
-        <ArrowRight
-          className="h-4 w-4 transition group-hover:translate-x-1"
-          aria-hidden="true"
-        />
-      </div>
-    </Link>
-  );
-}
 
 function LoadingState() {
   return (
@@ -133,10 +49,17 @@ function LoadingState() {
       aria-live="polite"
       className="flex min-h-[420px] items-center justify-center"
     >
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm text-slate-600 shadow-sm">
-        <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-        Завантаження головної сторінки…
-      </div>
+      <Card className="w-full max-w-sm">
+        <CardContent className="flex items-center justify-center gap-3">
+          <Loader2
+            className="size-5 animate-spin text-primary"
+            aria-hidden="true"
+          />
+          <span className="text-sm text-muted-foreground">
+            Завантажуємо головну сторінку…
+          </span>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -149,27 +72,62 @@ function ErrorState({
   onRetry: () => void;
 }) {
   return (
-    <section
-      role="alert"
-      className="rounded-3xl border border-red-200 bg-red-50 p-8 text-center"
-    >
-      <h1 className="text-xl font-bold text-red-800">
-        Не вдалося завантажити головну сторінку
-      </h1>
+    <Card className="border-destructive/20 bg-destructive-soft">
+      <CardHeader className="text-center">
+        <CardTitle className="text-destructive">
+          Не вдалося завантажити головну сторінку
+        </CardTitle>
 
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-red-700">
-        {message}
-      </p>
+        <CardDescription className="text-red-700 dark:text-red-300">
+          {message}
+        </CardDescription>
+      </CardHeader>
 
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
+      <CardFooter className="justify-center border-destructive/10">
+        <Button variant="destructive" onClick={onRetry}>
+          <RotateCcw aria-hidden="true" />
+          Спробувати ще раз
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+function ModeCard({ mode }: { mode: LearningMode }) {
+  const Icon = mode.icon;
+
+  return (
+    <Link href={mode.href} className="talkhero-focus group rounded-xl">
+      <Card
+        interactive
+        className="h-full transition-colors group-hover:border-primary/20"
       >
-        <RotateCcw className="h-4 w-4" aria-hidden="true" />
-        Спробувати ще раз
-      </button>
-    </section>
+        <CardHeader>
+          <div
+            className={[
+              "flex size-12 items-center justify-center rounded-lg",
+              mode.iconClassName,
+            ].join(" ")}
+          >
+            <Icon className="size-6" aria-hidden="true" />
+          </div>
+
+          <CardTitle className="pt-3">{mode.title}</CardTitle>
+
+          <CardDescription>{mode.description}</CardDescription>
+        </CardHeader>
+
+        <CardFooter className="mt-auto border-0 pt-0">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
+            {mode.actionLabel}
+            <ArrowRight
+              className="size-4 transition-transform group-hover:translate-x-1"
+              aria-hidden="true"
+            />
+          </span>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 }
 
@@ -188,8 +146,7 @@ export function HomeScreen() {
       });
 
       const responseData = (await response.json()) as
-        | DashboardData
-        | { error?: string };
+        DashboardData | { error?: string };
 
       if (!response.ok) {
         throw new Error(
@@ -201,7 +158,7 @@ export function HomeScreen() {
 
       setData(responseData as DashboardData);
     } catch (error) {
-      console.error("ПОМИЛКА ЗАВАНТАЖЕННЯ ГОЛОВНОЇ СТОРІНКИ:", error);
+      console.error("LOAD DASHBOARD ERROR:", error);
 
       setErrorMessage(
         error instanceof Error
@@ -220,9 +177,7 @@ export function HomeScreen() {
   const testHref = useMemo(() => {
     const slug = data?.assessment.recommendedTestSlug;
 
-    return slug
-      ? `/assessment/${encodeURIComponent(slug)}`
-      : "/assessment";
+    return slug ? `/assessment/${encodeURIComponent(slug)}` : "/placement-test";
   }, [data]);
 
   if (loading) {
@@ -241,28 +196,27 @@ export function HomeScreen() {
   }
 
   const xpPerLevel = 100;
-  const currentLevelStartXp =
-    Math.max(data.profile.level - 1, 0) * xpPerLevel;
+  const currentLevelStartXp = Math.max(data.profile.level - 1, 0) * xpPerLevel;
+
   const xpInsideCurrentLevel = Math.min(
     Math.max(data.profile.xp - currentLevelStartXp, 0),
     xpPerLevel,
   );
-  const xpProgressPercentage = Math.min(
-    Math.round((xpInsideCurrentLevel / xpPerLevel) * 100),
-    100,
-  );
 
-  const modes: ModeCardProps[] = [
+  const learnedPercentage =
+    data.stats.vocabulary > 0
+      ? Math.round((data.stats.learned / data.stats.vocabulary) * 100)
+      : 0;
+
+  const modes: LearningMode[] = [
     {
-      href: "/chat",
-      title: "Чат",
+      href: ADVENTURE_HREF,
+      title: "Пригода",
       description:
-        "Спілкуйтеся з Еммою у вільному форматі та ставте запитання про англійську.",
-      actionLabel: "Відкрити чат",
-      icon: MessageCircle,
-      iconClassName: "bg-indigo-100 text-indigo-700",
-      cardClassName:
-        "border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-white",
+        "Проходьте сюжетні місії та використовуйте англійську в реальних ситуаціях.",
+      actionLabel: "Продовжити пригоду",
+      icon: Gamepad2,
+      iconClassName: "bg-primary-soft text-primary",
     },
     {
       href: "/speaking",
@@ -271,31 +225,25 @@ export function HomeScreen() {
         "Говоріть уголос, тренуйте вимову та отримуйте зворотний зв’язок.",
       actionLabel: "Почати говорити",
       icon: Mic,
-      iconClassName: "bg-violet-100 text-violet-700",
-      cardClassName:
-        "border-violet-100 bg-gradient-to-br from-violet-50 via-white to-white",
+      iconClassName: "bg-violet-50 text-violet-700",
     },
     {
-      href: testHref,
-      title: "Тести",
+      href: "/vocabulary",
+      title: "Словник",
       description:
-        "Перевіряйте знання, визначайте рівень і знаходьте теми для покращення.",
-      actionLabel: "Пройти тест",
-      icon: BookOpenCheck,
-      iconClassName: "bg-amber-100 text-amber-700",
-      cardClassName:
-        "border-amber-100 bg-gradient-to-br from-amber-50 via-white to-white",
+        "Зберігайте корисні слова й фрази та відстежуйте свій прогрес.",
+      actionLabel: "Відкрити словник",
+      icon: BookOpen,
+      iconClassName: "bg-success-soft text-emerald-700",
     },
     {
-      href: ADVENTURE_HREF,
-      title: "Гра",
+      href: "/review",
+      title: "Повторення",
       description:
-        "Проживайте реальні ситуації англійською та проходьте сюжетні місії.",
-      actionLabel: "Продовжити пригоду",
-      icon: Gamepad2,
-      iconClassName: "bg-emerald-100 text-emerald-700",
-      cardClassName:
-        "border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white",
+        "Повертайтеся до складних слів і закріплюйте вивчений матеріал.",
+      actionLabel: "Почати повторення",
+      icon: Trophy,
+      iconClassName: "bg-warning-soft text-amber-700",
     },
   ];
 
@@ -304,118 +252,122 @@ export function HomeScreen() {
       label: "Рівень англійської",
       value: data.profile.englishLevel,
       icon: GraduationCap,
-      className: "bg-indigo-50 text-indigo-700",
+      iconClassName: "bg-primary-soft text-primary",
     },
     {
       label: "Загальний досвід",
       value: `${data.profile.xp} XP`,
       icon: Star,
-      className: "bg-amber-50 text-amber-700",
+      iconClassName: "bg-warning-soft text-amber-700",
     },
     {
       label: "Поточна серія",
       value: `${data.profile.streak} дн.`,
       icon: Flame,
-      className: "bg-orange-50 text-orange-700",
+      iconClassName: "bg-orange-50 text-orange-700",
     },
     {
       label: "Вивчено слів",
       value: data.stats.learned.toString(),
-      icon: Trophy,
-      className: "bg-emerald-50 text-emerald-700",
+      icon: BookOpen,
+      iconClassName: "bg-success-soft text-emerald-700",
     },
   ];
 
+  const userName = data.profile.fullName?.trim().split(/\s+/)[0] || "друже";
+
   return (
     <div className="space-y-8">
-      <section className="overflow-hidden rounded-3xl bg-slate-950 p-6 text-white shadow-xl sm:p-8">
-        <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-indigo-300">
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              З поверненням
+      <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
+        <Card className="overflow-hidden border-primary/10 bg-gradient-to-br from-white via-white to-primary-soft">
+          <CardHeader className="pb-2">
+            <Badge className="mb-2">
+              <Gamepad2 aria-hidden="true" />
+              Наступний крок
+            </Badge>
+
+            <CardTitle className="text-3xl sm:text-4xl">
+              Вітаємо, {userName}
+            </CardTitle>
+
+            <CardDescription className="max-w-2xl text-base">
+              Продовжуйте навчання з місії Coffee Shop і практикуйте англійську
+              в живій ситуації.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <div className="rounded-xl border border-primary/10 bg-white/80 p-5 backdrop-blur">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    London First Day
+                  </p>
+
+                  <h2 className="mt-1 text-2xl font-bold tracking-tight">
+                    Coffee Shop
+                  </h2>
+
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Замовте напій, поспілкуйтеся з баристою та отримайте
+                    персональний відгук.
+                  </p>
+                </div>
+
+                <Link href={ADVENTURE_HREF} className={buttonVariants()}>
+                  Продовжити
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </div>
             </div>
+          </CardContent>
+        </Card>
 
-            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Вітаємо, {data.profile.fullName}
-            </h1>
-
-            <p className="mt-3 max-w-2xl leading-7 text-slate-300">
-              Оберіть режим і зробіть наступний крок до впевненого
-              спілкування англійською.
-            </p>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href={ADVENTURE_HREF}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-              >
-                <Gamepad2 className="h-4 w-4" aria-hidden="true" />
-                Продовжити гру
-              </Link>
-
-              <Link
-                href="/speaking"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-              >
-                <Mic className="h-4 w-4" aria-hidden="true" />
-                Розмовна практика
-              </Link>
-            </div>
-          </div>
-
-          <div className="w-full min-w-0 rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur sm:min-w-[280px]">
-            <div className="flex items-center justify-between gap-4">
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-slate-300">
-                  Рівень користувача
-                </p>
-                <p className="mt-1 text-3xl font-bold">
+                <CardDescription>Рівень користувача</CardDescription>
+
+                <CardTitle className="mt-1 text-3xl">
                   {data.profile.level}
-                </p>
+                </CardTitle>
               </div>
 
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/30 text-indigo-200">
-                <Target className="h-7 w-7" aria-hidden="true" />
+              <div className="flex size-12 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                <Target className="size-6" aria-hidden="true" />
               </div>
             </div>
+          </CardHeader>
 
-            <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between text-xs text-slate-300">
-                <span>
-                  {xpInsideCurrentLevel} / {xpPerLevel} XP
-                </span>
-                <span>{xpProgressPercentage}%</span>
-              </div>
-
-              <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full rounded-full bg-indigo-400 transition-all duration-500"
-                  style={{ width: `${xpProgressPercentage}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+          <CardContent>
+            <Progress
+              value={xpInsideCurrentLevel}
+              max={xpPerLevel}
+              label={`${xpInsideCurrentLevel} із ${xpPerLevel} XP`}
+              showValue
+            />
+          </CardContent>
+        </Card>
       </section>
 
-      <section aria-labelledby="main-modes-heading">
+      <section aria-labelledby="learning-modes-heading">
         <div className="mb-5">
           <h2
-            id="main-modes-heading"
-            className="text-2xl font-bold tracking-tight text-slate-950"
+            id="learning-modes-heading"
+            className="text-2xl font-bold tracking-tight"
           >
-            Оберіть режим
+            Ваші напрями навчання
           </h2>
 
-          <p className="mt-1 text-sm text-slate-600">
-            Чотири способи навчатися та практикувати англійську.
+          <p className="mt-1 text-sm text-muted-foreground">
+            Оберіть формат, який найкраще відповідає вашій сьогоднішній цілі.
           </p>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {modes.map((mode) => (
-            <ModeCard key={mode.title} {...mode} />
+            <ModeCard key={mode.title} mode={mode} />
           ))}
         </div>
       </section>
@@ -425,22 +377,25 @@ export function HomeScreen() {
           <div>
             <h2
               id="progress-heading"
-              className="text-2xl font-bold tracking-tight text-slate-950"
+              className="text-2xl font-bold tracking-tight"
             >
               Ваш прогрес
             </h2>
 
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-muted-foreground">
               Короткий огляд поточних результатів.
             </p>
           </div>
 
           <Link
             href="/profile"
-            className="hidden items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700 sm:inline-flex"
+            className={buttonVariants({
+              variant: "ghost",
+              size: "sm",
+            })}
           >
             Відкрити профіль
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <ArrowRight aria-hidden="true" />
           </Link>
         </div>
 
@@ -449,110 +404,116 @@ export function HomeScreen() {
             const Icon = item.icon;
 
             return (
-              <article
-                key={item.label}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-              >
-                <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.className}`}
-                >
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </div>
+              <Card key={item.label}>
+                <CardContent>
+                  <div
+                    className={[
+                      "flex size-11 items-center justify-center rounded-lg",
+                      item.iconClassName,
+                    ].join(" ")}
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
+                  </div>
 
-                <p className="mt-5 text-2xl font-bold text-slate-950">
-                  {item.value}
-                </p>
+                  <p className="mt-5 text-2xl font-bold">{item.value}</p>
 
-                <p className="mt-1 text-sm text-slate-600">
-                  {item.label}
-                </p>
-              </article>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {item.label}
+                  </p>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
-        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-violet-600">
-                Оцінювання знань
-              </p>
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardDescription>Оцінювання знань</CardDescription>
 
-              <h2 className="mt-2 text-xl font-bold text-slate-950">
-                {data.assessment.latest
-                  ? `Останній результат: ${Math.round(
-                      data.assessment.latest.percentage,
-                    )}%`
-                  : "Визначте свій рівень англійської"}
-              </h2>
+                <CardTitle className="mt-1">
+                  {data.assessment.latest
+                    ? `Останній результат: ${Math.round(
+                        data.assessment.latest.percentage,
+                      )}%`
+                    : "Визначте свій рівень англійської"}
+                </CardTitle>
+              </div>
 
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                {data.assessment.latest
-                  ? "Перегляньте результат або пройдіть рекомендований тест."
-                  : "Пройдіть тест і отримайте персональні рекомендації."}
-              </p>
+              <div className="flex size-12 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
+                <BookOpenCheck className="size-6" aria-hidden="true" />
+              </div>
             </div>
+          </CardHeader>
 
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
-              <BookOpenCheck className="h-6 w-6" aria-hidden="true" />
+          <CardContent>
+            <p className="text-sm leading-6 text-muted-foreground">
+              {data.assessment.latest
+                ? "Пройдіть рекомендований тест, щоб перевірити прогрес і знайти теми для покращення."
+                : "Пройдіть коротке оцінювання й отримайте персональні рекомендації."}
+            </p>
+          </CardContent>
+
+          <CardFooter>
+            <Link href={testHref} className={buttonVariants()}>
+              {data.assessment.hasAssessment
+                ? "Пройти наступний тест"
+                : "Почати тест"}
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardDescription>Словниковий запас</CardDescription>
+
+                <CardTitle className="mt-1">
+                  {data.stats.learned} із {data.stats.vocabulary} слів вивчено
+                </CardTitle>
+              </div>
+
+              <div className="flex size-12 items-center justify-center rounded-lg bg-success-soft text-emerald-700">
+                <BookOpen className="size-6" aria-hidden="true" />
+              </div>
             </div>
-          </div>
+          </CardHeader>
 
-          <Link
-            href={testHref}
-            className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700"
-          >
-            {data.assessment.hasAssessment
-              ? "Пройти наступний тест"
-              : "Почати тест"}
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </article>
+          <CardContent>
+            <Progress
+              value={learnedPercentage}
+              label={`${data.stats.dueToday} слів доступно для повторення`}
+              showValue
+              indicatorClassName="bg-success"
+            />
+          </CardContent>
 
-        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-emerald-600">
-                Словниковий запас
-              </p>
-
-              <h2 className="mt-2 text-xl font-bold text-slate-950">
-                {data.stats.learned} із {data.stats.vocabulary} слів вивчено
-              </h2>
-
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Сьогодні доступно для повторення:{" "}
-                <strong className="text-slate-900">
-                  {data.stats.dueToday}
-                </strong>
-                .
-              </p>
-            </div>
-
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-              <Trophy className="h-6 w-6" aria-hidden="true" />
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
+          <CardFooter className="flex-wrap">
             <Link
               href="/review"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className={buttonVariants({
+                variant: "success",
+              })}
             >
               Повторити слова
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <ArrowRight aria-hidden="true" />
             </Link>
 
             <Link
               href="/vocabulary"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className={buttonVariants({
+                variant: "outline",
+              })}
             >
               Відкрити словник
             </Link>
-          </div>
-        </article>
+          </CardFooter>
+        </Card>
       </section>
     </div>
   );

@@ -1,0 +1,45 @@
+﻿export type DashboardData = {
+  profile: {
+    fullName: string;
+    englishLevel: string;
+    xp: number;
+    level: number;
+    streak: number;
+  };
+
+  stats: {
+    conversations: number;
+    vocabulary: number;
+    learned: number;
+    dueToday: number;
+    speakingToday: number;
+  };
+
+  assessment: {
+    hasAssessment: boolean;
+
+    latest: {
+      attemptId: string;
+      testSlug: string;
+      testName: string;
+      cefrLevel: string | null;
+      finalLevel: string | null;
+      percentage: number;
+      passed: boolean | null;
+      completedAt: string;
+      averageResponseTimeMs: number | null;
+    } | null;
+
+    categories: Array<{
+      category: string;
+      answered: number;
+      correct: number;
+      percentage: number;
+      averageResponseTimeMs: number | null;
+    }>;
+
+    strongestCategory: string | null;
+    weakestCategory: string | null;
+    recommendedTestSlug: string;
+  };
+};
