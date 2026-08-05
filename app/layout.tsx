@@ -20,9 +20,13 @@ export const metadata: Metadata = {
     default: "TalkHero — вивчайте англійську через живі ситуації",
     template: "%s | TalkHero",
   },
+
   description:
     "Вивчайте англійську через інтерактивні місії, живі розмови, словник, повторення та розмовну практику.",
+
   applicationName: "TalkHero",
+  manifest: "/manifest.webmanifest",
+
   keywords: [
     "англійська мова",
     "вивчення англійської",
@@ -30,17 +34,61 @@ export const metadata: Metadata = {
     "інтерактивне навчання",
     "TalkHero",
   ],
-  authors: [{ name: "TalkHero" }],
+
+  authors: [
+    {
+      name: "TalkHero",
+    },
+  ],
+
   creator: "TalkHero",
   publisher: "TalkHero",
+
+  icons: {
+    icon: [
+      {
+        url: "/favicon.ico",
+      },
+      {
+        url: "/pwa/icon-192",
+        type: "image/png",
+        sizes: "192x192",
+      },
+      {
+        url: "/pwa/icon-512",
+        type: "image/png",
+        sizes: "512x512",
+      },
+    ],
+
+    apple: [
+      {
+        url: "/pwa/apple-icon",
+        type: "image/png",
+        sizes: "180x180",
+      },
+    ],
+  },
+
+  appleWebApp: {
+    capable: true,
+    title: "TalkHero",
+    statusBarStyle: "default",
+  },
+
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
+
   robots: {
     index: true,
     follow: true,
+  },
+
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 
@@ -48,7 +96,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#F8FAFC",
+  themeColor: "#6366F1",
 };
 
 export default function RootLayout({
