@@ -9,12 +9,11 @@ export function createTalkHeroIcon({
   size,
   maskable = false,
 }: CreateTalkHeroIconOptions): ImageResponse {
-  const safeInset = maskable
-    ? Math.round(size * 0.16)
-    : Math.round(size * 0.08);
+  const horizontalInset = Math.round(size * (maskable ? 0.2 : 0.12));
 
-  const wordmarkSize = Math.round(size * 0.18);
-  const radius = Math.round(size * 0.22);
+  const verticalInset = Math.round(size * (maskable ? 0.2 : 0.12));
+
+  const wordmarkSize = Math.round(size * (maskable ? 0.145 : 0.155));
 
   return new ImageResponse(
     <div
@@ -24,10 +23,9 @@ export function createTalkHeroIcon({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: safeInset,
-        borderRadius: radius,
+        padding: `${verticalInset}px ${horizontalInset}px`,
         background:
-          "linear-gradient(135deg, #4F46E5 0%, #2563EB 58%, #0F172A 100%)",
+          "linear-gradient(135deg, #4F46E5 0%, #2563EB 58%, #172554 100%)",
       }}
     >
       <div
@@ -38,7 +36,7 @@ export function createTalkHeroIcon({
           fontFamily: "Arial, Helvetica, sans-serif",
           fontSize: wordmarkSize,
           fontWeight: 800,
-          letterSpacing: "-0.06em",
+          letterSpacing: "-0.055em",
           whiteSpace: "nowrap",
         }}
       >
