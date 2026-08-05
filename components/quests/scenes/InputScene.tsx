@@ -1,12 +1,12 @@
-"use client";
-
-import {
-  useEffect,
-  useState,
-} from "react";
+﻿"use client";
 
 import type { KeyboardEvent } from "react";
+import { useEffect, useState } from "react";
+import { Loader2, Send } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import type { PublicQuestScene } from "@/lib/quests";
+import { cn } from "@/lib/utils";
 
 import { SceneShell } from "./SceneShell";
 
@@ -32,9 +32,7 @@ export function InputScene({
   const trimmed = value.trim();
 
   const canSubmit =
-    trimmed.length > 0 &&
-    trimmed.length <= MAX_LENGTH &&
-    !loading;
+    trimmed.length > 0 && trimmed.length <= MAX_LENGTH && !loading;
 
   async function handleSubmit() {
     if (!canSubmit) {
@@ -44,13 +42,8 @@ export function InputScene({
     await onSubmit(trimmed);
   }
 
-  async function handleKeyDown(
-    event: KeyboardEvent<HTMLTextAreaElement>,
-  ) {
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
+  async function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       await handleSubmit();
     }
@@ -62,28 +55,42 @@ export function InputScene({
       description={scene.content}
       footer={
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-sm text-slate-500">
-            {value.length} із {MAX_LENGTH} символів
-          </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-muted-foreground">
+              {value.length} із {MAX_LENGTH} символів
+            </span>
 
-          <button
+            <span className="text-xs text-muted-foreground">
+              Enter — надіслати, Shift + Enter — новий рядок
+            </span>
+          </div>
+
+          <Button
             type="button"
             disabled={!canSubmit}
             onClick={() => {
               void handleSubmit();
             }}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full sm:w-auto"
           >
-            {loading
-              ? "Надсилання…"
-              : "Надіслати"}
-          </button>
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" aria-hidden="true" />
+                Надсилання…
+              </>
+            ) : (
+              <>
+                Надіслати відповідь
+                <Send aria-hidden="true" />
+              </>
+            )}
+          </Button>
         </div>
       }
     >
       <label
         htmlFor={`quest-answer-${scene.id}`}
-        className="sr-only"
+        className="mb-2 block text-sm font-semibold text-foreground"
       >
         Ваша відповідь
       </label>
@@ -92,16 +99,23 @@ export function InputScene({
         id={`quest-answer-${scene.id}`}
         value={value}
         disabled={loading}
-        onChange={(event) =>
-          setValue(event.target.value)
-        }
+        onChange={(event) => {
+          setValue(event.target.value);
+        }}
         onKeyDown={(event) => {
           void handleKeyDown(event);
         }}
         rows={6}
-        placeholder="Введіть відповідь…"
+        placeholder="Введіть відповідь англійською…"
         maxLength={MAX_LENGTH}
-        className="w-full resize-y rounded-2xl border border-slate-300 bg-white p-4 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70"
+        className={cn(
+          "min-h-40 w-full resize-y rounded-xl border border-input bg-card p-4",
+          "text-base leading-7 text-foreground",
+          "outline-none transition-[border-color,box-shadow,background-color] duration-150",
+          "placeholder:text-muted-foreground",
+          "focus:border-primary focus:ring-3 focus:ring-ring/20",
+          "disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-70",
+        )}
       />
     </SceneShell>
   );

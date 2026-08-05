@@ -1,6 +1,8 @@
-"use client";
+﻿"use client";
 
+import { useEffect, useState } from "react";
 import {
+  Loader2,
   Mic,
   MicOff,
   RotateCcw,
@@ -8,11 +10,8 @@ import {
   Square,
   Waves,
 } from "lucide-react";
-import {
-  useEffect,
-  useState,
-} from "react";
 
+import { Button } from "@/components/ui/button";
 import type { PublicQuestScene } from "@/lib/quests";
 
 import { useVoiceRecorder } from "../hooks/useVoiceRecorder";
@@ -24,15 +23,11 @@ type VoiceSceneProps = {
   onSubmit: (value: unknown) => Promise<void>;
 };
 
-function formatDuration(
-  seconds: number,
-): string {
+function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const remaining = seconds % 60;
 
-  return `${minutes}:${remaining
-    .toString()
-    .padStart(2, "0")}`;
+  return `${minutes}:${remaining.toString().padStart(2, "0")}`;
 }
 
 export function VoiceScene({
@@ -41,8 +36,8 @@ export function VoiceScene({
   onSubmit,
 }: VoiceSceneProps) {
   const recorder = useVoiceRecorder();
-  const [transcript, setTranscript] =
-    useState("");
+
+  const [transcript, setTranscript] = useState("");
 
   useEffect(() => {
     recorder.reset();
@@ -55,8 +50,7 @@ export function VoiceScene({
     recorder.state === "processing";
 
   async function handleStop() {
-    const text =
-      await recorder.stopAndTranscribe();
+    const text = await recorder.stopAndTranscribe();
 
     if (text) {
       setTranscript(text);
@@ -73,141 +67,160 @@ export function VoiceScene({
     await onSubmit(value);
   }
 
+  function handleClear() {
+    setTranscript("");
+    recorder.reset();
+  }
+
   return (
     <SceneShell
-      title={
-        scene.prompt ||
-        "Дайте відповідь голосом"
-      }
+      title={scene.prompt || "Дайте відповідь голосом"}
       description={scene.content}
       footer={
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-5 text-slate-500">
-            Голос перетворюється на текст за допомогою ШІ.
+          <p className="text-xs leading-5 text-muted-foreground">
+            Голос перетворюється на текст за допомогою штучного інтелекту.
           </p>
 
-          <button
+          <Button
             type="button"
             disabled={!transcript.trim() || busy}
             onClick={() => {
               void handleSubmit();
             }}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full sm:w-auto"
           >
-            <Send className="h-4 w-4" />
-            {loading
-              ? "Перевірка…"
-              : "Надіслати відповідь"}
-          </button>
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" aria-hidden="true" />
+                Перевіряємо…
+              </>
+            ) : (
+              <>
+                Надіслати відповідь
+                <Send aria-hidden="true" />
+              </>
+            )}
+          </Button>
         </div>
       }
     >
-      <div className="space-y-6">
-        <section className="rounded-3xl border border-indigo-100 bg-indigo-50 p-6 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-indigo-600 shadow-sm">
+      <div className="space-y-5">
+        <section className="rounded-xl border border-primary/15 bg-primary-soft/60 p-5 text-center sm:p-6">
+          <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-card text-primary shadow-sm">
             {recorder.state === "recording" ? (
-              <Waves className="h-8 w-8 animate-pulse" />
+              <Waves className="size-8 animate-pulse" aria-hidden="true" />
+            ) : recorder.state === "processing" ||
+              recorder.state === "requesting" ? (
+              <Loader2 className="size-8 animate-spin" aria-hidden="true" />
             ) : (
-              <Mic className="h-8 w-8" />
+              <Mic className="size-8" aria-hidden="true" />
             )}
           </div>
 
-          <h3 className="mt-4 text-lg font-bold text-slate-950">
+          <h3 className="mt-4 text-lg font-bold text-foreground">
             {recorder.state === "recording"
               ? "Говоріть англійською"
               : recorder.state === "processing"
-                ? "Розпізнавання голосу…"
+                ? "Розпізнаємо голос…"
                 : recorder.state === "requesting"
-                  ? "Підключення мікрофона…"
+                  ? "Підключаємо мікрофон…"
                   : "Запишіть свою відповідь"}
           </h3>
 
-          {recorder.state === "recording" && (
-            <p className="mt-2 font-mono text-2xl font-bold text-indigo-700">
-              {formatDuration(
-                recorder.durationSeconds,
-              )}
+          {recorder.state === "recording" ? (
+            <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-primary">
+              {formatDuration(recorder.durationSeconds)}
+            </p>
+          ) : (
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+              Говоріть чітко й природно. Після завершення запису ми покажемо
+              розпізнаний текст.
             </p>
           )}
 
           <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
             {recorder.state === "recording" ? (
               <>
-                <button
+                <Button
                   type="button"
+                  variant="destructive"
                   onClick={() => {
                     void handleStop();
                   }}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700"
+                  className="w-full sm:w-auto"
                 >
-                  <Square className="h-4 w-4 fill-current" />
+                  <Square className="fill-current" aria-hidden="true" />
                   Завершити запис
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={recorder.cancel}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="w-full sm:w-auto"
                 >
-                  <MicOff className="h-4 w-4" />
+                  <MicOff aria-hidden="true" />
                   Скасувати
-                </button>
+                </Button>
               </>
             ) : (
-              <button
+              <Button
                 type="button"
                 disabled={busy}
                 onClick={() => {
                   void recorder.start();
                 }}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full sm:w-auto"
               >
-                <Mic className="h-4 w-4" />
-                {transcript
-                  ? "Записати ще раз"
-                  : "Почати запис"}
-              </button>
+                {busy ? (
+                  <Loader2 className="animate-spin" aria-hidden="true" />
+                ) : (
+                  <Mic aria-hidden="true" />
+                )}
+
+                {transcript ? "Записати ще раз" : "Почати запис"}
+              </Button>
             )}
           </div>
         </section>
 
-        {recorder.error && (
+        {recorder.error ? (
           <div
             role="alert"
-            className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+            className="rounded-xl border border-destructive/20 bg-destructive-soft p-4 text-sm text-red-700 dark:text-red-300"
           >
             {recorder.error}
           </div>
-        )}
+        ) : null}
 
-        {transcript && (
-          <section className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
+        {transcript ? (
+          <section className="rounded-xl border border-success/20 bg-success-soft p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-200">
                   Розпізнана відповідь
                 </p>
 
-                <p className="mt-2 text-lg font-medium leading-7 text-slate-950">
+                <p className="mt-2 whitespace-pre-line text-lg font-medium leading-7 text-foreground">
                   “{transcript}”
                 </p>
               </div>
 
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 disabled={busy}
-                onClick={() => {
-                  setTranscript("");
-                  recorder.reset();
-                }}
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
+                onClick={handleClear}
+                className="shrink-0"
               >
-                <RotateCcw className="h-4 w-4" />
+                <RotateCcw aria-hidden="true" />
                 Очистити
-              </button>
+              </Button>
             </div>
           </section>
-        )}
+        ) : null}
       </div>
     </SceneShell>
   );
