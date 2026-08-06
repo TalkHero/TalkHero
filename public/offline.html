@@ -1,0 +1,225 @@
+﻿<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#6366f1" />
+
+    <title>Немає з’єднання | TalkHero</title>
+
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, Arial, Helvetica, sans-serif;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin: 0;
+        background:
+          radial-gradient(circle at top, #eef2ff 0, transparent 42%), #f8fafc;
+      }
+
+      main {
+        display: flex;
+        min-height: 100vh;
+        min-height: 100dvh;
+        align-items: center;
+        justify-content: center;
+        padding: max(24px, env(safe-area-inset-top))
+          max(16px, env(safe-area-inset-right))
+          max(24px, env(safe-area-inset-bottom))
+          max(16px, env(safe-area-inset-left));
+      }
+
+      .card {
+        width: 100%;
+        max-width: 520px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        border-radius: 28px;
+        background: #ffffff;
+        box-shadow: 0 24px 64px -32px rgb(15 23 42 / 0.32);
+      }
+
+      .hero {
+        padding: 40px 28px;
+        text-align: center;
+        background: linear-gradient(
+          135deg,
+          #4f46e5 0%,
+          #2563eb 58%,
+          #172554 100%
+        );
+        color: #ffffff;
+      }
+
+      .wordmark {
+        display: inline-flex;
+        align-items: baseline;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.055em;
+      }
+
+      .wordmark span:last-child {
+        color: #bfdbfe;
+      }
+
+      .icon {
+        display: flex;
+        width: 72px;
+        height: 72px;
+        margin: 28px auto 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 22px;
+        background: rgb(255 255 255 / 0.15);
+        font-size: 34px;
+        backdrop-filter: blur(8px);
+      }
+
+      .content {
+        padding: 28px;
+        text-align: center;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(26px, 7vw, 36px);
+        line-height: 1.15;
+        letter-spacing: -0.035em;
+      }
+
+      p {
+        margin: 14px auto 0;
+        max-width: 400px;
+        color: #64748b;
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      .hint {
+        margin-top: 22px;
+        padding: 14px;
+        border: 1px solid #e0e7ff;
+        border-radius: 16px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      button {
+        width: 100%;
+        min-height: 50px;
+        margin-top: 24px;
+        border: 0;
+        border-radius: 14px;
+        background: #6366f1;
+        color: #ffffff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+        transition:
+          background-color 150ms,
+          transform 150ms;
+      }
+
+      button:hover {
+        background: #4f46e5;
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      button:focus-visible {
+        outline: 3px solid rgb(99 102 241 / 0.3);
+        outline-offset: 3px;
+      }
+
+      .status {
+        min-height: 20px;
+        margin-top: 12px;
+        color: #64748b;
+        font-size: 13px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        button {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <section class="card" aria-labelledby="offline-title">
+        <div class="hero">
+          <div class="wordmark" aria-label="TalkHero">
+            <span>Talk</span><span>Hero</span>
+          </div>
+
+          <div class="icon" aria-hidden="true">📡</div>
+        </div>
+
+        <div class="content">
+          <h1 id="offline-title">Немає з’єднання з інтернетом</h1>
+
+          <p>
+            Для навчальних місій, озвучення та синхронізації прогресу TalkHero
+            потрібне підключення до мережі.
+          </p>
+
+          <div class="hint">
+            Перевірте Wi-Fi або мобільний інтернет, а потім повторіть спробу.
+          </div>
+
+          <button id="retry-button" type="button">Спробувати ще раз</button>
+
+          <div
+            id="connection-status"
+            class="status"
+            role="status"
+            aria-live="polite"
+          ></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const retryButton = document.getElementById("retry-button");
+
+      const connectionStatus = document.getElementById("connection-status");
+
+      function updateConnectionStatus() {
+        if (navigator.onLine) {
+          connectionStatus.textContent =
+            "З’єднання відновлено. Оновлюємо сторінку…";
+
+          window.location.reload();
+          return;
+        }
+
+        connectionStatus.textContent = "Підключення все ще відсутнє.";
+      }
+
+      retryButton.addEventListener("click", updateConnectionStatus);
+
+      window.addEventListener("online", updateConnectionStatus);
+    </script>
+  </body>
+</html>

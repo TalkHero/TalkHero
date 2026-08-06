@@ -1,6 +1,8 @@
 ﻿import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -114,6 +116,7 @@ export default function RootLayout({
         ].join(" ")}
       >
         {children}
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
