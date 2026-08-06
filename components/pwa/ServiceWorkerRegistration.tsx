@@ -2,12 +2,36 @@
 
 import { useEffect } from "react";
 
+const CACHE_PREFIX = "talkhero-";
+
+async function clearDevelopmentPwaState() {
+  if ("serviceWorker" in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+
+    await Promise.all(
+      registrations.map((registration) => registration.unregister()),
+    );
+  }
+
+  if ("caches" in window) {
+    const cacheNames = await caches.keys();
+
+    await Promise.all(
+      cacheNames
+        .filter((cacheName) => cacheName.startsWith(CACHE_PREFIX))
+        .map((cacheName) => caches.delete(cacheName)),
+    );
+  }
+}
+
 export function ServiceWorkerRegistration() {
   useEffect(() => {
-    if (
-      process.env.NODE_ENV !== "production" ||
-      !("serviceWorker" in navigator)
-    ) {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      void clearDevelopmentPwaState();
       return;
     }
 
