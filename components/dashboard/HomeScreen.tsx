@@ -18,6 +18,7 @@ import {
   Trophy,
 } from "lucide-react";
 
+import { DailyGoalsSection } from "@/components/dashboard/DailyGoalsSection";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -171,7 +172,13 @@ export function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    void loadDashboard();
+    const timeoutId = window.setTimeout(() => {
+      void loadDashboard();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadDashboard]);
 
   const testHref = useMemo(() => {
@@ -350,6 +357,8 @@ export function HomeScreen() {
           </CardContent>
         </Card>
       </section>
+
+      <DailyGoalsSection goals={data.dailyGoals} />
 
       <section aria-labelledby="learning-modes-heading">
         <div className="mb-5">

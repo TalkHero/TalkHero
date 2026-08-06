@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 import { API_ERRORS } from "@/lib/i18n/errors";
 import { createClient } from "@/lib/supabase/server";
@@ -34,29 +34,17 @@ function normalizeCategory(value: unknown): string | null {
 function buildRecommendedTestSlug(
   englishLevel: string | null | undefined,
 ): string {
-  const normalizedLevel =
-    englishLevel?.trim().toLowerCase() || "a1";
+  const normalizedLevel = englishLevel?.trim().toLowerCase() || "a1";
 
-  const supportedLevels = new Set([
-    "a1",
-    "a2",
-    "b1",
-    "b2",
-    "c1",
-  ]);
+  const supportedLevels = new Set(["a1", "a2", "b1", "b2", "c1"]);
 
   return supportedLevels.has(normalizedLevel)
     ? `english-${normalizedLevel}`
     : "english-a1";
 }
 
-function calculateAssessmentAnalytics(
-  items: AssessmentItemRow[],
-) {
-  const categoryMap = new Map<
-    string,
-    CategoryAccumulator
-  >();
+function calculateAssessmentAnalytics(items: AssessmentItemRow[]) {
+  const categoryMap = new Map<string, CategoryAccumulator>();
 
   let totalResponseTimeMs = 0;
   let timedAnswerCount = 0;
@@ -66,21 +54,18 @@ function calculateAssessmentAnalytics(
       continue;
     }
 
-    const category = normalizeCategory(
-      item.question_snapshot?.category,
-    );
+    const category = normalizeCategory(item.question_snapshot?.category);
 
     if (!category) {
       continue;
     }
 
-    const current =
-      categoryMap.get(category) ?? {
-        answered: 0,
-        correct: 0,
-        totalResponseTimeMs: 0,
-        timedAnswers: 0,
-      };
+    const current = categoryMap.get(category) ?? {
+      answered: 0,
+      correct: 0,
+      totalResponseTimeMs: 0,
+      timedAnswers: 0,
+    };
 
     current.answered += 1;
 
@@ -92,13 +77,11 @@ function calculateAssessmentAnalytics(
       typeof item.response_time_ms === "number" &&
       item.response_time_ms >= 0
     ) {
-      current.totalResponseTimeMs +=
-        item.response_time_ms;
+      current.totalResponseTimeMs += item.response_time_ms;
 
       current.timedAnswers += 1;
 
-      totalResponseTimeMs +=
-        item.response_time_ms;
+      totalResponseTimeMs += item.response_time_ms;
 
       timedAnswerCount += 1;
     }
@@ -106,25 +89,20 @@ function calculateAssessmentAnalytics(
     categoryMap.set(category, current);
   }
 
-  const categories = Array.from(
-    categoryMap.entries(),
-  )
+  const categories = Array.from(categoryMap.entries())
     .map(([category, stats]) => ({
       category,
       answered: stats.answered,
       correct: stats.correct,
+
       percentage:
         stats.answered > 0
-          ? Math.round(
-              (stats.correct / stats.answered) * 100,
-            )
+          ? Math.round((stats.correct / stats.answered) * 100)
           : 0,
+
       averageResponseTimeMs:
         stats.timedAnswers > 0
-          ? Math.round(
-              stats.totalResponseTimeMs /
-                stats.timedAnswers,
-            )
+          ? Math.round(stats.totalResponseTimeMs / stats.timedAnswers)
           : null,
     }))
     .sort((a, b) => {
@@ -136,9 +114,7 @@ function calculateAssessmentAnalytics(
     });
 
   const strongestCategory =
-    categories.length > 0
-      ? categories[0].category
-      : null;
+    categories.length > 0 ? categories[0].category : null;
 
   const weakestCategory =
     categories.length > 0
@@ -154,10 +130,7 @@ function calculateAssessmentAnalytics(
   return {
     averageResponseTimeMs:
       timedAnswerCount > 0
-        ? Math.round(
-            totalResponseTimeMs /
-              timedAnswerCount,
-          )
+        ? Math.round(totalResponseTimeMs / timedAnswerCount)
         : null,
 
     categories,
@@ -189,11 +162,12 @@ export async function GET() {
     const now = new Date();
 
     const startOfToday = new Date(now);
+
     startOfToday.setHours(0, 0, 0, 0);
 
     const nowIso = now.toISOString();
-    const startOfTodayIso =
-      startOfToday.toISOString();
+
+    const startOfTodayIso = startOfToday.toISOString();
 
     const [
       profileResult,
@@ -202,13 +176,13 @@ export async function GET() {
       learnedResult,
       dueResult,
       speakingTodayResult,
+      reviewedTodayResult,
+      completedMissionsTodayResult,
       latestAssessmentResult,
     ] = await Promise.all([
       supabase
         .from("profiles")
-        .select(
-          "full_name, english_level, xp, level, streak",
-        )
+        .select("full_name, english_level, xp, level, streak")
         .eq("id", user.id)
         .maybeSingle(),
 
@@ -253,10 +227,29 @@ export async function GET() {
           head: true,
         })
         .eq("user_id", user.id)
-        .gte(
-          "completed_at",
-          startOfTodayIso,
-        ),
+        .gte("completed_at", startOfTodayIso)
+        .lte("completed_at", nowIso),
+
+      supabase
+        .from("vocabulary")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .eq("user_id", user.id)
+        .gte("last_reviewed_at", startOfTodayIso)
+        .lte("last_reviewed_at", nowIso),
+
+      supabase
+        .from("quest_runs")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .eq("user_id", user.id)
+        .eq("status", "completed")
+        .gte("completed_at", startOfTodayIso)
+        .lte("completed_at", nowIso),
 
       supabase
         .from("assessment_attempts")
@@ -304,18 +297,25 @@ export async function GET() {
       throw speakingTodayResult.error;
     }
 
+    if (reviewedTodayResult.error) {
+      throw reviewedTodayResult.error;
+    }
+
+    if (completedMissionsTodayResult.error) {
+      throw completedMissionsTodayResult.error;
+    }
+
     if (latestAssessmentResult.error) {
       throw latestAssessmentResult.error;
     }
 
-    const englishLevel =
-      profileResult.data?.english_level || "A1";
+    const englishLevel = profileResult.data?.english_level || "A1";
 
-    const recommendedTestSlug =
-      buildRecommendedTestSlug(englishLevel);
+    const recommendedTestSlug = buildRecommendedTestSlug(englishLevel);
 
     let assessment: {
       hasAssessment: boolean;
+
       latest: {
         attemptId: string;
         testSlug: string;
@@ -327,6 +327,7 @@ export async function GET() {
         completedAt: string;
         averageResponseTimeMs: number | null;
       } | null;
+
       categories: Array<{
         category: string;
         answered: number;
@@ -334,8 +335,11 @@ export async function GET() {
         percentage: number;
         averageResponseTimeMs: number | null;
       }>;
+
       strongestCategory: string | null;
+
       weakestCategory: string | null;
+
       recommendedTestSlug: string;
     } = {
       hasAssessment: false,
@@ -346,36 +350,29 @@ export async function GET() {
       recommendedTestSlug,
     };
 
-    const latestAttempt =
-      latestAssessmentResult.data;
+    const latestAttempt = latestAssessmentResult.data;
 
     if (latestAttempt) {
-      const [testResult, itemsResult] =
-        await Promise.all([
-          supabase
-            .from("assessment_tests")
-            .select(
-              "slug, name_uk, cefr_level",
-            )
-            .eq("id", latestAttempt.test_id)
-            .maybeSingle(),
+      const [testResult, itemsResult] = await Promise.all([
+        supabase
+          .from("assessment_tests")
+          .select("slug, name_uk, cefr_level")
+          .eq("id", latestAttempt.test_id)
+          .maybeSingle(),
 
-          supabase
-            .from("assessment_attempt_items")
-            .select(
-              `
-                is_correct,
-                response_time_ms,
-                answer_status,
-                question_snapshot
-              `,
-            )
-            .eq(
-              "attempt_id",
-              latestAttempt.id,
-            )
-            .neq("answer_status", "pending"),
-        ]);
+        supabase
+          .from("assessment_attempt_items")
+          .select(
+            `
+              is_correct,
+              response_time_ms,
+              answer_status,
+              question_snapshot
+            `,
+          )
+          .eq("attempt_id", latestAttempt.id)
+          .neq("answer_status", "pending"),
+      ]);
 
       if (testResult.error) {
         throw testResult.error;
@@ -385,54 +382,100 @@ export async function GET() {
         throw itemsResult.error;
       }
 
-      const analytics =
-        calculateAssessmentAnalytics(
-          (itemsResult.data ??
-            []) as AssessmentItemRow[],
-        );
+      const analytics = calculateAssessmentAnalytics(
+        (itemsResult.data ?? []) as AssessmentItemRow[],
+      );
 
       assessment = {
         hasAssessment: true,
 
         latest: {
           attemptId: latestAttempt.id,
-          testSlug:
-            testResult.data?.slug ??
-            recommendedTestSlug,
-          testName:
-            testResult.data?.name_uk ??
-            "Тест рівня",
-          cefrLevel:
-            testResult.data?.cefr_level ??
-            null,
-          finalLevel:
-            latestAttempt.final_level ??
-            null,
-          percentage:
-            latestAttempt.percentage ??
-            0,
-          passed:
-            latestAttempt.passed ??
-            null,
-          completedAt:
-            latestAttempt.completed_at ??
-            nowIso,
-          averageResponseTimeMs:
-            analytics.averageResponseTimeMs,
+
+          testSlug: testResult.data?.slug ?? recommendedTestSlug,
+
+          testName: testResult.data?.name_uk ?? "Тест рівня",
+
+          cefrLevel: testResult.data?.cefr_level ?? null,
+
+          finalLevel: latestAttempt.final_level ?? null,
+
+          percentage: latestAttempt.percentage ?? 0,
+
+          passed: latestAttempt.passed ?? null,
+
+          completedAt: latestAttempt.completed_at ?? nowIso,
+
+          averageResponseTimeMs: analytics.averageResponseTimeMs,
         },
 
-        categories:
-          analytics.categories,
+        categories: analytics.categories,
 
-        strongestCategory:
-          analytics.strongestCategory,
+        strongestCategory: analytics.strongestCategory,
 
-        weakestCategory:
-          analytics.weakestCategory,
+        weakestCategory: analytics.weakestCategory,
 
         recommendedTestSlug,
       };
     }
+
+    const speakingToday = speakingTodayResult.count ?? 0;
+
+    const reviewedToday = reviewedTodayResult.count ?? 0;
+
+    const completedMissionsToday = completedMissionsTodayResult.count ?? 0;
+
+    const dailyGoalItems = [
+      {
+        id: "speaking" as const,
+
+        title: "Розмовна практика",
+
+        description: "Завершіть одну голосову практику з Еммою.",
+
+        current: speakingToday,
+        target: 1,
+
+        completed: speakingToday >= 1,
+
+        href: "/speaking",
+      },
+
+      {
+        id: "review" as const,
+
+        title: "Повторення слів",
+
+        description: "Повторіть щонайменше 5 слів зі словника.",
+
+        current: reviewedToday,
+        target: 5,
+
+        completed: reviewedToday >= 5,
+
+        href: "/review",
+      },
+
+      {
+        id: "mission" as const,
+
+        title: "Місія пригоди",
+
+        description: "Завершіть одну навчальну місію.",
+
+        current: completedMissionsToday,
+
+        target: 1,
+
+        completed: completedMissionsToday >= 1,
+
+        href: "/adventure",
+      },
+    ];
+
+    const completedDailyGoals = dailyGoalItems.filter(
+      (goal) => goal.completed,
+    ).length;
 
     return NextResponse.json({
       profile: {
@@ -444,37 +487,44 @@ export async function GET() {
         englishLevel,
 
         xp: profileResult.data?.xp ?? 0,
-        level:
-          profileResult.data?.level ?? 1,
-        streak:
-          profileResult.data?.streak ?? 0,
+
+        level: profileResult.data?.level ?? 1,
+
+        streak: profileResult.data?.streak ?? 0,
       },
 
       stats: {
-        conversations:
-          conversationsResult.count ?? 0,
-        vocabulary:
-          vocabularyResult.count ?? 0,
-        learned:
-          learnedResult.count ?? 0,
-        dueToday:
-          dueResult.count ?? 0,
-        speakingToday:
-          speakingTodayResult.count ?? 0,
+        conversations: conversationsResult.count ?? 0,
+
+        vocabulary: vocabularyResult.count ?? 0,
+
+        learned: learnedResult.count ?? 0,
+
+        dueToday: dueResult.count ?? 0,
+
+        speakingToday,
+
+        reviewedToday,
+
+        completedMissionsToday,
+      },
+
+      dailyGoals: {
+        completedCount: completedDailyGoals,
+
+        totalCount: dailyGoalItems.length,
+
+        items: dailyGoalItems,
       },
 
       assessment,
     });
   } catch (error) {
-    console.error(
-      "DASHBOARD STATS ERROR:",
-      error,
-    );
+    console.error("DASHBOARD STATS ERROR:", error);
 
     return NextResponse.json(
       {
-        error:
-          API_ERRORS.failedToLoadDashboardStatistics,
+        error: API_ERRORS.failedToLoadDashboardStatistics,
       },
       {
         status: 500,

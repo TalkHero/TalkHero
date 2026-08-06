@@ -1,4 +1,6 @@
-﻿export type DashboardData = {
+﻿export type DailyGoalId = "speaking" | "review" | "mission";
+
+export type DashboardData = {
   profile: {
     fullName: string;
     englishLevel: string;
@@ -13,6 +15,23 @@
     learned: number;
     dueToday: number;
     speakingToday: number;
+    reviewedToday: number;
+    completedMissionsToday: number;
+  };
+
+  dailyGoals: {
+    completedCount: number;
+    totalCount: number;
+
+    items: Array<{
+      id: DailyGoalId;
+      title: string;
+      description: string;
+      current: number;
+      target: number;
+      completed: boolean;
+      href: string;
+    }>;
   };
 
   assessment: {
