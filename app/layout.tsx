@@ -1,6 +1,7 @@
 ﻿import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 
 import "./globals.css";
@@ -116,6 +117,7 @@ export default function RootLayout({
         ].join(" ")}
       >
         {children}
+        <PWAInstallPrompt />
         <ServiceWorkerRegistration />
       </body>
     </html>
