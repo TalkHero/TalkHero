@@ -32,8 +32,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import type { DashboardData } from "@/lib/dashboard/types";
 
-const ADVENTURE_HREF = "/adventure/london-first-day/coffee-shop";
-
 type LearningMode = {
   href: string;
   title: string;
@@ -217,11 +215,16 @@ export function HomeScreen() {
 
   const modes: LearningMode[] = [
     {
-      href: ADVENTURE_HREF,
+      href: data.nextAdventure.mission?.href ?? "/adventure",
       title: "Пригода",
-      description:
-        "Проходьте сюжетні місії та використовуйте англійську в реальних ситуаціях.",
-      actionLabel: "Продовжити пригоду",
+      description: data.nextAdventure.mission
+        ? data.nextAdventure.mission.description
+        : `Кампанію «${data.nextAdventure.campaignTitle}» завершено. Перегляньте доступні пригоди.`,
+      actionLabel: data.nextAdventure.mission
+        ? data.nextAdventure.mission.status === "in_progress"
+          ? "Продовжити пригоду"
+          : "Почати місію"
+        : "Переглянути пригоди",
       icon: Gamepad2,
       iconClassName: "bg-primary-soft text-primary",
     },
