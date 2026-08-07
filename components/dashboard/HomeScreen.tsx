@@ -283,6 +283,58 @@ export function HomeScreen() {
 
   const userName = data.profile.fullName?.trim().split(/\s+/)[0] || "друже";
 
+  const speakingGoal = data.dailyGoals.items.find(
+    (goal) => goal.id === "speaking",
+  );
+
+  const reviewGoal = data.dailyGoals.items.find((goal) => goal.id === "review");
+
+  const smartNextStep = data.nextAdventure.mission
+    ? {
+        label: "Наступний крок",
+        title: data.nextAdventure.mission.title,
+        description: data.nextAdventure.mission.description,
+        href: data.nextAdventure.mission.href,
+        action:
+          data.nextAdventure.mission.status === "in_progress"
+            ? "Продовжити"
+            : "Почати місію",
+        context: data.nextAdventure.campaignLocation,
+        kind: "adventure" as const,
+      }
+    : speakingGoal && !speakingGoal.completed
+      ? {
+          label: "Рекомендовано",
+          title: "Розмовна практика",
+          description: "Виконайте сьогодні одну голосову практику з Еммою.",
+          href: "/speaking",
+          action: "Почати говорити",
+          context: "Щоденна ціль",
+          kind: "speaking" as const,
+        }
+      : reviewGoal && !reviewGoal.completed && data.stats.dueToday > 0
+        ? {
+            label: "Рекомендовано",
+            title: "Повторення слів",
+            description: `У вас ${data.stats.dueToday} слів, готових до повторення.`,
+            href: "/review",
+            action: "Почати повторення",
+            context: "Щоденна ціль",
+            kind: "review" as const,
+          }
+        : {
+            label: "Наступний крок",
+            title: "Перевірте свій прогрес",
+            description:
+              "Пройдіть рекомендований тест і подивіться, як змінився ваш рівень.",
+            href: testHref,
+            action: data.assessment.hasAssessment
+              ? "Пройти наступний тест"
+              : "Почати тест",
+            context: "Оцінювання знань",
+            kind: "assessment" as const,
+          };
+
   return (
     <div className="space-y-8">
       <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
@@ -290,7 +342,7 @@ export function HomeScreen() {
           <CardHeader className="pb-2">
             <Badge className="mb-2">
               <Gamepad2 aria-hidden="true" />
-              Наступний крок
+              {smartNextStep.label}
             </Badge>
 
             <CardTitle className="text-3xl sm:text-4xl">
@@ -298,11 +350,7 @@ export function HomeScreen() {
             </CardTitle>
 
             <CardDescription className="max-w-2xl text-base">
-              {data.nextAdventure.mission
-                ? data.nextAdventure.mission.status === "in_progress"
-                  ? `Продовжуйте місію ${data.nextAdventure.mission.title} і рухайтеся далі у пригоді.`
-                  : `Наступна доступна місія — ${data.nextAdventure.mission.title}.`
-                : `Ви завершили всі ${data.nextAdventure.totalMissions} місій кампанії ${data.nextAdventure.campaignTitle}.`}
+              {smartNextStep.description}
             </CardDescription>
           </CardHeader>
 
@@ -311,44 +359,18 @@ export function HomeScreen() {
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
-                    {data.nextAdventure.campaignLocation}
+                    {smartNextStep.context}
                   </p>
 
                   <h2 className="mt-1 text-2xl font-bold tracking-tight">
-                    {data.nextAdventure.mission
-                      ? data.nextAdventure.mission.title
-                      : data.nextAdventure.campaignTitle}
+                    {smartNextStep.title}
                   </h2>
-
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {data.nextAdventure.mission
-                      ? data.nextAdventure.mission.description
-                      : `Кампанію завершено: ${data.nextAdventure.completedMissions} із ${data.nextAdventure.totalMissions} місій.`}
-                  </p>
                 </div>
 
-                {data.nextAdventure.mission ? (
-                  <Link
-                    href={data.nextAdventure.mission.href}
-                    className={buttonVariants()}
-                  >
-                    {data.nextAdventure.mission.status === "in_progress"
-                      ? "Продовжити"
-                      : "Почати місію"}
-
-                    <ArrowRight aria-hidden="true" />
-                  </Link>
-                ) : (
-                  <Link
-                    href="/adventure"
-                    className={buttonVariants({
-                      variant: "outline",
-                    })}
-                  >
-                    Переглянути пригоди
-                    <ArrowRight aria-hidden="true" />
-                  </Link>
-                )}
+                <Link href={smartNextStep.href} className={buttonVariants()}>
+                  {smartNextStep.action}
+                  <ArrowRight aria-hidden="true" />
+                </Link>
               </div>
             </div>
           </CardContent>
