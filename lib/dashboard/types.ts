@@ -34,6 +34,21 @@ export type DashboardData = {
     }>;
   };
 
+  nextAdventure: {
+    campaignTitle: string;
+    campaignLocation: string;
+    completedMissions: number;
+    totalMissions: number;
+    mission: {
+      slug: string;
+      title: string;
+      subtitle: string;
+      description: string;
+      status: "available" | "in_progress";
+      href: string;
+    } | null;
+  };
+
   assessment: {
     hasAssessment: boolean;
 

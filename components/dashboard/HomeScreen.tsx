@@ -298,8 +298,11 @@ export function HomeScreen() {
             </CardTitle>
 
             <CardDescription className="max-w-2xl text-base">
-              Продовжуйте навчання з місії Coffee Shop і практикуйте англійську
-              в живій ситуації.
+              {data.nextAdventure.mission
+                ? data.nextAdventure.mission.status === "in_progress"
+                  ? `Продовжуйте місію ${data.nextAdventure.mission.title} і рухайтеся далі у пригоді.`
+                  : `Наступна доступна місія — ${data.nextAdventure.mission.title}.`
+                : `Ви завершили всі ${data.nextAdventure.totalMissions} місій кампанії ${data.nextAdventure.campaignTitle}.`}
             </CardDescription>
           </CardHeader>
 
@@ -308,23 +311,44 @@ export function HomeScreen() {
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
-                    London First Day
+                    {data.nextAdventure.campaignLocation}
                   </p>
 
                   <h2 className="mt-1 text-2xl font-bold tracking-tight">
-                    Coffee Shop
+                    {data.nextAdventure.mission
+                      ? data.nextAdventure.mission.title
+                      : data.nextAdventure.campaignTitle}
                   </h2>
 
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Замовте напій, поспілкуйтеся з баристою та отримайте
-                    персональний відгук.
+                    {data.nextAdventure.mission
+                      ? data.nextAdventure.mission.description
+                      : `Кампанію завершено: ${data.nextAdventure.completedMissions} із ${data.nextAdventure.totalMissions} місій.`}
                   </p>
                 </div>
 
-                <Link href={ADVENTURE_HREF} className={buttonVariants()}>
-                  Продовжити
-                  <ArrowRight aria-hidden="true" />
-                </Link>
+                {data.nextAdventure.mission ? (
+                  <Link
+                    href={data.nextAdventure.mission.href}
+                    className={buttonVariants()}
+                  >
+                    {data.nextAdventure.mission.status === "in_progress"
+                      ? "Продовжити"
+                      : "Почати місію"}
+
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                ) : (
+                  <Link
+                    href="/adventure"
+                    className={buttonVariants({
+                      variant: "outline",
+                    })}
+                  >
+                    Переглянути пригоди
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                )}
               </div>
             </div>
           </CardContent>

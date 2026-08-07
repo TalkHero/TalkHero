@@ -2,6 +2,8 @@
 
 import { API_ERRORS } from "@/lib/i18n/errors";
 import { createClient } from "@/lib/supabase/server";
+import { LONDON_CAMPAIGN } from "@/lib/adventure/content";
+import { getAdventureCampaignProgress } from "@/lib/adventure/progress";
 
 type QuestionSnapshot = {
   category?: unknown;
@@ -313,6 +315,47 @@ export async function GET() {
 
     const recommendedTestSlug = buildRecommendedTestSlug(englishLevel);
 
+    const adventureProgress = await getAdventureCampaignProgress(
+      LONDON_CAMPAIGN.progressCampaignSlug,
+    );
+
+    const nextProgressMission =
+      adventureProgress.missions.find(
+        (mission) => mission.status === "in_progress",
+      ) ??
+      adventureProgress.missions.find(
+        (mission) => mission.status === "available",
+      ) ??
+      null;
+
+    const nextAdventureMission = nextProgressMission
+      ? (LONDON_CAMPAIGN.missions.find(
+          (mission) => mission.slug === nextProgressMission.questSlug,
+        ) ?? null)
+      : null;
+
+    const nextAdventure = {
+      campaignTitle: LONDON_CAMPAIGN.title,
+      campaignLocation: LONDON_CAMPAIGN.location,
+      completedMissions: adventureProgress.completedMissions,
+      totalMissions: adventureProgress.totalMissions,
+
+      mission:
+        nextProgressMission && nextAdventureMission
+          ? {
+              slug: nextAdventureMission.slug,
+              title: nextAdventureMission.title,
+              subtitle: nextAdventureMission.subtitle,
+              description: nextAdventureMission.description,
+              status:
+                nextProgressMission.status === "in_progress"
+                  ? ("in_progress" as const)
+                  : ("available" as const),
+              href: `/adventure/${LONDON_CAMPAIGN.slug}/${nextAdventureMission.slug}`,
+            }
+          : null,
+    };
+
     let assessment: {
       hasAssessment: boolean;
 
@@ -516,6 +559,8 @@ export async function GET() {
 
         items: dailyGoalItems,
       },
+
+      nextAdventure,
 
       assessment,
     });
