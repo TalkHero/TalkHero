@@ -22,7 +22,7 @@ export type AdventureCampaign = {
 };
 
 export const LONDON_CAMPAIGN: AdventureCampaign = {
-  slug: "london-first-day",
+  slug: "english-basics",
   progressCampaignSlug: "english-basics",
   title: "Перший день у Лондоні",
   subtitle: "Побутове спілкування",
@@ -40,8 +40,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       durationMinutes: "10–12",
       xpReward: 60,
       coinReward: 20,
-      questHref:
-        "/quests/english-basics/first-contact/coffee-shop",
+      questHref: "/quests/english-basics/first-contact/coffee-shop",
       objectives: [
         "привітатися;",
         "замовити напій;",
@@ -52,14 +51,12 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       slug: "underground",
       title: "London Underground",
       subtitle: "Квиток і маршрут у метро",
-      description:
-        "Купіть квиток, уточніть лінію, пересадку та платформу.",
+      description: "Купіть квиток, уточніть лінію, пересадку та платформу.",
       cefrLevel: "A1",
       durationMinutes: "8–10",
       xpReward: 55,
       coinReward: 18,
-      questHref:
-        "/quests/english-basics/first-contact/underground",
+      questHref: "/quests/english-basics/first-contact/underground",
       objectives: [
         "назвати пункт призначення;",
         "купити квиток;",
@@ -76,8 +73,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       durationMinutes: "9–11",
       xpReward: 60,
       coinReward: 20,
-      questHref:
-        "/quests/english-basics/first-contact/hotel",
+      questHref: "/quests/english-basics/first-contact/hotel",
       objectives: [
         "підтвердити бронювання;",
         "надати документи;",
@@ -88,32 +84,24 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       slug: "airport",
       title: "At the Airport",
       subtitle: "Реєстрація на рейс",
-      description:
-        "Зареєструйтеся, здайте багаж і знайдіть вихід на посадку.",
+      description: "Зареєструйтеся, здайте багаж і знайдіть вихід на посадку.",
       cefrLevel: "A2",
       durationMinutes: "10–12",
       xpReward: 70,
       coinReward: 24,
-      questHref:
-        "/quests/english-basics/first-contact/airport",
-      objectives: [
-        "передати документи;",
-        "здати багаж;",
-        "знайти gate.",
-      ],
+      questHref: "/quests/english-basics/first-contact/airport",
+      objectives: ["передати документи;", "здати багаж;", "знайти gate."],
     },
     {
       slug: "restaurant",
       title: "At the Restaurant",
       subtitle: "Вечеря в ресторані",
-      description:
-        "Отримайте столик, замовте страви та попросіть рахунок.",
+      description: "Отримайте столик, замовте страви та попросіть рахунок.",
       cefrLevel: "A2",
       durationMinutes: "10–12",
       xpReward: 75,
       coinReward: 25,
-      questHref:
-        "/quests/english-basics/first-contact/restaurant",
+      questHref: "/quests/english-basics/first-contact/restaurant",
       objectives: [
         "попросити столик;",
         "замовити страви;",
@@ -124,52 +112,43 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       slug: "supermarket",
       title: "At the Supermarket",
       subtitle: "Покупки в супермаркеті",
-      description:
-        "Знайдіть товари, уточніть ціну та оплатіть покупки.",
+      description: "Знайдіть товари, уточніть ціну та оплатіть покупки.",
       cefrLevel: "A1",
       durationMinutes: "8–10",
       xpReward: 65,
       coinReward: 22,
-      questHref:
-        "/quests/english-basics/first-contact/supermarket",
+      questHref: "/quests/english-basics/first-contact/supermarket",
+      objectives: ["знайти товар;", "уточнити ціну;", "оплатити покупки."],
+    },
+    {
+      slug: "bank",
+      title: "At the Bank",
+      subtitle: "Обмін валюти в банку",
+      description:
+        "Обміняйте гроші, уточніть комісію, передайте документ і підтвердьте операцію.",
+      cefrLevel: "A2",
+      durationMinutes: "10–12",
+      xpReward: 75,
+      coinReward: 25,
+      questHref: "/quests/english-basics/first-contact/bank",
       objectives: [
-        "знайти товар;",
-        "уточнити ціну;",
-        "оплатити покупки.",
+        "ввічливо попросити обміняти гроші;",
+        "назвати валюту для обміну;",
+        "запитати про курс і комісію;",
+        "передати документ для ідентифікації;",
+        "підтвердити операцію.",
       ],
     },
-   {
-  slug: "bank",
-  title: "At the Bank",
-  subtitle: "Обмін валюти в банку",
-  description:
-    "Обміняйте гроші, уточніть комісію, передайте документ і підтвердьте операцію.",
-  cefrLevel: "A2",
-  durationMinutes: "10–12",
-  xpReward: 75,
-  coinReward: 25,
-  questHref:
-    "/quests/english-basics/first-contact/bank",
-  objectives: [
-    "ввічливо попросити обміняти гроші;",
-    "назвати валюту для обміну;",
-    "запитати про курс і комісію;",
-    "передати документ для ідентифікації;",
-    "підтвердити операцію.",
-  ],
-},
     {
       slug: "pharmacy",
       title: "At the Pharmacy",
       subtitle: "Покупка ліків",
-      description:
-        "Поясніть симптоми, оберіть ліки та уточніть інструкцію.",
+      description: "Поясніть симптоми, оберіть ліки та уточніть інструкцію.",
       cefrLevel: "A1",
       durationMinutes: "10–12",
       xpReward: 75,
       coinReward: 25,
-      questHref:
-        "/quests/english-basics/first-contact/pharmacy",
+      questHref: "/quests/english-basics/first-contact/pharmacy",
       objectives: [
         "описати симптоми;",
         "попросити ліки;",
@@ -180,32 +159,24 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       slug: "taxi",
       title: "Taxi Ride",
       subtitle: "Поїздка містом",
-      description:
-        "Назвіть адресу, уточніть тривалість і оплатіть поїздку.",
+      description: "Назвіть адресу, уточніть тривалість і оплатіть поїздку.",
       cefrLevel: "A1",
       durationMinutes: "8–10",
       xpReward: 65,
       coinReward: 22,
-      questHref:
-        "/quests/english-basics/first-contact/taxi",
-      objectives: [
-        "назвати адресу;",
-        "уточнити час поїздки;",
-        "оплатити.",
-      ],
+      questHref: "/quests/english-basics/first-contact/taxi",
+      objectives: ["назвати адресу;", "уточнити час поїздки;", "оплатити."],
     },
     {
       slug: "post-office",
       title: "At the Post Office",
       subtitle: "Відправлення посилки",
-      description:
-        "Відправте посилку, оберіть доставку та оплатіть послугу.",
+      description: "Відправте посилку, оберіть доставку та оплатіть послугу.",
       cefrLevel: "A2",
       durationMinutes: "10–12",
       xpReward: 75,
       coinReward: 25,
-      questHref:
-        "/quests/english-basics/first-contact/post-office",
+      questHref: "/quests/english-basics/first-contact/post-office",
       objectives: [
         "пояснити, що відправляєте;",
         "обрати доставку;",
@@ -222,23 +193,18 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       durationMinutes: "8–10",
       xpReward: 70,
       coinReward: 24,
-      questHref:
-        "/quests/english-basics/first-contact/clothes-shop",
+      questHref: "/quests/english-basics/first-contact/clothes-shop",
       objectives: [
         "пояснити, який одяг ви шукаєте;",
         "попросити потрібний колір і розмір;",
         "приміряти та оплатити товар.",
       ],
-    }
+    },
   ],
 };
 
-export function getMissionBySlug(
-  slug: string,
-): AdventureMission | null {
+export function getMissionBySlug(slug: string): AdventureMission | null {
   return (
-    LONDON_CAMPAIGN.missions.find(
-      (mission) => mission.slug === slug,
-    ) ?? null
+    LONDON_CAMPAIGN.missions.find((mission) => mission.slug === slug) ?? null
   );
 }

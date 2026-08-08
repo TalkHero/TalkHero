@@ -54,6 +54,43 @@ export function mapPublicScene(scene: QuestSceneRecord): PublicQuestScene {
   };
 }
 
+export async function loadPublishedCampaigns(): Promise<QuestCampaignRecord[]> {
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("quest_campaigns")
+    .select(
+      `
+        id,
+        slug,
+        title,
+        description,
+        cover_image_url,
+        cefr_level,
+        status,
+        order_index,
+        metadata,
+        created_at,
+        updated_at
+      `,
+    )
+    .eq("status", "published")
+    .order("order_index", {
+      ascending: true,
+    });
+
+  if (error) {
+    console.error("Failed to load published quest campaigns:", error);
+
+    throw new QuestEngineError(
+      "CAMPAIGN_NOT_FOUND",
+      "Failed to load published quest campaigns",
+    );
+  }
+
+  return (data ?? []) as QuestCampaignRecord[];
+}
+
 export async function loadCampaign(
   campaignSlug: string,
 ): Promise<QuestCampaignRecord> {
@@ -61,7 +98,8 @@ export async function loadCampaign(
 
   const { data, error } = await admin
     .from("quest_campaigns")
-    .select(`
+    .select(
+      `
       id,
       slug,
       title,
@@ -73,7 +111,8 @@ export async function loadCampaign(
       metadata,
       created_at,
       updated_at
-    `)
+    `,
+    )
     .eq("slug", campaignSlug)
     .eq("status", "published")
     .maybeSingle();
@@ -107,7 +146,8 @@ export async function loadEpisode(
 
   const { data, error } = await admin
     .from("quest_episodes")
-    .select(`
+    .select(
+      `
       id,
       campaign_id,
       slug,
@@ -118,7 +158,8 @@ export async function loadEpisode(
       metadata,
       created_at,
       updated_at
-    `)
+    `,
+    )
     .eq("campaign_id", campaignId)
     .eq("slug", episodeSlug)
     .eq("status", "published")
@@ -153,7 +194,8 @@ export async function loadQuest(
 
   const { data, error } = await admin
     .from("quests")
-    .select(`
+    .select(
+      `
       id,
       episode_id,
       slug,
@@ -170,7 +212,8 @@ export async function loadQuest(
       metadata,
       created_at,
       updated_at
-    `)
+    `,
+    )
     .eq("episode_id", episodeId)
     .eq("slug", questSlug)
     .eq("status", "published")
@@ -179,11 +222,10 @@ export async function loadQuest(
   if (error) {
     console.error("Failed to load quest:", error);
 
-    throw new QuestEngineError(
-      "QUEST_NOT_FOUND",
-      "Failed to load quest",
-      { episodeId, questSlug },
-    );
+    throw new QuestEngineError("QUEST_NOT_FOUND", "Failed to load quest", {
+      episodeId,
+      questSlug,
+    });
   }
 
   if (!data) {
@@ -197,14 +239,13 @@ export async function loadQuest(
   return data as QuestRecord;
 }
 
-export async function loadQuestById(
-  questId: string,
-): Promise<QuestRecord> {
+export async function loadQuestById(questId: string): Promise<QuestRecord> {
   const admin = createAdminClient();
 
   const { data, error } = await admin
     .from("quests")
-    .select(`
+    .select(
+      `
       id,
       episode_id,
       slug,
@@ -221,26 +262,23 @@ export async function loadQuestById(
       metadata,
       created_at,
       updated_at
-    `)
+    `,
+    )
     .eq("id", questId)
     .maybeSingle();
 
   if (error) {
     console.error("Failed to load quest by ID:", error);
 
-    throw new QuestEngineError(
-      "QUEST_NOT_FOUND",
-      "Failed to load quest",
-      { questId },
-    );
+    throw new QuestEngineError("QUEST_NOT_FOUND", "Failed to load quest", {
+      questId,
+    });
   }
 
   if (!data) {
-    throw new QuestEngineError(
-      "QUEST_NOT_FOUND",
-      "Quest not found",
-      { questId },
-    );
+    throw new QuestEngineError("QUEST_NOT_FOUND", "Quest not found", {
+      questId,
+    });
   }
 
   return data as QuestRecord;
@@ -253,7 +291,8 @@ export async function loadQuestStructure(
 
   const { data: actData, error: actError } = await admin
     .from("quest_acts")
-    .select(`
+    .select(
+      `
       id,
       quest_id,
       act_code,
@@ -265,7 +304,8 @@ export async function loadQuestStructure(
       metadata,
       created_at,
       updated_at
-    `)
+    `,
+    )
     .eq("quest_id", questId)
     .eq("status", "published")
     .order("order_index", { ascending: true });
@@ -294,7 +334,8 @@ export async function loadQuestStructure(
 
   const { data: sceneData, error: sceneError } = await admin
     .from("quest_scenes")
-    .select(`
+    .select(
+      `
       id,
       quest_id,
       act_id,
@@ -312,7 +353,8 @@ export async function loadQuestStructure(
       metadata,
       created_at,
       updated_at
-    `)
+    `,
+    )
     .eq("quest_id", questId)
     .in("act_id", actIds);
 
@@ -336,9 +378,7 @@ export async function loadQuestStructure(
     );
   }
 
-  const actOrder = new Map(
-    acts.map((act) => [act.id, act.order_index]),
-  );
+  const actOrder = new Map(acts.map((act) => [act.id, act.order_index]));
 
   scenes.sort((left, right) => {
     const leftActOrder = actOrder.get(left.act_id) ?? 0;
@@ -362,7 +402,8 @@ export async function loadQuestRun(
 
   let query = admin
     .from("quest_runs")
-    .select(`
+    .select(
+      `
       id,
       user_id,
       quest_id,
@@ -378,7 +419,8 @@ export async function loadQuestRun(
       started_at,
       completed_at,
       updated_at
-    `)
+    `,
+    )
     .eq("id", runId);
 
   if (userId) {
@@ -398,11 +440,10 @@ export async function loadQuestRun(
   }
 
   if (!data) {
-    throw new QuestEngineError(
-      "QUEST_RUN_LOAD_FAILED",
-      "Quest run not found",
-      { runId, userId },
-    );
+    throw new QuestEngineError("QUEST_RUN_LOAD_FAILED", "Quest run not found", {
+      runId,
+      userId,
+    });
   }
 
   return data as QuestRunRecord;
@@ -416,7 +457,8 @@ export async function loadActiveRun(
 
   const { data, error } = await admin
     .from("quest_runs")
-    .select(`
+    .select(
+      `
       id,
       user_id,
       quest_id,
@@ -432,7 +474,8 @@ export async function loadActiveRun(
       started_at,
       completed_at,
       updated_at
-    `)
+    `,
+    )
     .eq("user_id", userId)
     .eq("quest_id", questId)
     .eq("status", "in_progress")

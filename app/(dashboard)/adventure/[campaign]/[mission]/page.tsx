@@ -1,7 +1,5 @@
 import Link from "next/link";
-import {
-  redirect,
-} from "next/navigation";
+import { redirect } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,10 +14,7 @@ import {
   TrainFront,
 } from "lucide-react";
 
-import {
-  getMissionBySlug,
-  LONDON_CAMPAIGN,
-} from "@/lib/adventure/content";
+import { getMissionBySlug, LONDON_CAMPAIGN } from "@/lib/adventure/content";
 import {
   getAdventureCampaignProgress,
   getMissionProgressBySlug,
@@ -39,65 +34,40 @@ const ICONS = {
   airport: Plane,
 };
 
-export default async function MissionPage({
-  params,
-}: MissionPageProps) {
-  const {
-    campaign,
-    mission: missionSlug,
-  } = await params;
+export default async function MissionPage({ params }: MissionPageProps) {
+  const { campaign, mission: missionSlug } = await params;
 
-  if (
-    campaign !==
-    LONDON_CAMPAIGN.slug
-  ) {
+  if (campaign === "london-first-day") {
+    redirect(`/adventure/${LONDON_CAMPAIGN.slug}/${missionSlug}`);
+  }
+
+  if (campaign !== LONDON_CAMPAIGN.slug) {
     redirect("/adventure");
   }
 
-  const mission =
-    getMissionBySlug(
-      missionSlug,
-    );
+  const mission = getMissionBySlug(missionSlug);
 
   if (!mission) {
-    redirect(
-      `/adventure/${LONDON_CAMPAIGN.slug}`,
-    );
+    redirect(`/adventure/${LONDON_CAMPAIGN.slug}`);
   }
 
   let progress;
 
   try {
-    progress =
-      await getAdventureCampaignProgress(
-        LONDON_CAMPAIGN
-          .progressCampaignSlug,
-      );
+    progress = await getAdventureCampaignProgress(
+      LONDON_CAMPAIGN.progressCampaignSlug,
+    );
   } catch {
     redirect("/login");
   }
 
-  const missionProgress =
-    getMissionProgressBySlug(
-      progress,
-      mission.slug,
-    );
+  const missionProgress = getMissionProgressBySlug(progress, mission.slug);
 
-  if (
-    !missionProgress ||
-    missionProgress.status ===
-      "locked"
-  ) {
-    redirect(
-      `/adventure/${LONDON_CAMPAIGN.slug}`,
-    );
+  if (!missionProgress || missionProgress.status === "locked") {
+    redirect(`/adventure/${LONDON_CAMPAIGN.slug}`);
   }
 
-  const Icon =
-    ICONS[
-      mission.slug as
-        keyof typeof ICONS
-    ] ?? Coffee;
+  const Icon = ICONS[mission.slug as keyof typeof ICONS] ?? Coffee;
 
   return (
     <main className="min-h-0 flex-1 overflow-y-auto">
@@ -117,9 +87,7 @@ export default async function MissionPage({
             </div>
 
             <p className="mt-6 text-sm font-semibold text-emerald-700">
-              {
-                LONDON_CAMPAIGN.title
-              }
+              {LONDON_CAMPAIGN.title}
             </p>
 
             <h1 className="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">
@@ -131,9 +99,7 @@ export default async function MissionPage({
             </p>
 
             <p className="mt-4 max-w-2xl leading-7 text-slate-600">
-              {
-                mission.description
-              }
+              {mission.description}
             </p>
           </div>
 
@@ -141,10 +107,7 @@ export default async function MissionPage({
             <div className="rounded-2xl bg-slate-50 p-4">
               <Clock3 className="h-5 w-5 text-indigo-600" />
               <p className="mt-3 font-bold text-slate-950">
-                {
-                  mission.durationMinutes
-                }{" "}
-                хвилин
+                {mission.durationMinutes} хвилин
               </p>
               <p className="mt-1 text-sm text-slate-500">
                 Орієнтовна тривалість
@@ -156,18 +119,13 @@ export default async function MissionPage({
               <p className="mt-3 font-bold text-slate-950">
                 {mission.xpReward} XP
               </p>
-              <p className="mt-1 text-sm text-slate-500">
-                Нагорода досвідом
-              </p>
+              <p className="mt-1 text-sm text-slate-500">Нагорода досвідом</p>
             </div>
 
             <div className="rounded-2xl bg-slate-50 p-4">
               <Coins className="h-5 w-5 text-emerald-600" />
               <p className="mt-3 font-bold text-slate-950">
-                {
-                  mission.coinReward
-                }{" "}
-                монет
+                {mission.coinReward} монет
               </p>
               <p className="mt-1 text-sm text-slate-500">
                 Нагорода за завершення
@@ -183,28 +141,21 @@ export default async function MissionPage({
           </div>
 
           <ul className="mt-5 space-y-3">
-            {mission.objectives.map(
-              (item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 text-slate-700"
-                >
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
-                  <span>{item}</span>
-                </li>
-              ),
-            )}
+            {mission.objectives.map((item) => (
+              <li key={item} className="flex items-start gap-3 text-slate-700">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                <span>{item}</span>
+              </li>
+            ))}
           </ul>
 
           <Link
             href={mission.questHref}
             className="mt-8 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-6 py-3 font-semibold text-white transition hover:bg-slate-800 sm:w-auto"
           >
-            {missionProgress.status ===
-            "in_progress"
+            {missionProgress.status === "in_progress"
               ? "Продовжити місію"
-              : missionProgress.status ===
-                  "completed"
+              : missionProgress.status === "completed"
                 ? "Пройти ще раз"
                 : "Почати місію"}
 

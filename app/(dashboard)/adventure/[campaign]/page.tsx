@@ -1,18 +1,9 @@
 import Link from "next/link";
-import {
-  redirect,
-} from "next/navigation";
-import {
-  ArrowLeft,
-  MapPin,
-} from "lucide-react";
+import { redirect } from "next/navigation";
+import { ArrowLeft, MapPin } from "lucide-react";
 
-import {
-  CampaignMissionList,
-} from "@/components/adventure/CampaignMissionList";
-import {
-  LONDON_CAMPAIGN,
-} from "@/lib/adventure/content";
+import { CampaignMissionList } from "@/components/adventure/CampaignMissionList";
+import { LONDON_CAMPAIGN } from "@/lib/adventure/content";
 
 type CampaignPageProps = {
   params: Promise<{
@@ -20,15 +11,13 @@ type CampaignPageProps = {
   }>;
 };
 
-export default async function CampaignPage({
-  params,
-}: CampaignPageProps) {
+export default async function CampaignPage({ params }: CampaignPageProps) {
   const { campaign } = await params;
+  if (campaign === "london-first-day") {
+    redirect(`/adventure/${LONDON_CAMPAIGN.slug}`);
+  }
 
-  if (
-    campaign !==
-    LONDON_CAMPAIGN.slug
-  ) {
+  if (campaign !== LONDON_CAMPAIGN.slug) {
     redirect("/adventure");
   }
 
@@ -51,41 +40,30 @@ export default async function CampaignPage({
 
             <div>
               <p className="text-sm font-semibold text-emerald-300">
-                {
-                  LONDON_CAMPAIGN.location
-                }
+                {LONDON_CAMPAIGN.location}
               </p>
 
               <h1 className="mt-2 text-3xl font-bold">
-                {
-                  LONDON_CAMPAIGN.title
-                }
+                {LONDON_CAMPAIGN.title}
               </h1>
 
               <p className="mt-3 max-w-3xl leading-7 text-slate-300">
-                {
-                  LONDON_CAMPAIGN.description
-                }
+                {LONDON_CAMPAIGN.description}
               </p>
             </div>
           </div>
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-slate-950">
-            Місії кампанії
-          </h2>
+          <h2 className="text-2xl font-bold text-slate-950">Місії кампанії</h2>
 
           <p className="mt-1 text-sm text-slate-600">
-            Ваші результати, зірки й доступність місій завантажуються з бази даних.
+            Ваші результати, зірки й доступність місій завантажуються з бази
+            даних.
           </p>
 
           <div className="mt-6">
-            <CampaignMissionList
-              campaign={
-                LONDON_CAMPAIGN
-              }
-            />
+            <CampaignMissionList campaign={LONDON_CAMPAIGN} />
           </div>
         </section>
       </div>
