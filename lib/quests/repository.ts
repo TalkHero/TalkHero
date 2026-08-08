@@ -138,6 +138,88 @@ export async function loadCampaign(
   return data as QuestCampaignRecord;
 }
 
+export async function loadPublishedCampaignQuests(
+  campaignId: string,
+): Promise<QuestRecord[]> {
+  const admin = createAdminClient();
+
+  const { data: episodes, error: episodesError } = await admin
+    .from("quest_episodes")
+    .select("id, order_index")
+    .eq("campaign_id", campaignId)
+    .eq("status", "published")
+    .order("order_index", {
+      ascending: true,
+    });
+
+  if (episodesError) {
+    console.error("Failed to load published campaign episodes:", episodesError);
+
+    throw new QuestEngineError(
+      "EPISODE_NOT_FOUND",
+      "Failed to load published campaign episodes",
+      { campaignId },
+    );
+  }
+
+  const episodeIds = (episodes ?? []).map((episode) => episode.id);
+
+  if (episodeIds.length === 0) {
+    return [];
+  }
+
+  const { data: quests, error: questsError } = await admin
+    .from("quests")
+    .select(
+      `
+          id,
+          episode_id,
+          slug,
+          title,
+          description,
+          quest_type,
+          cefr_level,
+          order_index,
+          estimated_minutes,
+          xp_reward,
+          coin_reward,
+          status,
+          config,
+          metadata,
+          created_at,
+          updated_at
+        `,
+    )
+    .in("episode_id", episodeIds)
+    .eq("status", "published");
+
+  if (questsError) {
+    console.error("Failed to load published campaign quests:", questsError);
+
+    throw new QuestEngineError(
+      "QUEST_NOT_FOUND",
+      "Failed to load published campaign quests",
+      { campaignId },
+    );
+  }
+
+  const episodeOrder = new Map(
+    (episodes ?? []).map((episode) => [episode.id, episode.order_index]),
+  );
+
+  return ((quests ?? []) as QuestRecord[]).sort((left, right) => {
+    const episodeDifference =
+      (episodeOrder.get(left.episode_id) ?? 0) -
+      (episodeOrder.get(right.episode_id) ?? 0);
+
+    if (episodeDifference !== 0) {
+      return episodeDifference;
+    }
+
+    return left.order_index - right.order_index;
+  });
+}
+
 export async function loadEpisode(
   campaignId: string,
   episodeSlug: string,
@@ -180,6 +262,52 @@ export async function loadEpisode(
       "EPISODE_NOT_FOUND",
       `Published quest episode not found: ${episodeSlug}`,
       { campaignId, episodeSlug },
+    );
+  }
+
+  return data as QuestEpisodeRecord;
+}
+
+export async function loadEpisodeById(
+  episodeId: string,
+): Promise<QuestEpisodeRecord> {
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("quest_episodes")
+    .select(
+      `
+        id,
+        campaign_id,
+        slug,
+        title,
+        description,
+        order_index,
+        status,
+        metadata,
+        created_at,
+        updated_at
+      `,
+    )
+    .eq("id", episodeId)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to load quest episode by id:", error);
+
+    throw new QuestEngineError(
+      "EPISODE_NOT_FOUND",
+      "Failed to load quest episode",
+      { episodeId },
+    );
+  }
+
+  if (!data) {
+    throw new QuestEngineError(
+      "EPISODE_NOT_FOUND",
+      `Published quest episode not found: ${episodeId}`,
+      { episodeId },
     );
   }
 

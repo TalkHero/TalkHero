@@ -1,9 +1,6 @@
 import { QuestEngineError } from "../errors";
 
-import type {
-  QuestExpectedAnswer,
-  QuestSceneRecord,
-} from "../types";
+import type { QuestExpectedAnswer, QuestSceneRecord } from "../types";
 
 import type {
   EvaluateQuestSceneInput,
@@ -11,31 +8,21 @@ import type {
   QuestSceneEvaluationResult,
 } from "./types";
 
-function getEvaluationMode(
-  scene: QuestSceneRecord,
-): QuestSceneEvaluationMode {
+function getEvaluationMode(scene: QuestSceneRecord): QuestSceneEvaluationMode {
   return scene.evaluation_config?.mode ?? "exact";
 }
 
-function getPoints(
-  scene: QuestSceneRecord,
-): number {
+function getPoints(scene: QuestSceneRecord): number {
   const points = scene.evaluation_config?.points;
 
-  if (
-    typeof points !== "number" ||
-    !Number.isFinite(points) ||
-    points < 0
-  ) {
+  if (typeof points !== "number" || !Number.isFinite(points) || points < 0) {
     return 0;
   }
 
   return points;
 }
 
-function normalizeText(
-  value: unknown,
-): string | null {
+function normalizeText(value: unknown): string | null {
   if (typeof value !== "string") {
     return null;
   }
@@ -43,60 +30,46 @@ function normalizeText(
   return value.trim();
 }
 
-function normalizeCaseInsensitiveText(
-  value: unknown,
-): string | null {
+function normalizeCaseInsensitiveText(value: unknown): string | null {
   const text = normalizeText(value);
 
-  return text === null
-    ? null
-    : text.toLocaleLowerCase();
+  if (text === null) {
+    return null;
+  }
+
+  return text
+    .toLocaleLowerCase()
+    .replace(/[’‘]/g, "'")
+    .replace(/\s+/g, " ")
+    .replace(/[.!?]+$/g, "")
+    .trim();
 }
 
-function serializeComparableValue(
-  value: unknown,
-): string {
-  if (
-    value === null ||
-    typeof value !== "object"
-  ) {
+function serializeComparableValue(value: unknown): string {
+  if (value === null || typeof value !== "object") {
     return JSON.stringify(value);
   }
 
   if (Array.isArray(value)) {
     return JSON.stringify(
-      value.map((item) =>
-        JSON.parse(
-          serializeComparableValue(item),
-        ),
-      ),
+      value.map((item) => JSON.parse(serializeComparableValue(item))),
     );
   }
 
-  const objectValue =
-    value as Record<string, unknown>;
+  const objectValue = value as Record<string, unknown>;
 
   const sortedObject = Object.keys(objectValue)
     .sort()
-    .reduce<Record<string, unknown>>(
-      (result, key) => {
-        result[key] = objectValue[key];
-        return result;
-      },
-      {},
-    );
+    .reduce<Record<string, unknown>>((result, key) => {
+      result[key] = objectValue[key];
+      return result;
+    }, {});
 
   return JSON.stringify(sortedObject);
 }
 
-function valuesAreEqual(
-  left: unknown,
-  right: unknown,
-): boolean {
-  return (
-    serializeComparableValue(left) ===
-    serializeComparableValue(right)
-  );
+function valuesAreEqual(left: unknown, right: unknown): boolean {
+  return serializeComparableValue(left) === serializeComparableValue(right);
 }
 
 function getAcceptedAnswers(
@@ -116,14 +89,8 @@ function getAcceptedAnswers(
     answers.push(expectedAnswer.value);
   }
 
-  if (
-    Array.isArray(
-      expectedAnswer.acceptedAnswers,
-    )
-  ) {
-    answers.push(
-      ...expectedAnswer.acceptedAnswers,
-    );
+  if (Array.isArray(expectedAnswer.acceptedAnswers)) {
+    answers.push(...expectedAnswer.acceptedAnswers);
   }
 
   return answers;
@@ -133,26 +100,21 @@ function evaluateExact(
   userInput: unknown,
   acceptedAnswers: unknown[],
 ): boolean {
-  return acceptedAnswers.some(
-    (answer) =>
-      valuesAreEqual(userInput, answer),
-  );
+  return acceptedAnswers.some((answer) => valuesAreEqual(userInput, answer));
 }
 
 function evaluateCaseInsensitive(
   userInput: unknown,
   acceptedAnswers: unknown[],
 ): boolean {
-  const normalizedInput =
-    normalizeCaseInsensitiveText(userInput);
+  const normalizedInput = normalizeCaseInsensitiveText(userInput);
 
   if (normalizedInput === null) {
     return false;
   }
 
   return acceptedAnswers.some((answer) => {
-    const normalizedAnswer =
-      normalizeCaseInsensitiveText(answer);
+    const normalizedAnswer = normalizeCaseInsensitiveText(answer);
 
     return normalizedAnswer === normalizedInput;
   });
@@ -162,22 +124,17 @@ function evaluateContains(
   userInput: unknown,
   acceptedAnswers: unknown[],
 ): boolean {
-  const normalizedInput =
-    normalizeCaseInsensitiveText(userInput);
+  const normalizedInput = normalizeCaseInsensitiveText(userInput);
 
   if (normalizedInput === null) {
     return false;
   }
 
   return acceptedAnswers.some((answer) => {
-    const normalizedAnswer =
-      normalizeCaseInsensitiveText(answer);
+    const normalizedAnswer = normalizeCaseInsensitiveText(answer);
 
     return (
-      normalizedAnswer !== null &&
-      normalizedInput.includes(
-        normalizedAnswer,
-      )
+      normalizedAnswer !== null && normalizedInput.includes(normalizedAnswer)
     );
   });
 }
@@ -193,27 +150,15 @@ function resolveNextSceneCode({
 }): string | null {
   const branching = scene.branching ?? {};
 
-  const directInputKey =
-    typeof userInput === "string"
-      ? userInput
-      : null;
+  const directInputKey = typeof userInput === "string" ? userInput : null;
 
-  if (
-    directInputKey &&
-    typeof branching[directInputKey] ===
-      "string"
-  ) {
+  if (directInputKey && typeof branching[directInputKey] === "string") {
     return branching[directInputKey];
   }
 
-  const outcomeKey = isCorrect
-    ? "correct"
-    : "incorrect";
+  const outcomeKey = isCorrect ? "correct" : "incorrect";
 
-  if (
-    typeof branching[outcomeKey] ===
-    "string"
-  ) {
+  if (typeof branching[outcomeKey] === "string") {
     return branching[outcomeKey];
   }
 
@@ -239,34 +184,29 @@ export function evaluateStaticScene({
   }
 
   if (mode === "manual") {
-  return {
-    mode,
+    return {
+      mode,
 
-    isCorrect: null,
+      isCorrect: null,
 
-    grade: null,
+      grade: null,
 
-    scoreAwarded: 0,
+      scoreAwarded: 0,
 
-    feedback: null,
+      feedback: null,
 
-    nextSceneCode:
-      scene.next_scene_code,
+      nextSceneCode: scene.next_scene_code,
 
-    normalizedInput:
-      userInput,
+      normalizedInput: userInput,
 
-    metadata: {
-      attemptNumber,
-      requiresManualReview: true,
-    },
-  };
-}
+      metadata: {
+        attemptNumber,
+        requiresManualReview: true,
+      },
+    };
+  }
 
-  const acceptedAnswers =
-    getAcceptedAnswers(
-      scene.expected_answer,
-    );
+  const acceptedAnswers = getAcceptedAnswers(scene.expected_answer);
 
   if (acceptedAnswers.length === 0) {
     throw new QuestEngineError(
@@ -284,25 +224,15 @@ export function evaluateStaticScene({
 
   switch (mode) {
     case "exact":
-      isCorrect = evaluateExact(
-        userInput,
-        acceptedAnswers,
-      );
+      isCorrect = evaluateExact(userInput, acceptedAnswers);
       break;
 
     case "case_insensitive":
-      isCorrect =
-        evaluateCaseInsensitive(
-          userInput,
-          acceptedAnswers,
-        );
+      isCorrect = evaluateCaseInsensitive(userInput, acceptedAnswers);
       break;
 
     case "contains":
-      isCorrect = evaluateContains(
-        userInput,
-        acceptedAnswers,
-      );
+      isCorrect = evaluateContains(userInput, acceptedAnswers);
       break;
   }
 
@@ -311,28 +241,21 @@ export function evaluateStaticScene({
   return {
     mode,
     isCorrect,
-    grade: isCorrect
-      ? "correct"
-      : "incorrect",
+    grade: isCorrect ? "correct" : "incorrect",
     scoreAwarded: isCorrect ? points : 0,
     feedback: isCorrect
-      ? scene.evaluation_config
-          ?.feedbackCorrect ?? null
-      : scene.evaluation_config
-          ?.feedbackIncorrect ?? null,
+      ? (scene.evaluation_config?.feedbackCorrect ?? null)
+      : (scene.evaluation_config?.feedbackIncorrect ?? null),
     nextSceneCode: resolveNextSceneCode({
       scene,
       userInput,
       isCorrect,
     }),
     normalizedInput:
-      typeof userInput === "string"
-        ? userInput.trim()
-        : userInput,
+      typeof userInput === "string" ? userInput.trim() : userInput,
     metadata: {
       attemptNumber,
-      acceptedAnswerCount:
-        acceptedAnswers.length,
+      acceptedAnswerCount: acceptedAnswers.length,
     },
   };
 }
