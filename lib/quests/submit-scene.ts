@@ -31,6 +31,8 @@ import type {
   SubmitQuestSceneResult,
 } from "./types";
 
+import { saveCorrectAnswerVocabulary } from "./save-correct-answer-vocabulary";
+
 export type SubmitQuestSceneInput = {
   userId: string;
   runId: string;
@@ -103,11 +105,11 @@ function createUpdatedState({
   const attempts =
     getAttemptMap(currentState);
 
-  const {
-    conversationHistory:
-      _conversationHistory,
-    ...persistentState
-  } = currentState;
+  const persistentState = {
+  ...currentState,
+};
+
+delete persistentState.conversationHistory;
 
   return {
     ...persistentState,
@@ -365,63 +367,19 @@ async function recordSubmissionEvent({
   run: QuestRunRecord;
   scene: QuestSceneRecord;
   userInput: unknown;
-  evaluation:
-    QuestSceneEvaluationResult;
+  evaluation: QuestSceneEvaluationResult;
   responseTimeMs: number | null;
   attemptNumber: number;
 }): Promise<void> {
-  const evaluationJson = {
-  mode: evaluation.mode,
-
-  isCorrect: evaluation.isCorrect,
-
-  grade: evaluation.grade,
-
-  scoreAwarded: evaluation.scoreAwarded,
-
-  feedback: evaluation.feedback,
-
-  nextSceneCode: evaluation.nextSceneCode,
-
-  normalizedInput: evaluation.normalizedInput,
-
-  metadata: evaluation.metadata,
-};
-
-    async function recordSubmissionEvent({
-  run,
-  scene,
-  userInput,
-  evaluation,
-  responseTimeMs,
-  attemptNumber,
-}: {
-  run: QuestRunRecord;
-  scene: QuestSceneRecord;
-  userInput: unknown;
-  evaluation:
-    QuestSceneEvaluationResult;
-  responseTimeMs: number | null;
-  attemptNumber: number;
-}): Promise<void> {
-  const evaluationJson:
-    QuestJsonObject = {
-    mode:
-      evaluation.mode,
-    isCorrect:
-      evaluation.isCorrect,
-    grade:
-      evaluation.grade,
-    scoreAwarded:
-      evaluation.scoreAwarded,
-    feedback:
-      evaluation.feedback,
-    nextSceneCode:
-      evaluation.nextSceneCode,
-    normalizedInput:
-      evaluation.normalizedInput,
-    metadata:
-      evaluation.metadata,
+  const evaluationJson: QuestJsonObject = {
+    mode: evaluation.mode,
+    isCorrect: evaluation.isCorrect,
+    grade: evaluation.grade,
+    scoreAwarded: evaluation.scoreAwarded,
+    feedback: evaluation.feedback,
+    nextSceneCode: evaluation.nextSceneCode,
+    normalizedInput: evaluation.normalizedInput,
+    metadata: evaluation.metadata,
   };
 
   await recordQuestEvent({
@@ -432,22 +390,16 @@ async function recordSubmissionEvent({
         ? "choice_selected"
         : "answer_submitted",
     userInput,
-    evaluation:
-      evaluationJson,
-    isCorrect:
-      evaluation.isCorrect,
-    scoreAwarded:
-      evaluation.scoreAwarded,
+    evaluation: evaluationJson,
+    isCorrect: evaluation.isCorrect,
+    scoreAwarded: evaluation.scoreAwarded,
     responseTimeMs,
     metadata: {
       attemptNumber,
-      evaluationMode:
-        evaluation.mode,
-      grade:
-        evaluation.grade,
+      evaluationMode: evaluation.mode,
+      grade: evaluation.grade,
     },
   });
-}
 }
 
 export async function submitQuestScene({
@@ -589,6 +541,25 @@ export async function submitQuestScene({
         evaluation.scoreAwarded,
       ),
   };
+
+  if (
+  normalizedEvaluation.isCorrect === true
+) {
+  try {
+    await saveCorrectAnswerVocabulary({
+      userId,
+      scene: currentScene,
+      userInput,
+      evaluation:
+        normalizedEvaluation,
+    });
+  } catch (error) {
+    console.error(
+      "FAILED TO SAVE CORRECT ANSWER TO VOCABULARY:",
+      error,
+    );
+  }
+}
 
   await saveSubmittedConversation({
     run,
