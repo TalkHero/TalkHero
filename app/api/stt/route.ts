@@ -27,8 +27,7 @@ export async function POST(request: Request) {
     if (authError || !user) {
       return NextResponse.json(
         {
-          error:
-            "Потрібно увійти до облікового запису.",
+          error: "Потрібно увійти до облікового запису.",
         },
         { status: 401 },
       );
@@ -37,14 +36,11 @@ export async function POST(request: Request) {
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      console.error(
-        "STT: змінна OPENAI_API_KEY не налаштована.",
-      );
+      console.error("STT: змінна OPENAI_API_KEY не налаштована.");
 
       return NextResponse.json(
         {
-          error:
-            "Розпізнавання голосу тимчасово не налаштоване.",
+          error: "Розпізнавання голосу тимчасово не налаштоване.",
         },
         { status: 503 },
       );
@@ -56,8 +52,7 @@ export async function POST(request: Request) {
     if (!(audio instanceof File)) {
       return NextResponse.json(
         {
-          error:
-            "Аудіозапис не передано.",
+          error: "Аудіозапис не передано.",
         },
         { status: 400 },
       );
@@ -66,8 +61,7 @@ export async function POST(request: Request) {
     if (audio.size <= 0) {
       return NextResponse.json(
         {
-          error:
-            "Аудіозапис порожній.",
+          error: "Аудіозапис порожній.",
         },
         { status: 400 },
       );
@@ -76,26 +70,18 @@ export async function POST(request: Request) {
     if (audio.size > MAX_AUDIO_BYTES) {
       return NextResponse.json(
         {
-          error:
-            "Аудіозапис занадто великий.",
+          error: "Аудіозапис занадто великий.",
         },
         { status: 413 },
       );
     }
 
-    const normalizedType = audio.type
-      .split(";")[0]
-      .trim()
-      .toLowerCase();
+    const normalizedType = audio.type.split(";")[0].trim().toLowerCase();
 
-    if (
-      normalizedType &&
-      !ALLOWED_AUDIO_TYPES.has(normalizedType)
-    ) {
+    if (normalizedType && !ALLOWED_AUDIO_TYPES.has(normalizedType)) {
       return NextResponse.json(
         {
-          error:
-            "Цей формат аудіо не підтримується.",
+          error: "Цей формат аудіо не підтримується.",
         },
         { status: 415 },
       );
@@ -103,24 +89,9 @@ export async function POST(request: Request) {
 
     const openAIForm = new FormData();
 
-    openAIForm.append(
-      "file",
-      audio,
-      audio.name || "voice-answer.webm",
-    );
-    openAIForm.append(
-      "model",
-      "gpt-4o-mini-transcribe",
-    );
-    openAIForm.append("language", "en");
-    openAIForm.append(
-      "prompt",
-      "This is a short English-learning response. Preserve the learner's actual words and do not rewrite the sentence.",
-    );
-    openAIForm.append(
-      "response_format",
-      "json",
-    );
+    openAIForm.append("file", audio, audio.name || "voice-answer.webm");
+    openAIForm.append("model", "gpt-4o-mini-transcribe");
+    openAIForm.append("response_format", "json");
 
     const response = await fetch(
       "https://api.openai.com/v1/audio/transcriptions",
@@ -137,16 +108,11 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const errorText = await response.text();
 
-      console.error(
-        "ПОМИЛКА OPENAI STT:",
-        response.status,
-        errorText,
-      );
+      console.error("ПОМИЛКА OPENAI STT:", response.status, errorText);
 
       return NextResponse.json(
         {
-          error:
-            "Не вдалося розпізнати голос.",
+          error: "Не вдалося розпізнати голос.",
         },
         { status: 502 },
       );
@@ -156,16 +122,12 @@ export async function POST(request: Request) {
       text?: unknown;
     };
 
-    const text =
-      typeof result.text === "string"
-        ? result.text.trim()
-        : "";
+    const text = typeof result.text === "string" ? result.text.trim() : "";
 
     if (!text) {
       return NextResponse.json(
         {
-          error:
-            "Не вдалося розпізнати слова. Спробуйте говорити чіткіше.",
+          error: "Не вдалося розпізнати слова. Спробуйте говорити чіткіше.",
         },
         { status: 422 },
       );
@@ -175,15 +137,11 @@ export async function POST(request: Request) {
       text,
     });
   } catch (error) {
-    console.error(
-      "ПОМИЛКА МАРШРУТУ STT:",
-      error,
-    );
+    console.error("ПОМИЛКА МАРШРУТУ STT:", error);
 
     return NextResponse.json(
       {
-        error:
-          "Не вдалося обробити голосову відповідь.",
+        error: "Не вдалося обробити голосову відповідь.",
       },
       { status: 500 },
     );

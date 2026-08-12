@@ -13,6 +13,7 @@ import { getCurrentLesson } from "@/lib/ai/curriculum/get-current-lesson";
 import { API_ERRORS, UI_ERRORS } from "@/lib/i18n/errors";
 import { awardXp } from "@/lib/progress/awardXp";
 import { createClient } from "@/lib/supabase/server";
+import { analyzeAndSaveUserMemories } from "@/lib/ai/user-memory/analyze-and-save-memories";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -28,6 +29,13 @@ type Profile = {
   native_language: string | null;
   target_language: string | null;
   english_level: string | null;
+};
+
+type UserMemory = {
+  memory_key: string;
+  memory_value: string;
+  category: string;
+  confidence: number;
 };
 
 type UnlockedAchievement = {
@@ -61,20 +69,13 @@ const LANGUAGE_NAMES: Record<string, string> = {
   ru: "Russian",
 };
 
-function normalizeEnglishLevel(
-  value: string | null | undefined,
-): EnglishLevel {
+function normalizeEnglishLevel(value: string | null | undefined): EnglishLevel {
   const normalized = value?.trim().toUpperCase() as EnglishLevel;
 
-  return VALID_ENGLISH_LEVELS.includes(normalized)
-    ? normalized
-    : "A1";
+  return VALID_ENGLISH_LEVELS.includes(normalized) ? normalized : "A1";
 }
 
-function getLanguageName(
-  value: string | null | undefined,
-  fallback: string,
-) {
+function getLanguageName(value: string | null | undefined, fallback: string) {
   if (!value) {
     return fallback;
   }
@@ -84,9 +85,7 @@ function getLanguageName(
   return LANGUAGE_NAMES[normalized] ?? value.trim();
 }
 
-function normalizeConversationTitle(
-  value: string | null | undefined,
-) {
+function normalizeConversationTitle(value: string | null | undefined) {
   const normalized = value
     ?.replace(/^["'«»„“”]+|["'«»„“”]+$/g, "")
     .replace(/\s+/g, " ")
@@ -124,9 +123,7 @@ async function generateConversationTitle(
     ],
   });
 
-  return normalizeConversationTitle(
-    completion.choices[0]?.message?.content,
-  );
+  return normalizeConversationTitle(completion.choices[0]?.message?.content);
 }
 
 export async function POST(request: Request) {
@@ -149,14 +146,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: profileData, error: profileError } =
-      await supabase
-        .from("profiles")
-        .select(
-          "full_name, native_language, target_language, english_level",
-        )
-        .eq("id", user.id)
-        .maybeSingle();
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("full_name, native_language, target_language, english_level")
+      .eq("id", user.id)
+      .maybeSingle();
 
     if (profileError) {
       console.error("PROFILE ERROR:", profileError);
@@ -164,24 +158,17 @@ export async function POST(request: Request) {
 
     const profile = profileData as Profile | null;
 
-    const englishLevel = normalizeEnglishLevel(
-      profile?.english_level,
-    );
+    const englishLevel = normalizeEnglishLevel(profile?.english_level);
 
     const fullName =
-      profile?.full_name?.trim() ||
-      user.email?.split("@")[0] ||
-      "the student";
+      profile?.full_name?.trim() || user.email?.split("@")[0] || "the student";
 
     const nativeLanguage = getLanguageName(
       profile?.native_language,
       "Ukrainian",
     );
 
-    const targetLanguage = getLanguageName(
-      profile?.target_language,
-      "English",
-    );
+    const targetLanguage = getLanguageName(profile?.target_language, "English");
 
     const body = (await request.json()) as ChatRequest;
     const message = body.message?.trim();
@@ -201,13 +188,12 @@ export async function POST(request: Request) {
     let isNewConversation = false;
 
     if (conversationId) {
-      const { data: conversation, error: conversationError } =
-        await supabase
-          .from("conversations")
-          .select("id")
-          .eq("id", conversationId)
-          .eq("user_id", user.id)
-          .maybeSingle();
+      const { data: conversation, error: conversationError } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("id", conversationId)
+        .eq("user_id", user.id)
+        .maybeSingle();
 
       if (conversationError) {
         throw conversationError;
@@ -241,13 +227,11 @@ export async function POST(request: Request) {
       }
     }
 
-    const { error: userMessageError } = await supabase
-      .from("messages")
-      .insert({
-        conversation_id: conversationId,
-        role: "user",
-        content: message,
-      });
+    const { error: userMessageError } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      role: "user",
+      content: message,
+    });
 
     if (userMessageError) {
       throw userMessageError;
@@ -268,6 +252,54 @@ export async function POST(request: Request) {
 
     const orderedHistory = [...(history ?? [])].reverse();
 
+    let userMemoryPrompt = "";
+
+    try {
+      const { data: memories, error: memoriesError } = await supabase
+        .from("user_memories")
+        .select("memory_key, memory_value, category, confidence")
+        .eq("user_id", user.id)
+        .gte("confidence", 0.6)
+        .order("updated_at", {
+          ascending: false,
+        })
+        .limit(30);
+
+      if (memoriesError) {
+        throw memoriesError;
+      }
+
+      const userMemories = (memories ?? []) as UserMemory[];
+
+      if (userMemories.length > 0) {
+        const memoryLines = userMemories.map(
+          (memory) => `- ${memory.memory_key}: ${memory.memory_value}`,
+        );
+
+        userMemoryPrompt = `
+LONG-TERM USER MEMORY
+
+These are previously learned facts about the student.
+
+Use them naturally when relevant.
+
+Do not mention that you are reading memory or stored data.
+
+Do not repeat questions when the answer is already known from these memories.
+
+Do not force memories into unrelated conversation.
+
+If the student's current message contradicts an old memory, trust the current message.
+
+Known facts:
+
+${memoryLines.join("\n")}
+`.trim();
+      }
+    } catch (memoryLoadError) {
+      console.error("CHAT USER MEMORY LOAD ERROR:", memoryLoadError);
+    }
+
     const currentLesson = getCurrentLesson(englishLevel);
 
     let errorMemoryPrompt = "";
@@ -275,17 +307,14 @@ export async function POST(request: Request) {
     try {
       const previousErrors = await loadErrors(user.id);
 
-errorMemoryPrompt = [
-  buildErrorMemoryPrompt(previousErrors),
-  buildReinforcementPrompt(previousErrors),
-]
-  .filter(Boolean)
-  .join("\n\n");
+      errorMemoryPrompt = [
+        buildErrorMemoryPrompt(previousErrors),
+        buildReinforcementPrompt(previousErrors),
+      ]
+        .filter(Boolean)
+        .join("\n\n");
     } catch (errorMemoryLoadError) {
-      console.error(
-        "CHAT ERROR MEMORY LOAD ERROR:",
-        errorMemoryLoadError,
-      );
+      console.error("CHAT ERROR MEMORY LOAD ERROR:", errorMemoryLoadError);
     }
 
     const tutorPrompt = buildTutorPrompt({
@@ -298,10 +327,7 @@ errorMemoryPrompt = [
       lesson: currentLesson,
     });
 
-    const systemPrompt = [
-      tutorPrompt,
-      errorMemoryPrompt,
-    ]
+    const systemPrompt = [tutorPrompt, userMemoryPrompt, errorMemoryPrompt]
       .filter(Boolean)
       .join("\n\n");
 
@@ -314,10 +340,7 @@ errorMemoryPrompt = [
         let generatedConversationTitle: string | null = null;
         let streamClosed = false;
 
-        function sendEvent(
-          event: string,
-          data: Record<string, unknown>,
-        ) {
+        function sendEvent(event: string, data: Record<string, unknown>) {
           if (streamClosed) {
             return;
           }
@@ -342,25 +365,23 @@ errorMemoryPrompt = [
             },
           });
 
-          const completionStream =
-            await openai.chat.completions.create({
-              model: "gpt-4.1-mini",
-              stream: true,
-              messages: [
-                {
-                  role: "system",
-                  content: systemPrompt,
-                },
-                ...orderedHistory.map((item) => ({
-                  role: item.role as "user" | "assistant",
-                  content: item.content,
-                })),
-              ],
-            });
+          const completionStream = await openai.chat.completions.create({
+            model: "gpt-4.1-mini",
+            stream: true,
+            messages: [
+              {
+                role: "system",
+                content: systemPrompt,
+              },
+              ...orderedHistory.map((item) => ({
+                role: item.role as "user" | "assistant",
+                content: item.content,
+              })),
+            ],
+          });
 
           for await (const chunk of completionStream) {
-            const text =
-              chunk.choices[0]?.delta?.content ?? "";
+            const text = chunk.choices[0]?.delta?.content ?? "";
 
             if (!text) {
               continue;
@@ -394,33 +415,48 @@ errorMemoryPrompt = [
           }
 
           const [
-  errorAnalysisResult,
-  masteryAnalysisResult,
-] = await Promise.allSettled([
-  analyzeAndSaveErrors({
-    userId: user.id,
-    userMessage: message,
-    assistantMessage: fullText,
-  }),
-  checkAndUpdateMastery({
-    userId: user.id,
-    userMessage: message,
-  }),
-]);
+            errorAnalysisResult,
+            masteryAnalysisResult,
+            memoryAnalysisResult,
+          ] = await Promise.allSettled([
+            analyzeAndSaveErrors({
+              userId: user.id,
+              userMessage: message,
+              assistantMessage: fullText,
+            }),
 
-if (errorAnalysisResult.status === "rejected") {
-  console.error(
-    "CHAT ERROR MEMORY ANALYSIS ERROR:",
-    errorAnalysisResult.reason,
-  );
-}
+            checkAndUpdateMastery({
+              userId: user.id,
+              userMessage: message,
+            }),
 
-if (masteryAnalysisResult.status === "rejected") {
-  console.error(
-    "CHAT MASTERY ANALYSIS ERROR:",
-    masteryAnalysisResult.reason,
-  );
-}
+            analyzeAndSaveUserMemories({
+              userId: user.id,
+              conversationId: currentConversationId,
+              userMessage: message,
+              assistantMessage: fullText,
+            }),
+          ]);
+          if (errorAnalysisResult.status === "rejected") {
+            console.error(
+              "CHAT ERROR MEMORY ANALYSIS ERROR:",
+              errorAnalysisResult.reason,
+            );
+          }
+
+          if (masteryAnalysisResult.status === "rejected") {
+            console.error(
+              "CHAT MASTERY ANALYSIS ERROR:",
+              masteryAnalysisResult.reason,
+            );
+          }
+
+          if (memoryAnalysisResult.status === "rejected") {
+            console.error(
+              "CHAT USER MEMORY ANALYSIS ERROR:",
+              memoryAnalysisResult.reason,
+            );
+          }
 
           if (isNewConversation) {
             try {
@@ -445,10 +481,7 @@ if (masteryAnalysisResult.status === "rejected") {
                 title: generatedConversationTitle,
               });
             } catch (titleError) {
-              console.error(
-                "CHAT CONVERSATION TITLE ERROR:",
-                titleError,
-              );
+              console.error("CHAT CONVERSATION TITLE ERROR:", titleError);
             }
           }
 
@@ -469,8 +502,9 @@ if (masteryAnalysisResult.status === "rejected") {
           let streak = null;
 
           try {
-            const { data: streakData, error: streakError } =
-              await supabase.rpc("update_daily_streak");
+            const { data: streakData, error: streakError } = await supabase.rpc(
+              "update_daily_streak",
+            );
 
             if (streakError) {
               throw streakError;
@@ -484,34 +518,23 @@ if (masteryAnalysisResult.status === "rejected") {
           let unlockedAchievements: UnlockedAchievement[] = [];
 
           try {
-            const {
-              data: achievementData,
-              error: achievementError,
-            } = await supabase.rpc(
-              "check_and_unlock_achievements",
-            );
+            const { data: achievementData, error: achievementError } =
+              await supabase.rpc("check_and_unlock_achievements");
 
             if (achievementError) {
               throw achievementError;
             }
 
             unlockedAchievements =
-              (achievementData as
-                | UnlockedAchievement[]
-                | null) ?? [];
+              (achievementData as UnlockedAchievement[] | null) ?? [];
           } catch (achievementError) {
-            console.error(
-              "CHAT ACHIEVEMENT ERROR:",
-              achievementError,
-            );
+            console.error("CHAT ACHIEVEMENT ERROR:", achievementError);
           }
 
-          const achievementXpReward =
-            unlockedAchievements.reduce(
-              (total, achievement) =>
-                total + achievement.xp_reward,
-              0,
-            );
+          const achievementXpReward = unlockedAchievements.reduce(
+            (total, achievement) => total + achievement.xp_reward,
+            0,
+          );
 
           if (achievementXpReward > 0) {
             try {
@@ -522,10 +545,7 @@ if (masteryAnalysisResult.status === "rejected") {
 
               xpAwarded += achievementXpReward;
             } catch (achievementXpError) {
-              console.error(
-                "CHAT ACHIEVEMENT XP ERROR:",
-                achievementXpError,
-              );
+              console.error("CHAT ACHIEVEMENT XP ERROR:", achievementXpError);
             }
           }
 

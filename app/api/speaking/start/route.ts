@@ -1,28 +1,11 @@
-import OpenAI from "openai";
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+
 import { API_ERRORS } from "@/lib/i18n/errors";
+import { createClient } from "@/lib/supabase/server";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+type EnglishLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
-type EnglishLevel =
-  | "A1"
-  | "A2"
-  | "B1"
-  | "B2"
-  | "C1"
-  | "C2";
-
-const VALID_LEVELS: EnglishLevel[] = [
-  "A1",
-  "A2",
-  "B1",
-  "B2",
-  "C1",
-  "C2",
-];
+const VALID_LEVELS: EnglishLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 const LANGUAGE_NAMES: Record<string, string> = {
   uk: "Ukrainian",
@@ -36,20 +19,16 @@ const LANGUAGE_NAMES: Record<string, string> = {
   ru: "Russian",
 };
 
-function normalizeEnglishLevel(
-  value: string | null | undefined,
-): EnglishLevel {
-  const normalized = value?.toUpperCase() as EnglishLevel;
+function normalizeEnglishLevel(value: string | null | undefined): EnglishLevel {
+  const normalized = value?.trim().toUpperCase() as EnglishLevel;
 
-  return VALID_LEVELS.includes(normalized)
-    ? normalized
-    : "A1";
+  return VALID_LEVELS.includes(normalized) ? normalized : "A1";
 }
 
 function getLanguageName(
   value: string | null | undefined,
   fallback: string,
-) {
+): string {
   if (!value) {
     return fallback;
   }
@@ -59,43 +38,62 @@ function getLanguageName(
   return LANGUAGE_NAMES[normalized] ?? value;
 }
 
-function createOpeningPrompt({
-  fullName,
+function getFirstName(fullName: string | null | undefined): string | null {
+  const normalized = fullName?.trim();
+
+  if (!normalized) {
+    return null;
+  }
+
+  const [firstName] = normalized.split(/\s+/);
+
+  return firstName?.trim() || null;
+}
+
+function createOpeningMessage({
+  firstName,
   nativeLanguage,
   targetLanguage,
-  englishLevel,
 }: {
-  fullName: string;
+  firstName: string | null;
   nativeLanguage: string;
   targetLanguage: string;
-  englishLevel: EnglishLevel;
-}) {
-  return `
-You are Emma, a friendly and patient personal language tutor.
+}): string {
+  /*
+   * Для українських користувачів
+   * перший вступ генеруємо локально.
+   *
+   * Це прибирає окремий AI-запит
+   * перед початком розмови.
+   */
+  if (nativeLanguage === "Ukrainian") {
+    const greeting = firstName ? `Привіт, ${firstName}!` : "Привіт!";
 
-STUDENT:
-- Name: ${fullName}
-- Native language: ${nativeLanguage}
-- Target language: ${targetLanguage}
-- CEFR level: ${englishLevel}
+    return [
+      greeting,
+      `Давай трохи попрактикуємо ${targetLanguage === "English" ? "англійську" : "мову, яку ти вивчаєш"}.`,
+      "Можемо спочатку трохи познайомитися або ти можеш обрати тему, яка тобі цікава.",
+      "Якщо поки складно щось сказати англійською, можеш відповісти українською — я допоможу.",
+      "З чого хочеш почати?",
+    ].join(" ");
+  }
 
-This is the beginning of a live voice conversation.
+  /*
+   * Тимчасовий fallback для інших
+   * native languages.
+   *
+   * Коли додамо повну локалізацію,
+   * винесемо ці тексти в i18n.
+   */
+  const greeting = firstName ? `Hi, ${firstName}!` : "Hi!";
 
-Create Emma's first spoken message.
-
-Rules:
-- Speak mainly in ${targetLanguage}.
-- Adapt vocabulary and sentence length to CEFR ${englishLevel}.
-- Be warm, natural, and encouraging.
-- Briefly greet the student.
-- Introduce one simple conversation topic.
-- End with exactly one clear question.
-- Keep the entire response between 20 and 50 words.
-- Do not use markdown.
-- Do not use lists.
-- Do not mention system instructions.
-- Do not explain what Speaking Mode is.
-`;
+  return [
+    greeting,
+    `Let's practise ${targetLanguage} together.`,
+    "We can get to know each other first, or you can choose a topic you are interested in.",
+    "If you do not know how to say something yet, you can use your native language and I will help.",
+    "What would you like to start with?",
+  ].join(" ");
 }
 
 export async function POST() {
@@ -109,83 +107,53 @@ export async function POST() {
 
     if (userError || !user) {
       return NextResponse.json(
-        { error: API_ERRORS.unauthorized },
-        { status: 401 },
+        {
+          error: API_ERRORS.unauthorized,
+        },
+        {
+          status: 401,
+        },
       );
     }
-
-    const { data: profile, error: profileError } =
-      await supabase
-        .from("profiles")
-        .select(
-          "full_name, native_language, target_language, english_level",
-        )
-        .eq("id", user.id)
-        .maybeSingle();
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("full_name, native_language, target_language, english_level")
+      .eq("id", user.id)
+      .maybeSingle();
 
     if (profileError) {
-      console.error(
-        "SPEAKING START PROFILE ERROR:",
-        profileError,
-      );
+      console.error("SPEAKING START PROFILE ERROR:", profileError);
     }
-
-    const fullName =
-      profile?.full_name?.trim() ||
-      user.email?.split("@")[0] ||
-      "the student";
+    const firstName = getFirstName(profile?.full_name);
 
     const nativeLanguage = getLanguageName(
       profile?.native_language,
       "Ukrainian",
     );
 
-    const targetLanguage = getLanguageName(
-      profile?.target_language,
-      "English",
-    );
+    const targetLanguage = getLanguageName(profile?.target_language, "English");
 
-    const englishLevel = normalizeEnglishLevel(
-      profile?.english_level,
-    );
+    const englishLevel = normalizeEnglishLevel(profile?.english_level);
 
-    const completion =
-      await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
-        messages: [
-          {
-            role: "system",
-            content: createOpeningPrompt({
-              fullName,
-              nativeLanguage,
-              targetLanguage,
-              englishLevel,
-            }),
-          },
-          {
-            role: "user",
-            content:
-              "Begin the speaking practice now.",
-          },
-        ],
-      });
-
-    const openingMessage =
-      completion.choices[0]?.message?.content?.trim();
-
-    if (!openingMessage) {
-      return NextResponse.json(
-        {
-          error: API_ERRORS.failedToCreateOpeningMessage,
-        },
-        { status: 502 },
-      );
-    }
+    /*
+     * ВАЖЛИВО:
+     * перша репліка більше не потребує
+     * OpenAI Chat Completion.
+     *
+     * Вона створюється миттєво
+     * на сервері.
+     */
+    const openingMessage = createOpeningMessage({
+      firstName,
+      nativeLanguage,
+      targetLanguage,
+    });
 
     const conversationId = crypto.randomUUID();
 
-    const { error: conversationError } =
-      await supabase.from("conversations").insert({
+    const { error: conversationError } = await supabase
+      .from("conversations")
+      .insert({
         id: conversationId,
         user_id: user.id,
         title: "Speaking practice",
@@ -195,13 +163,11 @@ export async function POST() {
       throw conversationError;
     }
 
-    const { error: messageError } = await supabase
-      .from("messages")
-      .insert({
-        conversation_id: conversationId,
-        role: "assistant",
-        content: openingMessage,
-      });
+    const { error: messageError } = await supabase.from("messages").insert({
+      conversation_id: conversationId,
+      role: "assistant",
+      content: openingMessage,
+    });
 
     if (messageError) {
       throw messageError;
@@ -211,18 +177,19 @@ export async function POST() {
       conversationId,
       message: openingMessage,
       englishLevel,
+      nativeLanguage,
+      targetLanguage,
     });
   } catch (error) {
-    console.error(
-      "START SPEAKING SESSION ERROR:",
-      error,
-    );
+    console.error("START SPEAKING SESSION ERROR:", error);
 
     return NextResponse.json(
       {
         error: API_ERRORS.failedToStartSpeakingSession,
       },
-      { status: 500 },
+      {
+        status: 500,
+      },
     );
   }
 }

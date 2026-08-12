@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   Bot,
   Loader2,
@@ -13,7 +19,7 @@ import {
   Volume2,
 } from "lucide-react";
 
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useVoiceRecorder } from "@/components/quests/hooks/useVoiceRecorder";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import {
   SpeakingReport,
@@ -56,10 +62,19 @@ function isSpeakingEvaluation(value: unknown): value is SpeakingEvaluation {
     typeof evaluation.encouragement === "string"
   );
 }
+function subscribeToClientState() {
+  return () => {};
+}
+
+function getClientSnapshot() {
+  return true;
+}
+
+function getServerSnapshot() {
+  return false;
+}
 
 export function SpeakingSession() {
-  const [mounted, setMounted] = useState(false);
-
   const [sessionActive, setSessionActive] = useState(false);
 
   const [startingSession, setStartingSession] = useState(false);
@@ -67,21 +82,26 @@ export function SpeakingSession() {
   const [showReport, setShowReport] = useState(false);
 
   const [sessionStartedAt] = useState(() => Date.now());
+  const isClient = useSyncExternalStore(
+    subscribeToClientState,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
 
-const [completionData, setCompletionData] = useState<{
-  xpEarned: number;
+  const [completionData, setCompletionData] = useState<{
+    xpEarned: number;
 
-  progress: {
-    xp: number;
-    level: number;
-    progressPercent: number;
+    progress: {
+      xp: number;
+      level: number;
+      progressPercent: number;
 
-    previousLevel: number;
-    leveledUp: boolean;
-  };
-} | null>(null);
+      previousLevel: number;
+      leveledUp: boolean;
+    };
+  } | null>(null);
 
-const completingSessionRef = useRef(false);
+  const completingSessionRef = useRef(false);
 
   const [phase, setPhase] = useState<SessionPhase>("idle");
 
@@ -111,13 +131,18 @@ const completingSessionRef = useRef(false);
 
   const messagesBottomRef = useRef<HTMLDivElement | null>(null);
 
-  const {
-    status: recognitionStatus,
-    isSupported: recognitionSupported,
-    errorMessage: recognitionError,
-    startListening,
-    stopListening,
-  } = useSpeechRecognition();
+  const recorder = useVoiceRecorder();
+
+  const { startAutoTranscribe, cancel: cancelRecording } = recorder;
+
+  const recognitionSupported =
+    isClient &&
+    Boolean(navigator.mediaDevices?.getUserMedia) &&
+    typeof MediaRecorder !== "undefined";
+
+  const stopListening = useCallback(() => {
+    cancelRecording();
+  }, [cancelRecording]);
 
   const {
     status: speechStatus,
@@ -125,10 +150,6 @@ const completingSessionRef = useRef(false);
     speak,
     stop: stopSpeaking,
   } = useSpeechSynthesis();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     sessionActiveRef.current = sessionActive;
@@ -144,9 +165,8 @@ const completingSessionRef = useRef(false);
     });
   }, [messages, emmaResponse, evaluation]);
 
-  const voiceSupported = mounted && recognitionSupported && speechSupported;
-
-  function beginListening() {
+  const voiceSupported = recognitionSupported && speechSupported;
+  async function beginListening() {
     if (!sessionActiveRef.current || processingTranscriptRef.current) {
       return;
     }
@@ -156,8 +176,9 @@ const completingSessionRef = useRef(false);
     setEmmaResponse("");
     setErrorMessage("");
 
-    startListening({
-      language: "en-US",
+    await startAutoTranscribe({
+      silenceMs: 900,
+      maxRecordingMs: 30_000,
 
       onTranscript: (text) => {
         const normalizedText = text.trim();
@@ -172,14 +193,23 @@ const completingSessionRef = useRef(false);
 
         processingTranscriptRef.current = true;
 
-        stopListening();
         setCurrentTranscript(normalizedText);
 
         void sendVoiceMessage(normalizedText);
       },
+
+      onError: (message) => {
+        if (!sessionActiveRef.current) {
+          return;
+        }
+
+        processingTranscriptRef.current = false;
+
+        setPhase("error");
+        setErrorMessage(message);
+      },
     });
   }
-
   async function evaluateTranscript(transcript: string) {
     const previousAssistantMessage =
       [...messagesRef.current]
@@ -270,7 +300,9 @@ const completingSessionRef = useRef(false);
       if (!response.ok) {
         const responseText = await response.text();
 
-        throw new Error(responseText || "Не вдалося надіслати голосове повідомлення.");
+        throw new Error(
+          responseText || "Не вдалося надіслати голосове повідомлення.",
+        );
       }
 
       if (!response.body) {
@@ -407,10 +439,18 @@ const completingSessionRef = useRef(false);
       setPhase("error");
 
       setErrorMessage(
-        error instanceof Error ? error.message : "Під час розмовної практики сталася помилка.",
+        error instanceof Error
+          ? error.message
+          : "Під час розмовної практики сталася помилка.",
       );
     }
   }
+
+  const beginListeningRef = useRef<() => Promise<void>>(async () => {});
+
+  useEffect(() => {
+    beginListeningRef.current = beginListening;
+  });
 
   useEffect(() => {
     if (phase !== "speaking") {
@@ -429,20 +469,12 @@ const completingSessionRef = useRef(false);
       if (sessionActiveRef.current) {
         window.setTimeout(() => {
           if (sessionActiveRef.current) {
-            beginListening();
+            void beginListeningRef.current();
           }
         }, 500);
       }
     }
   }, [phase, speechStatus]);
-
-  useEffect(() => {
-    if (recognitionStatus === "error" && recognitionError) {
-      setPhase("error");
-      setErrorMessage(recognitionError);
-      processingTranscriptRef.current = false;
-    }
-  }, [recognitionError, recognitionStatus]);
 
   async function startSession() {
     if (!voiceSupported || startingSession) {
@@ -547,50 +579,46 @@ const completingSessionRef = useRef(false);
     }
   }
   async function completeSpeakingSession() {
-  if (completingSessionRef.current) {
-    return;
-  }
-
-  completingSessionRef.current = true;
-
-  try {
-    const response = await fetch("/api/speaking/complete", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        conversationId,
-        startedAt: new Date(sessionStartedAt).toISOString(),
-        durationSeconds: Math.floor(
-          (Date.now() - sessionStartedAt) / 1000,
-        ),
-        evaluations: sessionEvaluations,
-      }),
-    });
-
-    const data = await response.json();
-
-
-    if (!response.ok) {
-      throw new Error(
-  typeof data.error === "string"
-    ? data.error
-    : "Не вдалося завершити розмовну практику.",
-);
+    if (completingSessionRef.current) {
+      return;
     }
 
-    setCompletionData({
-      xpEarned: data.session.xpEarned,
-      progress: data.progress,
-    });
+    completingSessionRef.current = true;
 
-  } catch (error) {
-    console.error(error);
-  } finally {
-    completingSessionRef.current = false;
+    try {
+      const response = await fetch("/api/speaking/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversationId,
+          startedAt: new Date(sessionStartedAt).toISOString(),
+          durationSeconds: Math.floor((Date.now() - sessionStartedAt) / 1000),
+          evaluations: sessionEvaluations,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Не вдалося завершити розмовну практику.",
+        );
+      }
+
+      setCompletionData({
+        xpEarned: data.session.xpEarned,
+        progress: data.progress,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      completingSessionRef.current = false;
+    }
   }
-}
 
   async function stopSession() {
     const hadActiveSession = sessionActiveRef.current;
@@ -609,9 +637,9 @@ const completingSessionRef = useRef(false);
     setErrorMessage("");
 
     if (hadActiveSession) {
-  await completeSpeakingSession();
-  setShowReport(true);
-}
+      await completeSpeakingSession();
+      setShowReport(true);
+    }
   }
 
   function closeReport() {
@@ -657,12 +685,12 @@ const completingSessionRef = useRef(false);
   if (showReport) {
     return (
       <SpeakingReport
-  evaluations={sessionEvaluations}
-  messages={messages}
-  completionData={completionData}
-  onClose={closeReport}
-  onRestart={restartSession}
-/>
+        evaluations={sessionEvaluations}
+        messages={messages}
+        completionData={completionData}
+        onClose={closeReport}
+        onRestart={restartSession}
+      />
     );
   }
 
@@ -715,9 +743,7 @@ const completingSessionRef = useRef(false);
           </div>
 
           <div>
-            <h2 className="font-semibold text-slate-950">
-              Розмова з Еммою
-            </h2>
+            <h2 className="font-semibold text-slate-950">Розмова з Еммою</h2>
 
             <p className="text-sm text-slate-500">
               Автоматична голосова розмова
@@ -738,7 +764,7 @@ const completingSessionRef = useRef(false);
           <button
             type="button"
             onClick={() => void startSession()}
-            disabled={startingSession || (mounted && !voiceSupported)}
+            disabled={startingSession || !voiceSupported}
             className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {startingSession ? (
@@ -802,16 +828,12 @@ const completingSessionRef = useRef(false);
             </button>
           )}
 
-          {!mounted ? (
-            <p className="mt-6 text-xs text-slate-400">
-              Перевірка підтримки голосового керування браузером...
-            </p>
-          ) : !voiceSupported ? (
+          {!voiceSupported ? (
             <p className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-700">
-              Використовуйте найновішу версію Chrome або Edge та дозвольте доступ до мікрофона.
+              Використовуйте сучасний браузер та дозвольте доступ до мікрофона.
             </p>
           ) : (
-            <p className="mt-6 text-xs text-slatme-400">
+            <p className="mt-6 text-xs text-slate-400">
               Після завершення відповіді Емма автоматично знову почне слухати.
             </p>
           )}
@@ -831,7 +853,8 @@ const completingSessionRef = useRef(false);
                   </h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Натисніть «Почати говорити», відповідайте Еммі англійською та продовжуйте розмову без використання рук.
+                    Натисніть «Почати говорити», відповідайте Еммі англійською
+                    та продовжуйте розмову без використання рук.
                   </p>
                 </div>
               </div>
@@ -886,7 +909,7 @@ const completingSessionRef = useRef(false);
                   <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-lg font-bold text-slate-900">
-                        Зворотній зв'язок
+                        Зворотний зв&apos;язок
                       </h3>
 
                       <div className="rounded-full bg-white px-3 py-1 text-sm font-bold text-indigo-600">
