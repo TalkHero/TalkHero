@@ -8,6 +8,7 @@ import { CTA } from "@/components/landing/CTA";
 import { Footer } from "@/components/landing/Footer";
 import { ProductDemo } from "@/components/landing/ProductDemo";
 import { AdaptiveLearning } from "@/components/landing/AdaptiveLearning";
+import { VideoDemo } from "@/components/landing/VideoDemo";
 
 export default function HomePage() {
   return (
@@ -17,6 +18,7 @@ export default function HomePage() {
       <div className="pt-20">
         <Hero />
         <ProductDemo />
+        <VideoDemo />
         <section id="features" className="scroll-mt-24">
           <Features />
         </section>
