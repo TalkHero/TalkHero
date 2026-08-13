@@ -107,7 +107,7 @@ export function Navbar() {
             href="/register"
             className="inline-flex h-11 items-center justify-center rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700"
           >
-            Почати навчання
+            Почати безкоштовно
           </Link>
         </div>
 
@@ -116,9 +116,7 @@ export function Navbar() {
           onClick={() => setIsOpen((current) => !current)}
           className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-900 transition hover:bg-slate-50 lg:hidden"
           aria-label={
-            isOpen
-              ? "Закрити меню навігації"
-              : "Відкрити меню навігації"
+            isOpen ? "Закрити меню навігації" : "Відкрити меню навігації"
           }
           aria-expanded={isOpen}
         >
@@ -186,7 +184,7 @@ export function Navbar() {
               onClick={closeMenu}
               className="inline-flex h-12 items-center justify-center rounded-2xl bg-indigo-600 text-sm font-bold text-white transition hover:bg-indigo-700"
             >
-              Почати навчання
+              Почати безкоштовно
             </Link>
           </div>
         </div>

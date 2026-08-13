@@ -14,17 +14,16 @@ export function CTA() {
           <div className="relative mx-auto max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur">
               <Sparkles className="h-4 w-4" />
-              Почніть навчання вже сьогодні
+              Почніть уже сьогодні
             </div>
 
             <h2 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
-              Заговоріть англійською впевнено разом із TalkHero
+              Почніть говорити англійською впевненіше
             </h2>
 
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-indigo-100">
-              Практикуйте живі діалоги, покращуйте вимову, розширюйте словниковий
-              запас і відстежуйте свій прогрес разом із персональним
-              ШІ-викладачем.
+              Практикуйте живі діалоги з Emma, отримуйте зрозумілі виправлення
+              та поступово будуйте впевненість у реальному спілкуванні.
             </p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -57,7 +56,7 @@ export function CTA() {
 
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-300" />
-                Навчайтеся будь-коли
+                Google або email
               </div>
             </div>
           </div>
