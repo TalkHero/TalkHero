@@ -6,19 +6,9 @@ import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistr
 
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin", "cyrillic"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin", "cyrillic"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
+  metadataBase: new URL("https://talk-hero.com"),
+
   title: {
     default: "TalkHero — вивчайте англійську через живі ситуації",
     template: "%s | TalkHero",
@@ -29,6 +19,10 @@ export const metadata: Metadata = {
 
   applicationName: "TalkHero",
   manifest: "/manifest.webmanifest",
+
+  alternates: {
+    canonical: "/",
+  },
 
   keywords: [
     "англійська мова",
@@ -46,6 +40,23 @@ export const metadata: Metadata = {
 
   creator: "TalkHero",
   publisher: "TalkHero",
+
+  openGraph: {
+    type: "website",
+    locale: "uk_UA",
+    url: "/",
+    siteName: "TalkHero",
+    title: "TalkHero — вивчайте англійську через живі ситуації",
+    description:
+      "Вивчайте англійську через інтерактивні місії, живі розмови, словник, повторення та розмовну практику.",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "TalkHero — вивчайте англійську через живі ситуації",
+    description:
+      "Вивчайте англійську через інтерактивні місії, живі розмови, словник, повторення та розмовну практику.",
+  },
 
   icons: {
     icon: [
@@ -94,6 +105,18 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
   },
 };
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",

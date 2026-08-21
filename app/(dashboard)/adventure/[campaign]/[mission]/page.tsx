@@ -111,9 +111,7 @@ export default async function MissionPage({ params }: MissionPageProps) {
   );
 
   const subtitle =
-    getMetadataString(questAdventureMetadata.subtitle) ??
-    quest.description ??
-    "Навчальна місія";
+    getMetadataString(questAdventureMetadata.subtitle) ?? "Навчальна місія";
 
   const objectives = getMetadataStringArray(questAdventureMetadata.objectives);
 

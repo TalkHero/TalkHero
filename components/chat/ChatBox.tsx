@@ -47,9 +47,9 @@ export function ChatBox() {
   const [xpToast, setXpToast] = useState<XpToastData | null>(null);
   const [dailyStreak, setDailyStreak] = useState<DailyStreak | null>(null);
   const [achievementToast, setAchievementToast] =
-  useState<UnlockedAchievement | null>(null);
+    useState<UnlockedAchievement | null>(null);
 
-const achievementQueue = useRef<UnlockedAchievement[]>([]);
+  const achievementQueue = useRef<UnlockedAchievement[]>([]);
 
   const {
     messages,
@@ -59,13 +59,13 @@ const achievementQueue = useRef<UnlockedAchievement[]>([]);
     setConversationId,
     historyLoading,
     deletingConversationId,
-renamingConversationId,
-controlsDisabled,
-loadConversations,
-startNewConversation,
-openConversation,
-renameConversation,
-deleteConversation,
+    renamingConversationId,
+    controlsDisabled,
+    loadConversations,
+    startNewConversation,
+    openConversation,
+    renameConversation,
+    deleteConversation,
   } = useConversationManager({
     chatLoading: loading,
   });
@@ -147,8 +147,9 @@ deleteConversation,
     });
   }
 
-  async function sendMessage() {
-    const text = input.trim();
+  async function sendMessage(quickReply?: string) {
+    const text =
+      typeof quickReply === "string" ? quickReply.trim() : input.trim();
 
     if (!text || loading || historyLoading || deletingConversationId) {
       return;
@@ -190,8 +191,8 @@ deleteConversation,
         },
 
         onConversationTitle: () => {
-  loadConversations();
-},
+          loadConversations();
+        },
 
         onDelta: (messageId, deltaText) => {
           setMessages((previous) =>
@@ -223,35 +224,35 @@ deleteConversation,
         },
 
         onAchievementsUnlocked: (achievements) => {
-  if (!achievements.length) {
-    return;
-  }
+          if (!achievements.length) {
+            return;
+          }
 
-  achievementQueue.current.push(...achievements);
+          achievementQueue.current.push(...achievements);
 
-  if (achievementToast) {
-    return;
-  }
+          if (achievementToast) {
+            return;
+          }
 
-  const showNext = () => {
-    const next = achievementQueue.current.shift();
+          const showNext = () => {
+            const next = achievementQueue.current.shift();
 
-    if (!next) {
-      setAchievementToast(null);
-      return;
-    }
+            if (!next) {
+              setAchievementToast(null);
+              return;
+            }
 
-    setAchievementToast(next);
+            setAchievementToast(next);
 
-    window.setTimeout(() => {
-      setAchievementToast(null);
+            window.setTimeout(() => {
+              setAchievementToast(null);
 
-      window.setTimeout(showNext, 300);
-    }, 5000);
-  };
+              window.setTimeout(showNext, 300);
+            }, 5000);
+          };
 
-  showNext();
-},
+          showNext();
+        },
       });
 
       await loadConversations();
@@ -275,22 +276,42 @@ deleteConversation,
       setLoading(false);
     }
   }
+  const showQuickStarts =
+    !historyLoading &&
+    !loading &&
+    !conversationId &&
+    messages.every((message) => message.role !== "user");
+
+  const quickStarts = [
+    {
+      label: "👋 Познайомитися",
+      message: "Hi Emma! I'd like to introduce myself.",
+    },
+    {
+      label: "💬 Проста розмова",
+      message: "Hi Emma! Let's have a simple English conversation.",
+    },
+    {
+      label: "☕ Ситуація в кафе",
+      message: "Hi Emma! I'd like to practice ordering at a coffee shop.",
+    },
+  ];
 
   return (
     <div className="relative flex h-full min-h-0 overflow-hidden bg-slate-50">
       <ConversationSidebar
-  open={sidebarOpen}
-  conversations={conversations}
-  activeConversationId={conversationId}
-  deletingConversationId={deletingConversationId}
-  renamingConversationId={renamingConversationId}
-  disabled={controlsDisabled}
-  onClose={() => setSidebarOpen(false)}
-  onNewConversation={handleStartNewConversation}
-  onOpenConversation={handleOpenConversation}
-  onRenameConversation={renameConversation}
-  onDeleteConversation={deleteConversation}
-/>
+        open={sidebarOpen}
+        conversations={conversations}
+        activeConversationId={conversationId}
+        deletingConversationId={deletingConversationId}
+        renamingConversationId={renamingConversationId}
+        disabled={controlsDisabled}
+        onClose={() => setSidebarOpen(false)}
+        onNewConversation={handleStartNewConversation}
+        onOpenConversation={handleOpenConversation}
+        onRenameConversation={renameConversation}
+        onDeleteConversation={deleteConversation}
+      />
 
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4">
@@ -391,7 +412,20 @@ deleteConversation,
                   />
                 );
               })}
-
+              {showQuickStarts && (
+                <div className="ml-14 flex flex-wrap gap-2">
+                  {quickStarts.map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => void sendMessage(item.message)}
+                      className="rounded-full border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-50"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div ref={bottomRef} />
             </div>
           </div>

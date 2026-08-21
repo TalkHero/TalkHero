@@ -29,15 +29,6 @@ type ErrorAnalysisResponse = {
   }>;
 };
 
-function containsVisibleCorrection(
-  assistantMessage: string,
-): boolean {
-  return (
-    assistantMessage.includes("❌") &&
-    assistantMessage.includes("✅")
-  );
-}
-
 function isErrorType(value: string): value is ErrorType {
   return ERROR_TYPES.includes(value as ErrorType);
 }
@@ -91,10 +82,6 @@ export async function analyzeAndSaveErrors({
   userMessage,
   assistantMessage,
 }: AnalyzeErrorsInput): Promise<DetectedLanguageError[]> {
-  if (!containsVisibleCorrection(assistantMessage)) {
-    return [];
-  }
-
   const completion = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     temperature: 0,
@@ -213,8 +200,7 @@ ${assistantMessage}
     ],
   });
 
-  const content =
-    completion.choices[0]?.message?.content?.trim();
+  const content = completion.choices[0]?.message?.content?.trim();
 
   if (!content) {
     return [];
@@ -223,20 +209,14 @@ ${assistantMessage}
   let parsedResponse: ErrorAnalysisResponse;
 
   try {
-    parsedResponse = JSON.parse(
-      content,
-    ) as ErrorAnalysisResponse;
+    parsedResponse = JSON.parse(content) as ErrorAnalysisResponse;
   } catch (error) {
-    console.error(
-      "PARSE LANGUAGE ERROR ANALYSIS:",
-      error,
-    );
+    console.error("PARSE LANGUAGE ERROR ANALYSIS:", error);
 
     return [];
   }
 
-  const detectedErrors =
-    normalizeDetectedErrors(parsedResponse);
+  const detectedErrors = normalizeDetectedErrors(parsedResponse);
 
   if (detectedErrors.length === 0) {
     return [];

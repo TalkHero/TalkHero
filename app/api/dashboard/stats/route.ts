@@ -181,6 +181,9 @@ export async function GET() {
       reviewedTodayResult,
       completedMissionsTodayResult,
       latestAssessmentResult,
+      activeLanguageErrorsResult,
+      masteredLanguageErrorsResult,
+      practiceLanguageErrorsResult,
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -257,13 +260,13 @@ export async function GET() {
         .from("assessment_attempts")
         .select(
           `
-            id,
-            test_id,
-            percentage,
-            passed,
-            final_level,
-            completed_at
-          `,
+      id,
+      test_id,
+      percentage,
+      passed,
+      final_level,
+      completed_at
+    `,
         )
         .eq("user_id", user.id)
         .eq("status", "completed")
@@ -273,6 +276,46 @@ export async function GET() {
         })
         .limit(1)
         .maybeSingle(),
+
+      supabase
+        .from("user_language_errors")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .eq("user_id", user.id)
+        .eq("is_mastered", false),
+
+      supabase
+        .from("user_language_errors")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .eq("user_id", user.id)
+        .eq("is_mastered", true),
+
+      supabase
+        .from("user_language_errors")
+        .select(
+          `
+      error_key,
+      error_type,
+      original_text,
+      corrected_text,
+      occurrence_count,
+      successful_uses
+    `,
+        )
+        .eq("user_id", user.id)
+        .eq("is_mastered", false)
+        .order("occurrence_count", {
+          ascending: false,
+        })
+        .order("last_seen_at", {
+          ascending: false,
+        })
+        .limit(3),
     ]);
 
     if (profileResult.error) {
@@ -309,6 +352,18 @@ export async function GET() {
 
     if (latestAssessmentResult.error) {
       throw latestAssessmentResult.error;
+    }
+
+    if (activeLanguageErrorsResult.error) {
+      throw activeLanguageErrorsResult.error;
+    }
+
+    if (masteredLanguageErrorsResult.error) {
+      throw masteredLanguageErrorsResult.error;
+    }
+
+    if (practiceLanguageErrorsResult.error) {
+      throw practiceLanguageErrorsResult.error;
     }
 
     const englishLevel = profileResult.data?.english_level || "A1";
@@ -415,6 +470,46 @@ export async function GET() {
           )
           .eq("attempt_id", latestAttempt.id)
           .neq("answer_status", "pending"),
+
+        supabase
+          .from("user_language_errors")
+          .select("id", {
+            count: "exact",
+            head: true,
+          })
+          .eq("user_id", user.id)
+          .eq("is_mastered", false),
+
+        supabase
+          .from("user_language_errors")
+          .select("id", {
+            count: "exact",
+            head: true,
+          })
+          .eq("user_id", user.id)
+          .eq("is_mastered", true),
+
+        supabase
+          .from("user_language_errors")
+          .select(
+            `
+      error_key,
+      error_type,
+      original_text,
+      corrected_text,
+      occurrence_count,
+      successful_uses
+    `,
+          )
+          .eq("user_id", user.id)
+          .eq("is_mastered", false)
+          .order("occurrence_count", {
+            ascending: false,
+          })
+          .order("last_seen_at", {
+            ascending: false,
+          })
+          .limit(3),
       ]);
 
       if (testResult.error) {
@@ -520,6 +615,22 @@ export async function GET() {
       (goal) => goal.completed,
     ).length;
 
+    const languageMastery = {
+      activeErrors: activeLanguageErrorsResult.count ?? 0,
+
+      masteredErrors: masteredLanguageErrorsResult.count ?? 0,
+
+      practiceItems:
+        practiceLanguageErrorsResult.data?.map((error) => ({
+          errorKey: error.error_key,
+          errorType: error.error_type,
+          originalText: error.original_text,
+          correctedText: error.corrected_text,
+          occurrenceCount: error.occurrence_count,
+          successfulUses: error.successful_uses,
+        })) ?? [],
+    };
+
     return NextResponse.json({
       profile: {
         fullName:
@@ -551,6 +662,8 @@ export async function GET() {
 
         completedMissionsToday,
       },
+
+      languageMastery,
 
       dailyGoals: {
         completedCount: completedDailyGoals,

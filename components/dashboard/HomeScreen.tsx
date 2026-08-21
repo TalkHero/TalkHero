@@ -9,6 +9,7 @@ import {
   Flame,
   Gamepad2,
   GraduationCap,
+  Lightbulb,
   Loader2,
   MessageCircle,
   Mic,
@@ -54,6 +55,7 @@ function LoadingState() {
             className="size-5 animate-spin text-primary"
             aria-hidden="true"
           />
+
           <span className="text-sm text-muted-foreground">
             Завантажуємо головну сторінку…
           </span>
@@ -119,6 +121,7 @@ function ModeCard({ mode }: { mode: LearningMode }) {
         <CardFooter className="mt-auto border-0 pt-0">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
             {mode.actionLabel}
+
             <ArrowRight
               className="size-4 transition-transform group-hover:translate-x-1"
               aria-hidden="true"
@@ -201,6 +204,7 @@ export function HomeScreen() {
   }
 
   const xpPerLevel = 100;
+
   const currentLevelStartXp = Math.max(data.profile.level - 1, 0) * xpPerLevel;
 
   const xpInsideCurrentLevel = Math.min(
@@ -286,34 +290,36 @@ export function HomeScreen() {
 
   const userName = data.profile.fullName?.trim().split(/\s+/)[0] || "друже";
 
-  const speakingGoal = data.dailyGoals.items.find(
-    (goal) => goal.id === "speaking",
-  );
-
   const reviewGoal = data.dailyGoals.items.find((goal) => goal.id === "review");
 
-  const smartNextStep = data.nextAdventure.mission
+  const isNewUser =
+    data.profile.xp === 0 &&
+    data.stats.vocabulary === 0 &&
+    !data.assessment.hasAssessment;
+
+  const smartNextStep = isNewUser
     ? {
-        label: "Наступний крок",
-        title: data.nextAdventure.mission.title,
-        description: data.nextAdventure.mission.description,
-        href: data.nextAdventure.mission.href,
-        action:
-          data.nextAdventure.mission.status === "in_progress"
-            ? "Продовжити"
-            : "Почати місію",
-        context: data.nextAdventure.campaignLocation,
-        kind: "adventure" as const,
+        label: "Почніть тут",
+        title: "Познайомтеся з Еммою",
+        description:
+          "Почніть із короткої розмови з вашим AI-викладачем. Емма допоможе зробити перший крок без стресу.",
+        href: "/chat",
+        action: "Написати Еммі",
+        context: "Ваше перше заняття",
+        kind: "chat" as const,
       }
-    : speakingGoal && !speakingGoal.completed
+    : data.nextAdventure.mission
       ? {
-          label: "Рекомендовано",
-          title: "Розмовна практика",
-          description: "Виконайте сьогодні одну голосову практику з Еммою.",
-          href: "/speaking",
-          action: "Почати говорити",
-          context: "Щоденна ціль",
-          kind: "speaking" as const,
+          label: "Наступний крок",
+          title: data.nextAdventure.mission.title,
+          description: data.nextAdventure.mission.description,
+          href: data.nextAdventure.mission.href,
+          action:
+            data.nextAdventure.mission.status === "in_progress"
+              ? "Продовжити"
+              : "Почати місію",
+          context: data.nextAdventure.campaignLocation,
+          kind: "adventure" as const,
         }
       : reviewGoal && !reviewGoal.completed && data.stats.dueToday > 0
         ? {
@@ -485,6 +491,141 @@ export function HomeScreen() {
         </div>
       </section>
 
+      <section aria-labelledby="language-mastery-heading">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2
+              id="language-mastery-heading"
+              className="text-2xl font-bold tracking-tight"
+            >
+              Робота над помилками
+            </h2>
+
+            <p className="mt-1 text-sm text-muted-foreground">
+              TalkHero запам’ятовує складні моменти й відстежує, як ви їх
+              закріплюєте.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="neutral">
+              Активні: {data.languageMastery.activeErrors}
+            </Badge>
+
+            <Badge variant="neutral">
+              Закріплено: {data.languageMastery.masteredErrors}
+            </Badge>
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardDescription>Персональне повторення</CardDescription>
+
+                <CardTitle className="mt-1">Що варто закріпити</CardTitle>
+              </div>
+
+              <div className="flex size-12 items-center justify-center rounded-lg bg-warning-soft text-amber-700">
+                <Lightbulb className="size-6" aria-hidden="true" />
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            {data.languageMastery.practiceItems.length > 0 ? (
+              <div className="space-y-4">
+                {data.languageMastery.practiceItems.map((item) => {
+                  const masteryProgress = Math.min(
+                    3,
+                    Math.max(0, item.successfulUses),
+                  );
+
+                  return (
+                    <div
+                      key={item.errorKey}
+                      className="rounded-xl border border-border bg-muted/30 p-4"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <Badge variant="outline">{item.errorType}</Badge>
+
+                            <span className="text-xs text-muted-foreground">
+                              Повторень помилки: {item.occurrenceCount}
+                            </span>
+                          </div>
+
+                          <p className="text-sm leading-6">
+                            <span className="text-muted-foreground">Було:</span>{" "}
+                            <span className="font-medium">
+                              {item.originalText}
+                            </span>
+                          </p>
+
+                          <p className="mt-1 text-sm leading-6">
+                            <span className="text-muted-foreground">
+                              Правильно:
+                            </span>{" "}
+                            <span className="font-semibold text-foreground">
+                              {item.correctedText}
+                            </span>
+                          </p>
+                        </div>
+
+                        <div className="shrink-0 sm:w-40">
+                          <div className="mb-2 flex items-center justify-between gap-3 text-xs">
+                            <span className="text-muted-foreground">
+                              Закріплення
+                            </span>
+
+                            <span className="font-semibold">
+                              {masteryProgress}/3
+                            </span>
+                          </div>
+
+                          <Progress
+                            value={masteryProgress}
+                            max={3}
+                            label={`${masteryProgress} із 3 успішних використань`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-success/20 bg-success-soft p-5">
+                <p className="font-semibold text-emerald-800">
+                  Усе актуальне вже закріплено
+                </p>
+
+                <p className="mt-1 text-sm leading-6 text-emerald-700">
+                  Нові рекомендації з’являться тут, коли TalkHero помітить
+                  повторювану мовну помилку.
+                </p>
+              </div>
+            )}
+          </CardContent>
+
+          {data.languageMastery.practiceItems.length > 0 && (
+            <CardFooter>
+              <Link
+                href="/chat"
+                className={buttonVariants({
+                  variant: "outline",
+                })}
+              >
+                Потренуватися з Еммою
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </CardFooter>
+          )}
+        </Card>
+      </section>
+
       <section className="grid gap-5 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -520,6 +661,7 @@ export function HomeScreen() {
               {data.assessment.hasAssessment
                 ? "Пройти наступний тест"
                 : "Почати тест"}
+
               <ArrowRight aria-hidden="true" />
             </Link>
           </CardFooter>

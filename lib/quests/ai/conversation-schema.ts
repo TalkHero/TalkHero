@@ -17,20 +17,14 @@ export type AIConversationEvaluation = {
   npcReply: string;
 
   detectedLevel:
-    | "below_A1"
-    | "A1"
-    | "A2"
-    | "B1"
-    | "B2"
-    | "C1"
-    | "C2"
-    | "unknown";
+    "below_A1" | "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | "unknown";
 
   strengths: string[];
   improvements: string[];
 
-  errorType:
-    AIConversationErrorType;
+  errorType: AIConversationErrorType;
+
+  errorKey: string;
 
   originalFragment: string;
   correctedFragment: string;
@@ -57,15 +51,13 @@ export const AI_CONVERSATION_SCHEMA = {
       type: "integer",
       minimum: 0,
       maximum: 100,
-      description:
-        "Quality of the latest learner answer from 0 to 100.",
+      description: "Quality of the latest learner answer from 0 to 100.",
     },
     feedbackUk: {
       type: "string",
       minLength: 1,
       maxLength: 500,
-      description:
-        "Short, supportive feedback in Ukrainian.",
+      description: "Short, supportive feedback in Ukrainian.",
     },
     naturalAnswer: {
       type: "string",
@@ -77,39 +69,29 @@ export const AI_CONVERSATION_SCHEMA = {
       type: "string",
       minLength: 1,
       maxLength: 300,
-      description:
-        "The next short and natural English reply from the NPC.",
+      description: "The next short and natural English reply from the NPC.",
     },
     detectedLevel: {
       type: "string",
-      enum: [
-        "below_A1",
-        "A1",
-        "A2",
-        "B1",
-        "B2",
-        "C1",
-        "C2",
-        "unknown"
-      ]
+      enum: ["below_A1", "A1", "A2", "B1", "B2", "C1", "C2", "unknown"],
     },
     strengths: {
       type: "array",
       maxItems: 3,
       items: {
         type: "string",
-        maxLength: 160
-      }
+        maxLength: 160,
+      },
     },
     improvements: {
       type: "array",
       maxItems: 3,
       items: {
         type: "string",
-        maxLength: 160
+        maxLength: 160,
       },
     },
-        errorType: {
+    errorType: {
       type: "string",
       enum: [
         "grammar",
@@ -122,6 +104,13 @@ export const AI_CONVERSATION_SCHEMA = {
       ],
       description:
         "The single most important issue in the learner answer. Use none when no correction is needed.",
+    },
+
+    errorKey: {
+      type: "string",
+      maxLength: 120,
+      description:
+        "A stable reusable identifier for the underlying language rule, for example grammar:third-person-singular-s or naturalness:polite-service-request. Use an empty string when errorType is none or relevance. Do not use the complete learner sentence as the key.",
     },
 
     originalFragment: {
@@ -152,7 +141,7 @@ export const AI_CONVERSATION_SCHEMA = {
         "One short reusable English pattern or rule explained in Ukrainian.",
     },
   },
-   required: [
+  required: [
     "isCorrect",
     "goalReached",
     "scorePercent",
@@ -163,6 +152,7 @@ export const AI_CONVERSATION_SCHEMA = {
     "strengths",
     "improvements",
     "errorType",
+    "errorKey",
     "originalFragment",
     "correctedFragment",
     "explanationUk",

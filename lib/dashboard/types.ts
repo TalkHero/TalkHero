@@ -19,6 +19,20 @@ export type DashboardData = {
     completedMissionsToday: number;
   };
 
+  languageMastery: {
+    activeErrors: number;
+    masteredErrors: number;
+
+    practiceItems: Array<{
+      errorKey: string;
+      errorType: string;
+      originalText: string;
+      correctedText: string;
+      occurrenceCount: number;
+      successfulUses: number;
+    }>;
+  };
+
   dailyGoals: {
     completedCount: number;
     totalCount: number;

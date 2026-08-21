@@ -30,13 +30,12 @@ export function useNPCSpeech({
   const cleanupAudio = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current.src = "";
+      audioRef.current.removeAttribute("src");
       audioRef.current = null;
     }
 
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current);
-
       objectUrlRef.current = null;
     }
 
@@ -112,7 +111,20 @@ export function useNPCSpeech({
 
       audio.addEventListener("play", () => setPlaying(true), { once: true });
 
-      audio.addEventListener("ended", cleanupAudio, { once: true });
+      audio.addEventListener(
+        "ended",
+        () => {
+          audioRef.current = null;
+
+          if (objectUrlRef.current) {
+            URL.revokeObjectURL(objectUrlRef.current);
+            objectUrlRef.current = null;
+          }
+
+          setPlaying(false);
+        },
+        { once: true },
+      );
 
       audio.addEventListener(
         "error",

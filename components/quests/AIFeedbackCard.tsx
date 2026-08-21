@@ -67,12 +67,32 @@ export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
     return null;
   }
 
+  const normalizeText = (value: string | null | undefined) =>
+    value
+      ?.trim()
+      .toLowerCase()
+      .replace(/[.!?,;:'"“”‘’]/g, "") ?? "";
+
+  const hasExplicitCorrection =
+    Boolean(coach.originalFragment && coach.correctedFragment) &&
+    normalizeText(coach.originalFragment) !==
+      normalizeText(coach.correctedFragment);
+
   const variant: FeedbackVariant =
-    grade === "correct"
-      ? "correct"
+    isCorrect === true
+      ? hasExplicitCorrection || grade === "almost"
+        ? "almost"
+        : "correct"
       : grade === "almost"
         ? "almost"
         : "incorrect";
+
+  const showNaturalAnswer =
+    Boolean(coach.naturalAnswer) &&
+    variant !== "correct" &&
+    (!coach.originalFragment ||
+      normalizeText(coach.naturalAnswer) !==
+        normalizeText(coach.originalFragment));
 
   const styles = VARIANT_STYLES[variant];
 
@@ -121,7 +141,7 @@ export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {coach.originalFragment || coach.correctedFragment ? (
+        {hasExplicitCorrection ? (
           <section
             aria-labelledby="correction-heading"
             className="rounded-xl border border-border bg-muted/40 p-4"
@@ -162,7 +182,7 @@ export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
           </section>
         ) : null}
 
-        {coach.naturalAnswer ? (
+        {showNaturalAnswer ? (
           <section
             aria-labelledby="natural-answer-heading"
             className="rounded-xl border border-primary/15 bg-primary-soft p-4"

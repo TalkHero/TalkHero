@@ -1,6 +1,15 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  },
+};
 
 export default async function DashboardLayout({
   children,
@@ -18,20 +27,14 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const { data: profile, error: profileError } =
-    await supabase
-      .from("profiles")
-      .select(
-        "full_name, english_level, xp, streak",
-      )
-      .eq("id", user.id)
-      .maybeSingle();
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("full_name, english_level, xp, streak")
+    .eq("id", user.id)
+    .maybeSingle();
 
   if (profileError) {
-    console.error(
-      "DASHBOARD LAYOUT PROFILE ERROR:",
-      profileError,
-    );
+    console.error("DASHBOARD LAYOUT PROFILE ERROR:", profileError);
   }
 
   const fullName =

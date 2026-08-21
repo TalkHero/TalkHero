@@ -65,10 +65,7 @@ export async function recordQuestEvent({
     .single();
 
   if (error || !data) {
-    console.error(
-      "Failed to record quest event:",
-      error,
-    );
+    console.error("Failed to record quest event:", error);
 
     throw new QuestEngineError(
       "QUEST_EVENT_CREATE_FAILED",
@@ -81,4 +78,39 @@ export async function recordQuestEvent({
   }
 
   return data as QuestRunEventRecord;
+}
+
+export async function listQuestRunEvents(
+  runId: string,
+): Promise<QuestRunEventRecord[]> {
+  if (!runId.trim()) {
+    throw new QuestEngineError(
+      "QUEST_EVENT_LOAD_FAILED",
+      "Quest run ID is required",
+    );
+  }
+
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("quest_run_events")
+    .select("*")
+    .eq("run_id", runId)
+    .order("created_at", {
+      ascending: true,
+    });
+
+  if (error) {
+    console.error("Failed to load quest events:", error);
+
+    throw new QuestEngineError(
+      "QUEST_EVENT_LOAD_FAILED",
+      "Failed to load quest events",
+      {
+        runId,
+      },
+    );
+  }
+
+  return (data ?? []) as QuestRunEventRecord[];
 }

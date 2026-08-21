@@ -1,12 +1,12 @@
 import "server-only";
 
-import { recordQuestEvent } from "./run-events";
+import { buildQuestCompletionSummary } from "./completion-summary";
+import { listQuestRunEvents, recordQuestEvent } from "./run-events";
+
+import type { QuestCompletionSummary } from "./completion-summary";
 import { updateQuestRun } from "./run-updater";
 
-import type {
-  QuestRunRecord,
-  QuestSceneRecord,
-} from "./types";
+import type { QuestRunRecord, QuestSceneRecord } from "./types";
 
 export type CompleteQuestInput = {
   run: QuestRunRecord;
@@ -29,6 +29,8 @@ export type CompleteQuestResult = {
   xpEarned: number;
 
   coinsEarned: number;
+
+  summary: QuestCompletionSummary;
 };
 
 export async function completeQuest({
@@ -39,8 +41,7 @@ export async function completeQuest({
   coinsEarned,
   completedSceneCount,
 }: CompleteQuestInput): Promise<CompleteQuestResult> {
-  const completedAt =
-    new Date().toISOString();
+  const completedAt = new Date().toISOString();
 
   await updateQuestRun({
     runId: run.id,
@@ -77,10 +78,15 @@ export async function completeQuest({
     },
   });
 
+  const events = await listQuestRunEvents(run.id);
+
+  const summary = buildQuestCompletionSummary(events);
+
   return {
     completed: true,
     score,
     xpEarned,
     coinsEarned,
+    summary,
   };
 }

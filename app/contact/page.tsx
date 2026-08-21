@@ -1,5 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Bot, Mail, MessageCircle } from "lucide-react";
+import { ArrowLeft, Bot, Bug, Lightbulb, MessageCircle } from "lucide-react";
+import { FeedbackForm } from "@/components/contact/FeedbackForm";
+
+export const metadata: Metadata = {
+  title: "Підтримка та зворотний зв’язок",
+  description:
+    "Надішліть команді TalkHero повідомлення про помилку, ідею або запитання.",
+  alternates: {
+    canonical: "/contact",
+  },
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 export default function ContactPage() {
   return (
@@ -18,7 +33,7 @@ export default function ContactPage() {
 
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-indigo-600"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600"
           >
             <ArrowLeft className="h-4 w-4" />
             На головну
@@ -26,60 +41,56 @@ export default function ContactPage() {
         </div>
       </header>
 
-      <section className="py-24 px-4">
-        <div className="mx-auto max-w-3xl rounded-[32px] border border-slate-200 bg-white p-10 shadow-sm">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-indigo-100 text-indigo-600">
-            <MessageCircle className="h-8 w-8" />
-          </div>
-
-          <h1 className="mt-8 text-5xl font-black text-slate-900">
-            Contact
-          </h1>
-
-          <p className="mt-6 text-lg leading-8 text-slate-600">
-            Ми убдем раді отрмати від  вас відгук, повіомлення про помилку, пораду про покращення, або пропозицію партнерства
-          </p>
-
-          <div className="mt-10 rounded-3xl border border-slate-200 bg-slate-50 p-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white">
-                <Mail className="h-6 w-6" />
-              </div>
-
-              <div>
-                <p className="font-semibold text-slate-500">
-                  Електронна пошта
-                </p>
-
-                <a
-                  href="mailto:hello@talkhero.app"
-                  className="text-lg font-bold text-indigo-600 hover:underline"
-                >
-                  hello@talkhero.app
-                </a>
-              </div>
+      <section className="px-4 py-16 sm:py-20">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-indigo-100 text-indigo-600">
+              <MessageCircle className="h-8 w-8" />
             </div>
-          </div>
 
-          <div className="mt-10 rounded-3xl bg-indigo-600 p-8 text-white">
-            <h2 className="text-2xl font-black">
-              We usually reply within 24 hours
-            </h2>
+            <h1 className="mt-6 text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
+              Підтримка та зворотний зв’язок
+            </h1>
 
-            <p className="mt-4 leading-7 text-indigo-100">
-              Whether you found a bug, have an idea for a new feature or simply
-              want to say hello — we'd love to hear from you.
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+              Знайшли помилку, маєте ідею або хочете щось запропонувати?
+              Надішліть повідомлення команді TalkHero.
             </p>
           </div>
 
-          <div className="mt-10">
-            <Link
-              href="/"
-              className="inline-flex h-12 items-center justify-center rounded-2xl bg-slate-900 px-6 text-sm font-bold text-white transition hover:bg-black"
-            >
-              Return to homepage
-            </Link>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <Bug className="h-6 w-6 text-indigo-600" />
+              <h2 className="mt-4 font-bold text-slate-950">
+                Повідомити про помилку
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Опишіть, що сталося, і за можливості додайте скріншот.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <Lightbulb className="h-6 w-6 text-indigo-600" />
+              <h2 className="mt-4 font-bold text-slate-950">
+                Запропонувати ідею
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Розкажіть, що зробило б навчання в TalkHero кращим.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <MessageCircle className="h-6 w-6 text-indigo-600" />
+              <h2 className="mt-4 font-bold text-slate-950">
+                Поставити запитання
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Напишіть нам щодо роботи сервісу або вашого акаунта.
+              </p>
+            </div>
           </div>
+
+          <FeedbackForm />
         </div>
       </section>
     </main>

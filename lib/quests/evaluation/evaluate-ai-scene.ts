@@ -4,9 +4,7 @@ import {
   AI_CONVERSATION_SCHEMA,
   type AIConversationEvaluation,
 } from "../ai/conversation-schema";
-import {
-  buildConversationPrompt,
-} from "../ai/build-conversation-prompt";
+import { buildConversationPrompt } from "../ai/build-conversation-prompt";
 import { QuestEngineError } from "../errors";
 
 import type {
@@ -37,15 +35,10 @@ type ResponsesAPIResult = {
 
 const DEFAULT_MODEL = "gpt-4o-mini";
 
-function getAvailablePoints(
-  input: EvaluateQuestSceneInput,
-): number {
-  const points =
-    input.scene.evaluation_config?.points;
+function getAvailablePoints(input: EvaluateQuestSceneInput): number {
+  const points = input.scene.evaluation_config?.points;
 
-  return typeof points === "number" &&
-    Number.isFinite(points) &&
-    points >= 0
+  return typeof points === "number" && Number.isFinite(points) && points >= 0
     ? points
     : 0;
 }
@@ -55,40 +48,27 @@ function getMetadataNumber(
   key: string,
   fallback: number,
 ): number {
-  const value =
-    input.scene.metadata?.[key];
+  const value = input.scene.metadata?.[key];
 
-  return typeof value === "number" &&
-    Number.isFinite(value)
-    ? value
-    : fallback;
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-function getUserTurnCount(
-  input: EvaluateQuestSceneInput,
-): number {
-  const history =
-    input.runState.conversationHistory;
+function getUserTurnCount(input: EvaluateQuestSceneInput): number {
+  const history = input.runState.conversationHistory;
 
   if (!Array.isArray(history)) {
     return 1;
   }
 
-  const previousUserTurns =
-    history.filter((entry) => {
-      if (
-        !entry ||
-        typeof entry !== "object" ||
-        Array.isArray(entry)
-      ) {
-        return false;
-      }
+  const previousUserTurns = history.filter((entry) => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      return false;
+    }
 
-      return (
-        (entry as Record<string, unknown>)
-          .role === "user"
-      );
-    }).length;
+    const message = entry as Record<string, unknown>;
+
+    return message.role === "user" && message.sceneId === input.scene.id;
+  }).length;
 
   return previousUserTurns + 1;
 }
@@ -100,32 +80,19 @@ function resolveNextSceneCode({
   input: EvaluateQuestSceneInput;
   goalReached: boolean;
 }): string | null {
-  const branching =
-    input.scene.branching ?? {};
+  const branching = input.scene.branching ?? {};
 
-  const outcomeKey =
-    goalReached
-      ? "correct"
-      : "incorrect";
+  const outcomeKey = goalReached ? "correct" : "incorrect";
 
-  if (
-    typeof branching[outcomeKey] ===
-    "string"
-  ) {
+  if (typeof branching[outcomeKey] === "string") {
     return branching[outcomeKey];
   }
 
-  return goalReached
-    ? input.scene.next_scene_code
-    : input.scene.scene_code;
+  return goalReached ? input.scene.next_scene_code : input.scene.scene_code;
 }
 
-function extractOutputText(
-  response: ResponsesAPIResult,
-): string {
-  if (
-    typeof response.output_text === "string"
-  ) {
+function extractOutputText(response: ResponsesAPIResult): string {
+  if (typeof response.output_text === "string") {
     return response.output_text.trim();
   }
 
@@ -134,38 +101,24 @@ function extractOutputText(
   }
 
   for (const rawOutput of response.output) {
-    if (
-      !rawOutput ||
-      typeof rawOutput !== "object"
-    ) {
+    if (!rawOutput || typeof rawOutput !== "object") {
       continue;
     }
 
-    const output =
-      rawOutput as ResponsesAPIOutput;
+    const output = rawOutput as ResponsesAPIOutput;
 
-    if (
-      output.type !== "message" ||
-      !Array.isArray(output.content)
-    ) {
+    if (output.type !== "message" || !Array.isArray(output.content)) {
       continue;
     }
 
     for (const rawContent of output.content) {
-      if (
-        !rawContent ||
-        typeof rawContent !== "object"
-      ) {
+      if (!rawContent || typeof rawContent !== "object") {
         continue;
       }
 
-      const content =
-        rawContent as ResponsesAPIContent;
+      const content = rawContent as ResponsesAPIContent;
 
-      if (
-        content.type === "refusal" &&
-        typeof content.refusal === "string"
-      ) {
+      if (content.type === "refusal" && typeof content.refusal === "string") {
         throw new QuestEngineError(
           "SCENE_SUBMIT_FAILED",
           "AI evaluator refused the request",
@@ -175,10 +128,7 @@ function extractOutputText(
         );
       }
 
-      if (
-        content.type === "output_text" &&
-        typeof content.text === "string"
-      ) {
+      if (content.type === "output_text" && typeof content.text === "string") {
         return content.text.trim();
       }
     }
@@ -187,20 +137,13 @@ function extractOutputText(
   return "";
 }
 
-function isStringArray(
-  value: unknown,
-): value is string[] {
+function isStringArray(value: unknown): value is string[] {
   return (
-    Array.isArray(value) &&
-    value.every(
-      (item) => typeof item === "string",
-    )
+    Array.isArray(value) && value.every((item) => typeof item === "string")
   );
 }
 
-function parseEvaluation(
-  text: string,
-): AIConversationEvaluation {
+function parseEvaluation(text: string): AIConversationEvaluation {
   let parsed: unknown;
 
   try {
@@ -212,19 +155,14 @@ function parseEvaluation(
     );
   }
 
-  if (
-    !parsed ||
-    typeof parsed !== "object" ||
-    Array.isArray(parsed)
-  ) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
     throw new QuestEngineError(
       "SCENE_SUBMIT_FAILED",
       "AI evaluator returned an invalid object",
     );
   }
 
-  const value =
-    parsed as Record<string, unknown>;
+  const value = parsed as Record<string, unknown>;
 
   const allowedLevels = new Set([
     "below_A1",
@@ -237,16 +175,15 @@ function parseEvaluation(
     "unknown",
   ]);
 
-    const allowedErrorTypes =
-    new Set([
-      "grammar",
-      "vocabulary",
-      "word_order",
-      "naturalness",
-      "politeness",
-      "relevance",
-      "none",
-    ]);
+  const allowedErrorTypes = new Set([
+    "grammar",
+    "vocabulary",
+    "word_order",
+    "naturalness",
+    "politeness",
+    "relevance",
+    "none",
+  ]);
 
   if (
     typeof value.isCorrect !== "boolean" ||
@@ -261,20 +198,14 @@ function parseEvaluation(
     typeof value.detectedLevel !== "string" ||
     !allowedLevels.has(value.detectedLevel) ||
     !isStringArray(value.strengths) ||
-    !isStringArray(value.improvements)
-        ||
+    !isStringArray(value.improvements) ||
     typeof value.errorType !== "string" ||
-    !allowedErrorTypes.has(
-      value.errorType,
-    ) ||
-    typeof value.originalFragment !==
-      "string" ||
-    typeof value.correctedFragment !==
-      "string" ||
-    typeof value.explanationUk !==
-      "string" ||
-    typeof value.rememberUk !==
-      "string"
+    !allowedErrorTypes.has(value.errorType) ||
+    typeof value.errorKey !== "string" ||
+    typeof value.originalFragment !== "string" ||
+    typeof value.correctedFragment !== "string" ||
+    typeof value.explanationUk !== "string" ||
+    typeof value.rememberUk !== "string"
   ) {
     throw new QuestEngineError(
       "SCENE_SUBMIT_FAILED",
@@ -290,8 +221,7 @@ function parseEvaluation(
     naturalAnswer: value.naturalAnswer.trim(),
     npcReply: value.npcReply.trim(),
     detectedLevel:
-      value.detectedLevel as
-        AIConversationEvaluation["detectedLevel"],
+      value.detectedLevel as AIConversationEvaluation["detectedLevel"],
     strengths: value.strengths
       .map((item) => item.trim())
       .filter(Boolean)
@@ -300,54 +230,92 @@ function parseEvaluation(
       .map((item) => item.trim())
       .filter(Boolean)
       .slice(0, 3),
-          errorType:
-      value.errorType as
-        AIConversationEvaluation["errorType"],
+    errorType: value.errorType as AIConversationEvaluation["errorType"],
 
-    originalFragment:
-      value.originalFragment
-        .trim()
-        .slice(0, 160),
+    errorKey: value.errorKey.trim().slice(0, 120),
 
-    correctedFragment:
-      value.correctedFragment
-        .trim()
-        .slice(0, 160),
+    originalFragment: value.originalFragment.trim().slice(0, 160),
 
-    explanationUk:
-      value.explanationUk
-        .trim()
-        .slice(0, 500),
+    correctedFragment: value.correctedFragment.trim().slice(0, 160),
 
-    rememberUk:
-      value.rememberUk
-        .trim()
-        .slice(0, 300),
+    explanationUk: value.explanationUk.trim().slice(0, 500),
+
+    rememberUk: value.rememberUk.trim().slice(0, 300),
   };
 }
 
-function buildFeedback(
+function normalizeSpokenComparison(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[.,!?;:'"“”‘’()[\]{}\-–—/\\]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizePunctuationOnlyEvaluation(
   evaluation: AIConversationEvaluation,
-): string {
+): AIConversationEvaluation {
+  const original = normalizeSpokenComparison(evaluation.originalFragment);
+
+  const corrected = normalizeSpokenComparison(evaluation.correctedFragment);
+
+  const punctuationOnlyCorrection =
+    Boolean(original) &&
+    Boolean(corrected) &&
+    original === corrected &&
+    evaluation.originalFragment !== evaluation.correctedFragment;
+
+  if (!punctuationOnlyCorrection) {
+    return evaluation;
+  }
+
+  return {
+    ...evaluation,
+    isCorrect: true,
+    scorePercent: Math.max(95, evaluation.scorePercent),
+    errorType: "none",
+    feedbackUk: "Чудово! Ваша відповідь зрозуміла й природна.",
+    naturalAnswer: "",
+    originalFragment: "",
+    correctedFragment: "",
+    explanationUk: "Ви правильно передали потрібний зміст у цій ситуації.",
+    rememberUk: "",
+  };
+}
+
+function normalizeBeginnerPolitenessEvaluation(
+  evaluation: AIConversationEvaluation,
+  cefrLevel: string,
+): AIConversationEvaluation {
+  const beginner = cefrLevel === "A1" || cefrLevel === "A2";
+
+  if (!beginner || evaluation.errorType !== "politeness") {
+    return evaluation;
+  }
+
+  return {
+    ...evaluation,
+    isCorrect: true,
+    scorePercent: Math.max(75, Math.min(89, evaluation.scorePercent)),
+  };
+}
+
+function buildFeedback(evaluation: AIConversationEvaluation): string {
   const parts: string[] = [];
 
   if (evaluation.feedbackUk) {
-    parts.push(
-      evaluation.feedbackUk,
-    );
+    parts.push(evaluation.feedbackUk);
   }
 
   if (evaluation.naturalAnswer) {
-    parts.push(
-      `Природніше англійською: ${evaluation.naturalAnswer}`,
-    );
+    parts.push(`Природніше англійською: ${evaluation.naturalAnswer}`);
   }
 
   if (
     evaluation.originalFragment &&
     evaluation.correctedFragment &&
-    evaluation.originalFragment !==
-      evaluation.correctedFragment
+    evaluation.originalFragment !== evaluation.correctedFragment
   ) {
     parts.push(
       [
@@ -359,33 +327,24 @@ function buildFeedback(
   }
 
   if (evaluation.explanationUk) {
-    parts.push(
-      `Чому саме так: ${evaluation.explanationUk}`,
-    );
+    parts.push(`Чому саме так: ${evaluation.explanationUk}`);
   }
 
   if (evaluation.rememberUk) {
-    parts.push(
-      `Запам'ятайте: ${evaluation.rememberUk}`,
-    );
+    parts.push(`Запам'ятайте: ${evaluation.rememberUk}`);
   }
 
   if (evaluation.npcReply) {
-    parts.push(
-      `Відповідь персонажа: ${evaluation.npcReply}`,
-    );
+    parts.push(`Відповідь персонажа: ${evaluation.npcReply}`);
   }
 
-  return parts
-    .filter(Boolean)
-    .join("\n\n");
+  return parts.filter(Boolean).join("\n\n");
 }
 
 export async function evaluateAIScene(
   input: EvaluateQuestSceneInput,
 ): Promise<QuestSceneEvaluationResult> {
-  const apiKey =
-    process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
     throw new QuestEngineError(
@@ -393,99 +352,80 @@ export async function evaluateAIScene(
       "OPENAI_API_KEY is not configured",
       {
         sceneId: input.scene.id,
-        sceneCode:
-          input.scene.scene_code,
+        sceneCode: input.scene.scene_code,
       },
     );
   }
 
-  if (
-    typeof input.userInput !== "string" ||
-    !input.userInput.trim()
-  ) {
+  if (typeof input.userInput !== "string" || !input.userInput.trim()) {
     throw new QuestEngineError(
       "INVALID_SCENE_INPUT",
       "AI scene requires a non-empty text answer",
       {
         sceneId: input.scene.id,
-        sceneCode:
-          input.scene.scene_code,
+        sceneCode: input.scene.scene_code,
       },
     );
   }
 
-  const prompt =
-    buildConversationPrompt(input);
+  const prompt = buildConversationPrompt(input);
 
-  const model =
-    process.env
-      .OPENAI_EVALUATION_MODEL
-      ?.trim() ||
-    DEFAULT_MODEL;
+  console.log("=== AI EVALUATOR INPUT ===", {
+    sceneCode: input.scene.scene_code,
+    userInput: input.userInput,
+    promptUser: prompt.user,
+  });
 
-  const response = await fetch(
-    "https://api.openai.com/v1/responses",
-    {
-      method: "POST",
-      headers: {
-        Authorization:
-          `Bearer ${apiKey}`,
-        "Content-Type":
-          "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        store: false,
-        input: [
-          {
-            role: "system",
-            content: prompt.system,
-          },
-          {
-            role: "user",
-            content: prompt.user,
-          },
-        ],
-        max_output_tokens: 700,
-        text: {
-          format: {
-            type: "json_schema",
-            name:
-              "talkhero_scene_evaluation",
-            strict: true,
-            schema:
-              AI_CONVERSATION_SCHEMA,
-          },
-        },
-      }),
-      cache: "no-store",
+  const model = process.env.OPENAI_EVALUATION_MODEL?.trim() || DEFAULT_MODEL;
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({
+      model,
+      store: false,
+      input: [
+        {
+          role: "system",
+          content: prompt.system,
+        },
+        {
+          role: "user",
+          content: prompt.user,
+        },
+      ],
+      max_output_tokens: 700,
+      text: {
+        format: {
+          type: "json_schema",
+          name: "talkhero_scene_evaluation",
+          strict: true,
+          schema: AI_CONVERSATION_SCHEMA,
+        },
+      },
+    }),
+    cache: "no-store",
+  });
 
-  const body =
-    (await response.json()) as
-      ResponsesAPIResult;
+  const body = (await response.json()) as ResponsesAPIResult;
 
   if (!response.ok) {
     const apiMessage =
-      typeof body.error?.message ===
-      "string"
+      typeof body.error?.message === "string"
         ? body.error.message
         : "Unknown OpenAI error";
 
-    console.error(
-      "ПОМИЛКА OPENAI AI EVALUATOR:",
-      response.status,
-      apiMessage,
-    );
+    console.error("ПОМИЛКА OPENAI AI EVALUATOR:", response.status, apiMessage);
 
     throw new QuestEngineError(
       "SCENE_SUBMIT_FAILED",
       "Failed to evaluate AI scene",
       {
         sceneId: input.scene.id,
-        sceneCode:
-          input.scene.scene_code,
+        sceneCode: input.scene.scene_code,
         status: response.status,
       },
     );
@@ -497,16 +437,13 @@ export async function evaluateAIScene(
       "AI evaluation response was incomplete",
       {
         sceneId: input.scene.id,
-        sceneCode:
-          input.scene.scene_code,
-        incompleteDetails:
-          body.incomplete_details ?? null,
+        sceneCode: input.scene.scene_code,
+        incompleteDetails: body.incomplete_details ?? null,
       },
     );
   }
 
-  const outputText =
-    extractOutputText(body);
+  const outputText = extractOutputText(body);
 
   if (!outputText) {
     throw new QuestEngineError(
@@ -514,115 +451,99 @@ export async function evaluateAIScene(
       "AI evaluator returned no output",
       {
         sceneId: input.scene.id,
-        sceneCode:
-          input.scene.scene_code,
+        sceneCode: input.scene.scene_code,
       },
     );
   }
 
-  const ai =
-    parseEvaluation(outputText);
+  const parsedAi = normalizePunctuationOnlyEvaluation(
+    parseEvaluation(outputText),
+  );
 
-  const aiConversation =
-    input.scene.metadata
-      ?.aiConversation === true;
+  const cefrLevel =
+    typeof input.scene.metadata?.cefrLevel === "string"
+      ? input.scene.metadata.cefrLevel
+      : "A1";
 
-  const currentTurn =
-    getUserTurnCount(input);
+  const ai = normalizeBeginnerPolitenessEvaluation(parsedAi, cefrLevel);
+
+  const aiConversation = input.scene.metadata?.aiConversation === true;
+
+  const currentTurn = getUserTurnCount(input);
 
   const maxTurns = Math.max(
     1,
-    Math.trunc(
-      getMetadataNumber(
-        input,
-        "maxTurns",
-        4,
-      ),
-    ),
+    Math.trunc(getMetadataNumber(input, "maxTurns", 4)),
   );
+  const minTurns = Math.max(
+    1,
+    Math.min(maxTurns, Math.trunc(getMetadataNumber(input, "minTurns", 2))),
+  );
+  const goalReached = aiConversation
+    ? currentTurn >= maxTurns
+      ? true
+      : currentTurn < minTurns
+        ? false
+        : ai.goalReached
+    : ai.isCorrect;
 
-  const goalReached =
-    aiConversation
-      ? ai.goalReached ||
-        currentTurn >= maxTurns
-      : ai.isCorrect;
+  const isCorrect = ai.isCorrect;
 
-    const isCorrect =
-  goalReached &&
-  ai.isCorrect &&
-  ai.scorePercent >= 90;
+  let grade: "correct" | "almost" | "incorrect";
 
-let grade:
-  | "correct"
-  | "almost"
-  | "incorrect";
+  if (ai.isCorrect && ai.scorePercent >= 90) {
+    grade = "correct";
+  } else if (ai.isCorrect || ai.scorePercent >= 60) {
+    grade = "almost";
+  } else {
+    grade = "incorrect";
+  }
 
-if (
-  goalReached &&
-  ai.isCorrect &&
-  ai.scorePercent >= 90
-) {
-  grade = "correct";
-} else if (
-  goalReached &&
-  ai.scorePercent >= 60
-) {
-  grade = "almost";
-} else {
-  grade = "incorrect";
-}
-
-  const availablePoints =
-    getAvailablePoints(input);
+  const availablePoints = getAvailablePoints(input);
 
   const scoreAwarded =
     goalReached && isCorrect
       ? Math.min(
           availablePoints,
-          Math.max(
-            0,
-            Math.round(
-              availablePoints *
-                (ai.scorePercent / 100),
-            ),
-          ),
+          Math.max(0, Math.round(availablePoints * (ai.scorePercent / 100))),
         )
       : 0;
 
- return {
-  mode: "ai",
-  isCorrect,
-  grade,
+  return {
+    mode: "ai",
+    isCorrect,
+    grade,
     scoreAwarded,
-    feedback:
-      buildFeedback(ai),
-    nextSceneCode:
-      resolveNextSceneCode({
-        input,
-        goalReached,
-      }),
-    normalizedInput:
-      input.userInput.trim(),
+    feedback: buildFeedback(ai),
+    nextSceneCode: resolveNextSceneCode({
+      input,
+      goalReached,
+    }),
+    normalizedInput: input.userInput.trim(),
     metadata: {
-      attemptNumber:
-        input.attemptNumber,
+      attemptNumber: input.attemptNumber,
       model,
       aiConversation,
       goalReached,
       currentTurn,
+      minTurns,
       maxTurns,
-      scorePercent:
-        ai.scorePercent,
-      detectedLevel:
-        ai.detectedLevel,
-      naturalAnswer:
-        ai.naturalAnswer,
-      npcReply:
-        ai.npcReply,
-      strengths:
-        ai.strengths,
-      improvements:
-        ai.improvements,
+
+      scorePercent: ai.scorePercent,
+      detectedLevel: ai.detectedLevel,
+
+      errorType: ai.errorType,
+      errorKey: ai.errorKey,
+      originalFragment: ai.originalFragment,
+      correctedFragment: ai.correctedFragment,
+      explanationUk: ai.explanationUk,
+      rememberUk: ai.rememberUk,
+
+      naturalAnswer: ai.naturalAnswer,
+      npcReply: ai.npcReply,
+
+      strengths: ai.strengths,
+      improvements: ai.improvements,
     },
   };
 }

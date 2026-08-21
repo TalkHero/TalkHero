@@ -45,6 +45,148 @@ function normalizeCaseInsensitiveText(value: unknown): string | null {
     .trim();
 }
 
+function tokenizeComparableText(value: unknown): string[] | null {
+  const normalized = normalizeCaseInsensitiveText(value);
+
+  if (normalized === null) {
+    return null;
+  }
+
+  return normalized
+    .replace(/[’']/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function findNearAcceptedAnswer(
+  userInput: unknown,
+  acceptedAnswers: unknown[],
+): string | null {
+  const userTokens = tokenizeComparableText(userInput);
+
+  if (!userTokens || userTokens.length === 0) {
+    return null;
+  }
+
+  const optionalTokens = new Set(["please", "a", "an", "the"]);
+
+  for (const answer of acceptedAnswers) {
+    if (typeof answer !== "string") {
+      continue;
+    }
+
+    const answerTokens = tokenizeComparableText(answer);
+
+    if (!answerTokens || answerTokens.length === 0) {
+      continue;
+    }
+
+    const userCore = userTokens.filter((token) => !optionalTokens.has(token));
+
+    const answerCore = answerTokens.filter(
+      (token) => !optionalTokens.has(token),
+    );
+
+    if (userCore.length !== answerCore.length) {
+      continue;
+    }
+
+    const sameCore = userCore.every(
+      (token, index) => token === answerCore[index],
+    );
+
+    if (sameCore) {
+      return answer.trim();
+    }
+  }
+
+  return null;
+}
+
+function classifyStaticError({
+  userInput,
+  suggestedAnswer,
+  isAlmost,
+}: {
+  userInput: unknown;
+  suggestedAnswer: string | null;
+  isAlmost: boolean;
+}): "spelling" | "word_choice" | "naturalness" | "none" {
+  if (
+    typeof userInput !== "string" ||
+    !userInput.trim() ||
+    !suggestedAnswer?.trim()
+  ) {
+    return "none";
+  }
+
+  const original = userInput.trim().toLocaleLowerCase();
+  const corrected = suggestedAnswer.trim().toLocaleLowerCase();
+
+  if (original === corrected) {
+    return "none";
+  }
+
+  const normalizeWords = (value: string) =>
+    value
+      .replace(/[^\p{L}\p{N}'’]+/gu, " ")
+      .replace(/[’]/g, "'")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .filter(Boolean);
+
+  const originalWords = normalizeWords(original);
+  const correctedWords = normalizeWords(corrected);
+
+  /*
+   * Same number of words + only a very small character difference
+   * usually means spelling rather than word choice.
+   *
+   * Example:
+   * "No thank yo" -> "No, thank you."
+   */
+  if (originalWords.length === correctedWords.length) {
+    let changedWords = 0;
+
+    for (let index = 0; index < originalWords.length; index += 1) {
+      if (originalWords[index] !== correctedWords[index]) {
+        changedWords += 1;
+      }
+    }
+
+    if (changedWords === 1) {
+      const originalChanged = originalWords.find(
+        (word, index) => word !== correctedWords[index],
+      );
+
+      const correctedChanged = correctedWords.find(
+        (word, index) => word !== originalWords[index],
+      );
+
+      if (
+        originalChanged &&
+        correctedChanged &&
+        Math.abs(originalChanged.length - correctedChanged.length) <= 2
+      ) {
+        return "spelling";
+      }
+    }
+  }
+
+  /*
+   * Near accepted answers usually preserve the intended meaning
+   * but differ in phrasing/politeness/naturalness.
+   */
+  if (isAlmost) {
+    return "naturalness";
+  }
+
+  return "word_choice";
+}
+
 function serializeComparableValue(value: unknown): string {
   if (value === null || typeof value !== "object") {
     return JSON.stringify(value);
@@ -117,6 +259,31 @@ function evaluateCaseInsensitive(
     const normalizedAnswer = normalizeCaseInsensitiveText(answer);
 
     return normalizedAnswer === normalizedInput;
+  });
+}
+
+function evaluateCaseInsensitiveNaturalExtension(
+  userInput: unknown,
+  acceptedAnswers: unknown[],
+): boolean {
+  const userTokens = tokenizeComparableText(userInput);
+
+  if (!userTokens || userTokens.length === 0) {
+    return false;
+  }
+
+  return acceptedAnswers.some((answer) => {
+    const answerTokens = tokenizeComparableText(answer);
+
+    if (
+      !answerTokens ||
+      answerTokens.length === 0 ||
+      userTokens.length < answerTokens.length
+    ) {
+      return false;
+    }
+
+    return answerTokens.every((token, index) => userTokens[index] === token);
   });
 }
 
@@ -227,35 +394,91 @@ export function evaluateStaticScene({
       isCorrect = evaluateExact(userInput, acceptedAnswers);
       break;
 
-    case "case_insensitive":
-      isCorrect = evaluateCaseInsensitive(userInput, acceptedAnswers);
+    case "case_insensitive": {
+      const allowNaturalExtension =
+        scene.evaluation_config?.allowNaturalExtension === true;
+
+      isCorrect =
+        evaluateCaseInsensitive(userInput, acceptedAnswers) ||
+        (allowNaturalExtension &&
+          evaluateCaseInsensitiveNaturalExtension(userInput, acceptedAnswers));
+
       break;
+    }
 
     case "contains":
       isCorrect = evaluateContains(userInput, acceptedAnswers);
       break;
   }
 
+  const nearAcceptedAnswer =
+    !isCorrect && mode === "case_insensitive"
+      ? findNearAcceptedAnswer(userInput, acceptedAnswers)
+      : null;
+
+  const isAlmost = nearAcceptedAnswer !== null;
+
   const points = getPoints(scene);
+
+  const almostFeedback =
+    isAlmost && typeof userInput === "string" && nearAcceptedAnswer
+      ? [
+          "Майже правильно. Основний зміст ви передали.",
+          "",
+          "Що саме виправити:",
+          `❌ ${userInput.trim()}`,
+          `✅ ${nearAcceptedAnswer}`,
+          "",
+          "Чому саме так:",
+          "Ваш варіант зрозумілий, але рекомендований варіант точніше передає фразу завдання або звучить природніше в цій ситуації.",
+        ].join("\n")
+      : null;
+
+  const suggestedAnswer =
+    nearAcceptedAnswer ??
+    acceptedAnswers.find(
+      (answer): answer is string =>
+        typeof answer === "string" && answer.trim().length > 0,
+    ) ??
+    null;
+
+  const staticErrorType = isCorrect
+    ? "none"
+    : classifyStaticError({
+        userInput,
+        suggestedAnswer,
+        isAlmost,
+      });
 
   return {
     mode,
-    isCorrect,
-    grade: isCorrect ? "correct" : "incorrect",
-    scoreAwarded: isCorrect ? points : 0,
+    isCorrect: isCorrect || isAlmost,
+    grade: isCorrect ? "correct" : isAlmost ? "almost" : "incorrect",
+    scoreAwarded: isCorrect ? points : isAlmost ? Math.round(points * 0.7) : 0,
     feedback: isCorrect
       ? (scene.evaluation_config?.feedbackCorrect ?? null)
-      : (scene.evaluation_config?.feedbackIncorrect ?? null),
+      : isAlmost
+        ? almostFeedback
+        : (scene.evaluation_config?.feedbackIncorrect ?? null),
     nextSceneCode: resolveNextSceneCode({
       scene,
       userInput,
-      isCorrect,
+      isCorrect: isCorrect || isAlmost,
     }),
     normalizedInput:
       typeof userInput === "string" ? userInput.trim() : userInput,
     metadata: {
       attemptNumber,
       acceptedAnswerCount: acceptedAnswers.length,
+
+      errorType: staticErrorType,
+
+      originalFragment:
+        !isCorrect && typeof userInput === "string" ? userInput.trim() : "",
+
+      correctedFragment: !isCorrect ? (suggestedAnswer ?? "") : "",
+
+      suggestedAnswer: suggestedAnswer ?? "",
     },
   };
 }

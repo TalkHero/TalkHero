@@ -14,7 +14,8 @@ export type QuestEngineErrorCode =
   | "SCENE_ALREADY_COMPLETED"
   | "INVALID_SCENE_INPUT"
   | "SCENE_SUBMIT_FAILED"
-  | "QUEST_EVENT_CREATE_FAILED";
+  | "QUEST_EVENT_CREATE_FAILED"
+  | "QUEST_EVENT_LOAD_FAILED";
 
 export class QuestEngineError extends Error {
   readonly code: QuestEngineErrorCode;
@@ -31,15 +32,10 @@ export class QuestEngineError extends Error {
     this.code = code;
     this.details = details;
 
-    Object.setPrototypeOf(
-      this,
-      QuestEngineError.prototype,
-    );
+    Object.setPrototypeOf(this, QuestEngineError.prototype);
   }
 }
 
-export function isQuestEngineError(
-  error: unknown,
-): error is QuestEngineError {
+export function isQuestEngineError(error: unknown): error is QuestEngineError {
   return error instanceof QuestEngineError;
 }
