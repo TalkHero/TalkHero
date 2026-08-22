@@ -29,6 +29,7 @@ import { StreakBadge } from "@/components/chat/StreakBadge";
 import { type UnlockedAchievement } from "@/hooks/useChatStream";
 
 import { AchievementToast } from "@/components/chat/AchievementToast";
+import { useRouter } from "next/navigation";
 
 type Message = ChatMessage;
 
@@ -41,7 +42,7 @@ type XpToastData = {
 export function ChatBox() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [xpToast, setXpToast] = useState<XpToastData | null>(null);
@@ -213,6 +214,8 @@ export function ChatBox() {
             totalXp: reward.totalXp,
             level: reward.level,
           });
+
+          router.refresh();
 
           window.setTimeout(() => {
             setXpToast(null);
