@@ -42,29 +42,26 @@ const GRADE_BUTTONS: {
 }[] = [
   {
     grade: "again",
-    label: "Again",
-    hint: "10 min",
-    className:
-      "border-red-200 bg-red-50 text-red-700 hover:bg-red-100",
+    label: "Ще раз",
+    hint: "10 хв",
+    className: "border-red-200 bg-red-50 text-red-700 hover:bg-red-100",
   },
   {
     grade: "hard",
-    label: "Hard",
-    hint: "1 day",
-    className:
-      "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100",
+    label: "Важко",
+    hint: "1 день",
+    className: "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100",
   },
   {
     grade: "good",
-    label: "Good",
-    hint: "Normal",
-    className:
-      "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100",
+    label: "Добре",
+    hint: "Звичайно",
+    className: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100",
   },
   {
     grade: "easy",
-    label: "Easy",
-    hint: "Longer",
+    label: "Легко",
+    hint: "Довше",
     className:
       "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
   },
@@ -83,8 +80,9 @@ export function ReviewSession() {
   const [answerVisible, setAnswerVisible] = useState(false);
 
   const [loading, setLoading] = useState(true);
-  const [submittingGrade, setSubmittingGrade] =
-    useState<ReviewGrade | null>(null);
+  const [submittingGrade, setSubmittingGrade] = useState<ReviewGrade | null>(
+    null,
+  );
 
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -130,7 +128,8 @@ export function ReviewSession() {
   }
 
   useEffect(() => {
-    loadCards();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadCards();
   }, []);
 
   const currentCard = cards[currentIndex] ?? null;
@@ -138,15 +137,11 @@ export function ReviewSession() {
 
   const progress =
     initialCardCount > 0
-      ? Math.round(
-          (reviewedCount / initialCardCount) * 100,
-        )
+      ? Math.round((reviewedCount / initialCardCount) * 100)
       : 0;
 
   const reviewCompleted =
-    !loading &&
-    initialCardCount > 0 &&
-    currentIndex >= initialCardCount;
+    !loading && initialCardCount > 0 && currentIndex >= initialCardCount;
 
   async function submitGrade(grade: ReviewGrade) {
     if (!currentCard || submittingGrade) {
@@ -185,8 +180,7 @@ export function ReviewSession() {
       setStats((previous) => ({
         ...previous,
         learned:
-          data.card?.status === "learned" &&
-          currentCard.status !== "learned"
+          data.card?.status === "learned" && currentCard.status !== "learned"
             ? previous.learned + 1
             : previous.learned,
       }));
@@ -208,7 +202,7 @@ export function ReviewSession() {
       <div className="flex min-h-[500px] items-center justify-center">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm text-slate-500 shadow-sm">
           <Loader2 className="h-5 w-5 animate-spin" />
-          Loading review cards...
+          Завантаження карток для повторення...
         </div>
       </div>
     );
@@ -218,12 +212,10 @@ export function ReviewSession() {
     return (
       <div className="mx-auto max-w-lg rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
         <p className="font-semibold text-red-700">
-          Could not load your review
+          Не вдалося завантажити повторення
         </p>
 
-        <p className="mt-2 text-sm text-red-600">
-          {errorMessage}
-        </p>
+        <p className="mt-2 text-sm text-red-600">{errorMessage}</p>
 
         <button
           type="button"
@@ -245,19 +237,16 @@ export function ReviewSession() {
         </div>
 
         <h2 className="mt-5 text-2xl font-bold text-slate-950">
-          You’re all caught up
+          Усе повторено!
         </h2>
 
         <p className="mt-2 text-slate-500">
-          There are no vocabulary cards due for review right
-          now.
+          Зараз немає слів, які потрібно повторити.
         </p>
 
         <div className="mt-8 grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-2xl font-bold text-slate-950">
-              {stats.total}
-            </p>
+            <p className="text-2xl font-bold text-slate-950">{stats.total}</p>
             <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">
               Усього слів
             </p>
@@ -288,18 +277,14 @@ export function ReviewSession() {
         </h2>
 
         <p className="mt-2 text-slate-500">
-         Ви завершили сьогоднішній огляд словникового запасу.
+          Ви завершили сьогоднішній огляд словникового запасу.
         </p>
 
         <div className="mt-8 rounded-2xl bg-slate-50 p-6">
-          <p className="text-4xl font-bold text-indigo-600">
-            {reviewedCount}
-          </p>
+          <p className="text-4xl font-bold text-indigo-600">{reviewedCount}</p>
 
           <p className="mt-2 text-sm font-medium text-slate-500">
-            {reviewedCount === 1
-              ? "word reviewed"
-              : "words reviewed"}
+            {reviewedCount === 1 ? "слово повторено" : "слів повторено"}
           </p>
         </div>
 
@@ -329,7 +314,7 @@ export function ReviewSession() {
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
-              {reviewedCount} of {initialCardCount} completed
+              Виконано {reviewedCount} із {initialCardCount}
             </p>
           </div>
 
@@ -415,21 +400,18 @@ export function ReviewSession() {
         {answerVisible && (
           <div className="border-t border-slate-200 bg-slate-50 p-4 sm:p-5">
             <p className="mb-3 text-center text-xs font-medium text-slate-500">
-              Наскільки добре ви запам'ятали це слово?
+              Наскільки добре ви запам’ятали це слово?
             </p>
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {GRADE_BUTTONS.map((button) => {
-                const isSubmitting =
-                  submittingGrade === button.grade;
+                const isSubmitting = submittingGrade === button.grade;
 
                 return (
                   <button
                     key={button.grade}
                     type="button"
-                    onClick={() =>
-                      submitGrade(button.grade)
-                    }
+                    onClick={() => submitGrade(button.grade)}
                     disabled={Boolean(submittingGrade)}
                     className={`rounded-xl border px-3 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${button.className}`}
                   >
