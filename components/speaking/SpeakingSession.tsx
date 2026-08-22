@@ -27,6 +27,7 @@ import {
   type SpeakingReportMessage,
 } from "@/components/speaking/SpeakingReport";
 import { UI_ERRORS } from "@/lib/i18n/errors";
+import { useRouter } from "next/navigation";
 
 type SessionPhase = "idle" | "listening" | "thinking" | "speaking" | "error";
 
@@ -75,6 +76,7 @@ function getServerSnapshot() {
 }
 
 export function SpeakingSession() {
+  const router = useRouter();
   const [sessionActive, setSessionActive] = useState(false);
 
   const [startingSession, setStartingSession] = useState(false);
@@ -613,6 +615,8 @@ export function SpeakingSession() {
         xpEarned: data.session.xpEarned,
         progress: data.progress,
       });
+
+      router.refresh();
     } catch (error) {
       console.error(error);
     } finally {
