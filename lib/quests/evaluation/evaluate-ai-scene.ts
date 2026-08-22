@@ -480,11 +480,7 @@ export async function evaluateAIScene(
     Math.min(maxTurns, Math.trunc(getMetadataNumber(input, "minTurns", 2))),
   );
   const goalReached = aiConversation
-    ? currentTurn >= maxTurns
-      ? true
-      : currentTurn < minTurns
-        ? false
-        : ai.goalReached
+    ? ai.goalReached || currentTurn >= maxTurns
     : ai.isCorrect;
 
   const isCorrect = ai.isCorrect;
