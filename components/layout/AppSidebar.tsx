@@ -6,10 +6,12 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   Brain,
+  ClipboardCheck,
   Gamepad2,
   LayoutDashboard,
   MessageCircle,
   Mic,
+  MessageSquareMore,
   Settings,
   UserRound,
   X,
@@ -56,6 +58,12 @@ const MAIN_NAVIGATION: NavigationItem[] = [
     icon: Mic,
   },
   {
+    href: "/placement-test",
+    label: "Тест рівня",
+    icon: ClipboardCheck,
+    activePrefixes: ["/placement-test", "/assessment"],
+  },
+  {
     href: "/vocabulary",
     label: "Словник",
     icon: BookOpen,
@@ -77,6 +85,11 @@ const ACCOUNT_NAVIGATION: NavigationItem[] = [
     href: "/settings",
     label: "Налаштування",
     icon: Settings,
+  },
+  {
+    href: "/contact",
+    label: "Зворотний зв’язок",
+    icon: MessageSquareMore,
   },
 ];
 
