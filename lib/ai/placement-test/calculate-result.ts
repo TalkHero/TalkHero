@@ -1,13 +1,6 @@
 import type { CEFRLevel } from "./types";
 
-const CEFR_LEVELS: readonly CEFRLevel[] = [
-  "A1",
-  "A2",
-  "B1",
-  "B2",
-  "C1",
-  "C2",
-];
+const CEFR_LEVELS: readonly CEFRLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 const DIMENSION_WEIGHTS = {
   grammar: 0.25,
@@ -64,26 +57,16 @@ export interface PlacementResult {
   resultSummary: string;
 }
 
-interface ScoredPlacementQuestion
-  extends PlacementResultQuestion {
+interface ScoredPlacementQuestion extends PlacementResultQuestion {
   overallScore: number;
 }
 
-function clamp(
-  value: number,
-  minimum: number,
-  maximum: number,
-): number {
-  return Math.min(
-    maximum,
-    Math.max(minimum, value),
-  );
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(maximum, Math.max(minimum, value));
 }
 
 function roundScore(value: number): number {
-  return Math.round(
-    clamp(value, MIN_SCORE, MAX_SCORE),
-  );
+  return Math.round(clamp(value, MIN_SCORE, MAX_SCORE));
 }
 
 function normalizeScore(value: number): number {
@@ -91,16 +74,10 @@ function normalizeScore(value: number): number {
     return MIN_SCORE;
   }
 
-  return clamp(
-    value,
-    MIN_SCORE,
-    MAX_SCORE,
-  );
+  return clamp(value, MIN_SCORE, MAX_SCORE);
 }
 
-function getLevelIndex(
-  level: CEFRLevel,
-): number {
+function getLevelIndex(level: CEFRLevel): number {
   const index = CEFR_LEVELS.indexOf(level);
 
   if (index === -1) {
@@ -110,16 +87,8 @@ function getLevelIndex(
   return index;
 }
 
-function getLevelByIndex(
-  index: number,
-): CEFRLevel {
-  const normalizedIndex = Math.round(
-    clamp(
-      index,
-      0,
-      CEFR_LEVELS.length - 1,
-    ),
-  );
+function getLevelByIndex(index: number): CEFRLevel {
+  const normalizedIndex = Math.round(clamp(index, 0, CEFR_LEVELS.length - 1));
 
   return CEFR_LEVELS[normalizedIndex];
 }
@@ -129,17 +98,10 @@ function average(values: number[]): number {
     return 0;
   }
 
-  return (
-    values.reduce(
-      (total, value) => total + value,
-      0,
-    ) / values.length
-  );
+  return values.reduce((total, value) => total + value, 0) / values.length;
 }
 
-function standardDeviation(
-  values: number[],
-): number {
+function standardDeviation(values: number[]): number {
   if (values.length <= 1) {
     return 0;
   }
@@ -157,20 +119,13 @@ function standardDeviation(
   return Math.sqrt(variance);
 }
 
-function calculateQuestionScore(
-  question: PlacementResultQuestion,
-): number {
+function calculateQuestionScore(question: PlacementResultQuestion): number {
   return (
-    normalizeScore(question.grammar) *
-      DIMENSION_WEIGHTS.grammar +
-    normalizeScore(question.vocabulary) *
-      DIMENSION_WEIGHTS.vocabulary +
-    normalizeScore(question.comprehension) *
-      DIMENSION_WEIGHTS.comprehension +
-    normalizeScore(question.complexity) *
-      DIMENSION_WEIGHTS.complexity +
-    normalizeScore(question.taskCompletion) *
-      DIMENSION_WEIGHTS.taskCompletion
+    normalizeScore(question.grammar) * DIMENSION_WEIGHTS.grammar +
+    normalizeScore(question.vocabulary) * DIMENSION_WEIGHTS.vocabulary +
+    normalizeScore(question.comprehension) * DIMENSION_WEIGHTS.comprehension +
+    normalizeScore(question.complexity) * DIMENSION_WEIGHTS.complexity +
+    normalizeScore(question.taskCompletion) * DIMENSION_WEIGHTS.taskCompletion
   );
 }
 
@@ -178,46 +133,22 @@ function calculateDimensionScores(
   questions: ScoredPlacementQuestion[],
 ): PlacementDimensionScores {
   return {
-    grammar: roundScore(
-      average(
-        questions.map(
-          (question) => question.grammar,
-        ),
-      ),
-    ),
+    grammar: roundScore(average(questions.map((question) => question.grammar))),
 
     vocabulary: roundScore(
-      average(
-        questions.map(
-          (question) => question.vocabulary,
-        ),
-      ),
+      average(questions.map((question) => question.vocabulary)),
     ),
 
     comprehension: roundScore(
-      average(
-        questions.map(
-          (question) =>
-            question.comprehension,
-        ),
-      ),
+      average(questions.map((question) => question.comprehension)),
     ),
 
     complexity: roundScore(
-      average(
-        questions.map(
-          (question) => question.complexity,
-        ),
-      ),
+      average(questions.map((question) => question.complexity)),
     ),
 
     taskCompletion: roundScore(
-      average(
-        questions.map(
-          (question) =>
-            question.taskCompletion,
-        ),
-      ),
+      average(questions.map((question) => question.taskCompletion)),
     ),
   };
 }
@@ -226,54 +157,33 @@ function calculateLevelPerformance(
   questions: ScoredPlacementQuestion[],
 ): PlacementLevelPerformance[] {
   return CEFR_LEVELS.map((level) => {
-    const matchingQuestions =
-      questions.filter(
-        (question) =>
-          question.targetLevel === level,
-      );
+    const matchingQuestions = questions.filter(
+      (question) => question.targetLevel === level,
+    );
 
     const averageScore = roundScore(
-      average(
-        matchingQuestions.map(
-          (question) =>
-            question.overallScore,
-        ),
-      ),
+      average(matchingQuestions.map((question) => question.overallScore)),
     );
 
     return {
       level,
-      questionCount:
-        matchingQuestions.length,
+      questionCount: matchingQuestions.length,
       averageScore,
       passed:
-        matchingQuestions.length > 0 &&
-        averageScore >=
-          PASSING_LEVEL_SCORE,
+        matchingQuestions.length > 0 && averageScore >= PASSING_LEVEL_SCORE,
     };
-  }).filter(
-    (performance) =>
-      performance.questionCount > 0,
-  );
+  }).filter((performance) => performance.questionCount > 0);
 }
 
 function calculateConfirmedLevel(
-  levelPerformance:
-    PlacementLevelPerformance[],
+  levelPerformance: PlacementLevelPerformance[],
 ): CEFRLevel {
   let confirmedLevel: CEFRLevel = "A1";
 
-  for (
-    let index = 0;
-    index < CEFR_LEVELS.length;
-    index += 1
-  ) {
+  for (let index = 0; index < CEFR_LEVELS.length; index += 1) {
     const level = CEFR_LEVELS[index];
 
-    const performance =
-      levelPerformance.find(
-        (item) => item.level === level,
-      );
+    const performance = levelPerformance.find((item) => item.level === level);
 
     /*
      * A level can only be confirmed when there is
@@ -303,149 +213,89 @@ function calculateConfirmedLevel(
 function calculatePerformanceAbility(
   questions: ScoredPlacementQuestion[],
 ): number {
-  const weightedAbilityTotal =
-    questions.reduce((total, question) => {
-      const targetLevelIndex =
-        getLevelIndex(
-          question.targetLevel,
-        );
+  const weightedAbilityTotal = questions.reduce((total, question) => {
+    const targetLevelIndex = getLevelIndex(question.targetLevel);
 
-      /*
-       * A score of 70 means the student performs
-       * approximately at the target level.
-       *
-       * Every 20 score points move the demonstrated
-       * ability by roughly one CEFR band.
-       */
-      const scoreAdjustment =
-        (question.overallScore - 70) / 20;
+    /*
+     * A score of 70 means the student performs
+     * approximately at the target level.
+     *
+     * Every 20 score points move the demonstrated
+     * ability by roughly one CEFR band.
+     */
+    const scoreAdjustment = (question.overallScore - 70) / 20;
 
-      const demonstratedAbility =
-        clamp(
-          targetLevelIndex +
-            scoreAdjustment,
-          0,
-          CEFR_LEVELS.length - 1,
-        );
-
-      /*
-       * Harder questions provide slightly more
-       * information than easier questions.
-       */
-      const difficultyWeight =
-        1 + targetLevelIndex * 0.12;
-
-      return (
-        total +
-        demonstratedAbility *
-          difficultyWeight
-      );
-    }, 0);
-
-  const totalWeight =
-    questions.reduce(
-      (total, question) => {
-        const targetLevelIndex =
-          getLevelIndex(
-            question.targetLevel,
-          );
-
-        return (
-          total +
-          1 +
-          targetLevelIndex * 0.12
-        );
-      },
+    const demonstratedAbility = clamp(
+      targetLevelIndex + scoreAdjustment,
       0,
+      CEFR_LEVELS.length - 1,
     );
+
+    /*
+     * Harder questions provide slightly more
+     * information than easier questions.
+     */
+    const difficultyWeight = 1 + targetLevelIndex * 0.12;
+
+    return total + demonstratedAbility * difficultyWeight;
+  }, 0);
+
+  const totalWeight = questions.reduce((total, question) => {
+    const targetLevelIndex = getLevelIndex(question.targetLevel);
+
+    return total + 1 + targetLevelIndex * 0.12;
+  }, 0);
 
   if (totalWeight === 0) {
     return 0;
   }
 
-  return (
-    weightedAbilityTotal / totalWeight
-  );
+  return weightedAbilityTotal / totalWeight;
 }
 
 function calculateEvaluatorAbility(
   questions: ScoredPlacementQuestion[],
 ): number {
-  const weightedLevelTotal =
-    questions.reduce((total, question) => {
-      const reliability =
-        clamp(
-          (
-            normalizeScore(
-              question.comprehension,
-            ) +
-            normalizeScore(
-              question.taskCompletion,
-            )
-          ) /
-            200,
-          0.2,
-          1,
-        );
-
-      return (
-        total +
-        getLevelIndex(
-          question.estimatedLevel,
-        ) *
-          reliability
-      );
-    }, 0);
-
-  const totalReliability =
-    questions.reduce(
-      (total, question) => {
-        const reliability =
-          clamp(
-            (
-              normalizeScore(
-                question.comprehension,
-              ) +
-              normalizeScore(
-                question.taskCompletion,
-              )
-            ) /
-              200,
-            0.2,
-            1,
-          );
-
-        return total + reliability;
-      },
-      0,
+  const weightedLevelTotal = questions.reduce((total, question) => {
+    const reliability = clamp(
+      (normalizeScore(question.comprehension) +
+        normalizeScore(question.taskCompletion)) /
+        200,
+      0.2,
+      1,
     );
+
+    return total + getLevelIndex(question.estimatedLevel) * reliability;
+  }, 0);
+
+  const totalReliability = questions.reduce((total, question) => {
+    const reliability = clamp(
+      (normalizeScore(question.comprehension) +
+        normalizeScore(question.taskCompletion)) /
+        200,
+      0.2,
+      1,
+    );
+
+    return total + reliability;
+  }, 0);
 
   if (totalReliability === 0) {
     return 0;
   }
 
-  return (
-    weightedLevelTotal /
-    totalReliability
-  );
+  return weightedLevelTotal / totalReliability;
 }
 
 function calculateFinalLevel(
   questions: ScoredPlacementQuestion[],
   confirmedLevel: CEFRLevel,
 ): CEFRLevel {
-  const performanceAbility =
-    calculatePerformanceAbility(
-      questions,
-    );
+  const performanceAbility = calculatePerformanceAbility(questions);
 
-  const evaluatorAbility =
-    calculateEvaluatorAbility(
-      questions,
-    );
+  const evaluatorAbility = calculateEvaluatorAbility(questions);
 
-  const confirmedLevelIndex =
-    getLevelIndex(confirmedLevel);
+  const confirmedLevelIndex = getLevelIndex(confirmedLevel);
 
   /*
    * The final estimate combines:
@@ -454,36 +304,24 @@ function calculateFinalLevel(
    * - the highest consistently confirmed level.
    */
   const combinedAbility =
-    performanceAbility * 0.45 +
-    evaluatorAbility * 0.35 +
-    confirmedLevelIndex * 0.2;
+    performanceAbility * 0.55 +
+    evaluatorAbility * 0.4 +
+    confirmedLevelIndex * 0.05;
 
-  const highestTargetLevelIndex =
-    Math.max(
-      ...questions.map((question) =>
-        getLevelIndex(
-          question.targetLevel,
-        ),
-      ),
-    );
+  const highestTargetLevelIndex = Math.max(
+    ...questions.map((question) => getLevelIndex(question.targetLevel)),
+  );
 
   /*
    * Do not assign more than one CEFR band above the
    * hardest level that was actually tested.
    */
-  const maximumAllowedLevel =
-    Math.min(
-      CEFR_LEVELS.length - 1,
-      highestTargetLevelIndex + 1,
-    );
-
-  return getLevelByIndex(
-    clamp(
-      combinedAbility,
-      0,
-      maximumAllowedLevel,
-    ),
+  const maximumAllowedLevel = Math.min(
+    CEFR_LEVELS.length - 1,
+    highestTargetLevelIndex + 1,
   );
+
+  return getLevelByIndex(clamp(combinedAbility, 0, maximumAllowedLevel));
 }
 
 function calculateConfidence({
@@ -493,74 +331,37 @@ function calculateConfidence({
 }: {
   questions: ScoredPlacementQuestion[];
   finalLevel: CEFRLevel;
-  levelPerformance:
-    PlacementLevelPerformance[];
+  levelPerformance: PlacementLevelPerformance[];
 }): number {
-  const questionCountConfidence =
-    clamp(
-      questions.length / 12,
-      0,
-      1,
-    );
+  const questionCountConfidence = clamp(questions.length / 12, 0, 1);
 
   const testedLevels = new Set(
-    questions.map(
-      (question) =>
-        question.targetLevel,
-    ),
+    questions.map((question) => question.targetLevel),
   );
 
-  const levelCoverageConfidence =
-    clamp(
-      testedLevels.size / 5,
-      0,
-      1,
-    );
+  const levelCoverageConfidence = clamp(testedLevels.size / 5, 0, 1);
 
-  const questionScores =
-    questions.map(
-      (question) =>
-        question.overallScore,
-    );
+  const questionScores = questions.map((question) => question.overallScore);
 
-  const deviation =
-    standardDeviation(questionScores);
+  const deviation = standardDeviation(questionScores);
 
-  const consistencyConfidence =
-    clamp(
-      1 - deviation / 35,
-      0,
-      1,
-    );
+  const consistencyConfidence = clamp(1 - deviation / 35, 0, 1);
 
-  const finalLevelPerformance =
-    levelPerformance.find(
-      (performance) =>
-        performance.level ===
-        finalLevel,
-    );
+  const finalLevelPerformance = levelPerformance.find(
+    (performance) => performance.level === finalLevel,
+  );
 
-  const boundaryConfidence =
-    finalLevelPerformance
-      ? clamp(
-          Math.abs(
-            finalLevelPerformance.averageScore -
-              PASSING_LEVEL_SCORE,
-          ) / 25,
-          0.35,
-          1,
-        )
-      : 0.45;
+  const boundaryConfidence = finalLevelPerformance
+    ? clamp(
+        Math.abs(finalLevelPerformance.averageScore - PASSING_LEVEL_SCORE) / 25,
+        0.35,
+        1,
+      )
+    : 0.45;
 
-  const averageTaskCompletion =
-    average(
-      questions.map(
-        (question) =>
-          normalizeScore(
-            question.taskCompletion,
-          ) / 100,
-      ),
-    );
+  const averageTaskCompletion = average(
+    questions.map((question) => normalizeScore(question.taskCompletion) / 100),
+  );
 
   const confidence =
     questionCountConfidence * 0.3 +
@@ -572,9 +373,7 @@ function calculateConfidence({
   return roundScore(confidence * 100);
 }
 
-function describeStrength(
-  scores: PlacementDimensionScores,
-): string {
+function describeStrength(scores: PlacementDimensionScores): string {
   const dimensions = [
     {
       label: "граматика",
@@ -598,51 +397,40 @@ function describeStrength(
     },
   ];
 
-  const strongestDimension =
-    [...dimensions].sort(
-      (first, second) =>
-        second.score - first.score,
-    )[0];
+  const strongestDimension = [...dimensions].sort(
+    (first, second) => second.score - first.score,
+  )[0];
 
   return strongestDimension.label;
 }
 
-function describeImprovementArea(
-  scores: PlacementDimensionScores,
-): string {
+function describeImprovementArea(scores: PlacementDimensionScores): string {
   const dimensions = [
     {
-      label:
-        "точністю граматичних конструкцій",
+      label: "точністю граматичних конструкцій",
       score: scores.grammar,
     },
     {
-      label:
-        "розширенням словникового запасу",
+      label: "розширенням словникового запасу",
       score: scores.vocabulary,
     },
     {
-      label:
-        "точнішим розумінням запитань",
+      label: "точнішим розумінням запитань",
       score: scores.comprehension,
     },
     {
-      label:
-        "використанням складніших речень",
+      label: "використанням складніших речень",
       score: scores.complexity,
     },
     {
-      label:
-        "повнотою відповідей",
+      label: "повнотою відповідей",
       score: scores.taskCompletion,
     },
   ];
 
-  const weakestDimension =
-    [...dimensions].sort(
-      (first, second) =>
-        first.score - second.score,
-    )[0];
+  const weakestDimension = [...dimensions].sort(
+    (first, second) => first.score - second.score,
+  )[0];
 
   return weakestDimension.label;
 }
@@ -658,11 +446,9 @@ function buildResultSummary({
   confidence: number;
   scores: PlacementDimensionScores;
 }): string {
-  const strength =
-    describeStrength(scores);
+  const strength = describeStrength(scores);
 
-  const improvementArea =
-    describeImprovementArea(scores);
+  const improvementArea = describeImprovementArea(scores);
 
   return [
     `Визначений рівень англійської — ${finalLevel}.`,
@@ -672,31 +458,19 @@ function buildResultSummary({
   ].join(" ");
 }
 
-function validateQuestions(
-  questions: PlacementResultQuestion[],
-): void {
+function validateQuestions(questions: PlacementResultQuestion[]): void {
   if (questions.length === 0) {
-    throw new Error(
-      "At least one answered placement question is required.",
-    );
+    throw new Error("At least one answered placement question is required.");
   }
 
   for (const question of questions) {
-    if (
-      !CEFR_LEVELS.includes(
-        question.targetLevel,
-      )
-    ) {
+    if (!CEFR_LEVELS.includes(question.targetLevel)) {
       throw new Error(
         `Unsupported target CEFR level: ${question.targetLevel}.`,
       );
     }
 
-    if (
-      !CEFR_LEVELS.includes(
-        question.estimatedLevel,
-      )
-    ) {
+    if (!CEFR_LEVELS.includes(question.estimatedLevel)) {
       throw new Error(
         `Unsupported estimated CEFR level: ${question.estimatedLevel}.`,
       );
@@ -709,79 +483,49 @@ export function calculatePlacementResult(
 ): PlacementResult {
   validateQuestions(inputQuestions);
 
-  const questions:
-    ScoredPlacementQuestion[] =
-    inputQuestions.map((question) => {
+  const questions: ScoredPlacementQuestion[] = inputQuestions.map(
+    (question) => {
       const normalizedQuestion = {
         ...question,
-        grammar: normalizeScore(
-          question.grammar,
-        ),
-        vocabulary: normalizeScore(
-          question.vocabulary,
-        ),
-        comprehension: normalizeScore(
-          question.comprehension,
-        ),
-        complexity: normalizeScore(
-          question.complexity,
-        ),
-        taskCompletion: normalizeScore(
-          question.taskCompletion,
-        ),
+        grammar: normalizeScore(question.grammar),
+        vocabulary: normalizeScore(question.vocabulary),
+        comprehension: normalizeScore(question.comprehension),
+        complexity: normalizeScore(question.complexity),
+        taskCompletion: normalizeScore(question.taskCompletion),
       };
 
       return {
         ...normalizedQuestion,
-        overallScore:
-          calculateQuestionScore(
-            normalizedQuestion,
-          ),
+        overallScore: calculateQuestionScore(normalizedQuestion),
       };
-    });
-
-  const scores =
-    calculateDimensionScores(questions);
-
-  const levelPerformance =
-    calculateLevelPerformance(
-      questions,
-    );
-
-  const confirmedLevel =
-    calculateConfirmedLevel(
-      levelPerformance,
-    );
-
-  const finalLevel =
-    calculateFinalLevel(
-      questions,
-      confirmedLevel,
-    );
-
-  const finalScore = roundScore(
-    questions.reduce(
-      (total, question) =>
-        total +
-        question.overallScore,
-      0,
-    ) / questions.length,
+    },
   );
 
-  const confidence =
-    calculateConfidence({
-      questions,
-      finalLevel,
-      levelPerformance,
-    });
+  const scores = calculateDimensionScores(questions);
 
-  const resultSummary =
-    buildResultSummary({
-      finalLevel,
-      finalScore,
-      confidence,
-      scores,
-    });
+  const levelPerformance = calculateLevelPerformance(questions);
+
+  const confirmedLevel = calculateConfirmedLevel(levelPerformance);
+
+  const finalLevel = calculateFinalLevel(questions, confirmedLevel);
+
+  const finalScore = roundScore(
+    questions.reduce((total, question) => total + question.overallScore, 0) /
+      questions.length,
+  );
+
+  const confidence = calculateConfidence({
+    questions,
+    finalLevel,
+    levelPerformance,
+  });
+
+  const resultSummary = buildResultSummary({
+    finalLevel,
+    finalScore,
+    confidence,
+    scores,
+  });
 
   return {
     finalLevel,
@@ -789,17 +533,12 @@ export function calculatePlacementResult(
     confidence,
 
     grammarScore: scores.grammar,
-    vocabularyScore:
-      scores.vocabulary,
-    comprehensionScore:
-      scores.comprehension,
-    complexityScore:
-      scores.complexity,
-    taskCompletionScore:
-      scores.taskCompletion,
+    vocabularyScore: scores.vocabulary,
+    comprehensionScore: scores.comprehension,
+    complexityScore: scores.complexity,
+    taskCompletionScore: scores.taskCompletion,
 
-    answeredQuestions:
-      questions.length,
+    answeredQuestions: questions.length,
     confirmedLevel,
     levelPerformance,
     resultSummary,
