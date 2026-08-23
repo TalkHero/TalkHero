@@ -27,12 +27,12 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
   title: "Перший день у Лондоні",
   subtitle: "Побутове спілкування",
   description:
-    "Пройдіть London Campaign і потренуйте англійську в найпоширеніших ситуаціях першого дня в Лондоні.",
+    "Пройдіть Лондонську кампанію і потренуйте англійську в найпоширеніших ситуаціях першого дня в Лондоні.",
   location: "Лондон, Велика Британія",
   missions: [
     {
       slug: "coffee-shop",
-      title: "Coffee Shop Mission",
+      title: "Місія в кав’ярні",
       subtitle: "Повне замовлення в кав’ярні",
       description:
         "Привітайтеся, замовте напій, оберіть розмір і молоко та оплатіть.",
@@ -49,7 +49,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
     },
     {
       slug: "underground",
-      title: "London Underground",
+      title: "Лондонське метро",
       subtitle: "Квиток і маршрут у метро",
       description: "Купіть квиток, уточніть лінію, пересадку та платформу.",
       cefrLevel: "A1",
@@ -65,7 +65,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
     },
     {
       slug: "hotel",
-      title: "Hotel Check-in",
+      title: "Заселення в готель",
       subtitle: "Заселення в готель",
       description:
         "Підтвердьте бронювання та уточніть важливі деталі проживання.",
@@ -77,12 +77,12 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       objectives: [
         "підтвердити бронювання;",
         "надати документи;",
-        "уточнити Wi-Fi та check-out.",
+        "уточнити Wi-Fi та час виселення.",
       ],
     },
     {
       slug: "airport",
-      title: "At the Airport",
+      title: "В аеропорту",
       subtitle: "Реєстрація на рейс",
       description: "Зареєструйтеся, здайте багаж і знайдіть вихід на посадку.",
       cefrLevel: "A2",
@@ -90,11 +90,15 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
       xpReward: 70,
       coinReward: 24,
       questHref: "/quests/english-basics/first-contact/airport",
-      objectives: ["передати документи;", "здати багаж;", "знайти gate."],
+      objectives: [
+        "передати документи;",
+        "здати багаж;",
+        "знайти вихід на посадку.",
+      ],
     },
     {
       slug: "restaurant",
-      title: "At the Restaurant",
+      title: "У ресторані",
       subtitle: "Вечеря в ресторані",
       description: "Отримайте столик, замовте страви та попросіть рахунок.",
       cefrLevel: "A2",
@@ -110,7 +114,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
     },
     {
       slug: "supermarket",
-      title: "At the Supermarket",
+      title: "У супермаркеті",
       subtitle: "Покупки в супермаркеті",
       description: "Знайдіть товари, уточніть ціну та оплатіть покупки.",
       cefrLevel: "A1",
@@ -122,7 +126,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
     },
     {
       slug: "bank",
-      title: "At the Bank",
+      title: "У банку",
       subtitle: "Обмін валюти в банку",
       description:
         "Обміняйте гроші, уточніть комісію, передайте документ і підтвердьте операцію.",
@@ -141,7 +145,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
     },
     {
       slug: "pharmacy",
-      title: "At the Pharmacy",
+      title: "В аптеці",
       subtitle: "Покупка ліків",
       description: "Поясніть симптоми, оберіть ліки та уточніть інструкцію.",
       cefrLevel: "A1",
@@ -157,7 +161,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
     },
     {
       slug: "taxi",
-      title: "Taxi Ride",
+      title: "Поїздка на таксі",
       subtitle: "Поїздка містом",
       description: "Назвіть адресу, уточніть тривалість і оплатіть поїздку.",
       cefrLevel: "A1",
@@ -169,7 +173,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
     },
     {
       slug: "post-office",
-      title: "At the Post Office",
+      title: "На пошті",
       subtitle: "Відправлення посилки",
       description: "Відправте посилку, оберіть доставку та оплатіть послугу.",
       cefrLevel: "A2",
@@ -185,7 +189,7 @@ export const LONDON_CAMPAIGN: AdventureCampaign = {
     },
     {
       slug: "clothes-shop",
-      title: "At the Clothes Shop",
+      title: "У магазині одягу",
       subtitle: "Покупка одягу",
       description:
         "Знайдіть футболку, оберіть колір і розмір, приміряйте та оплатіть.",
