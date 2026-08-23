@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Confetti from "react-confetti";
 import { LevelUpModal } from "./LevelUpModal";
@@ -243,20 +243,20 @@ useEffect(() => {
         <div>
           <div className="flex items-center gap-2 text-sm font-semibold text-indigo-100">
             <Sparkles className="h-4 w-4" />
-            Сесія заверщена
+            Сесію завершено
           </div>
 
           <h2 className="mt-2 text-2xl font-bold">Звіт про говоріння</h2>
 
           <p className="mt-2 max-w-xl text-sm leading-6 text-indigo-100">
-            Перегляньте рівень вашої розмовної аннглійської мови та подивіться, що слід покращити під час наступної розмови.
+            Перегляньте рівень вашої розмовної англійської та дізнайтеся, що варто покращити під час наступної розмови.
           </p>
         </div>
 
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close speaking report"
+          aria-label="Закрити звіт про говоріння"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20"
         >
           <X className="h-5 w-5" />
@@ -270,7 +270,7 @@ useEffect(() => {
           </div>
 
           <p className="mt-6 text-sm font-medium text-slate-400">
-            Загагом балів
+            Загальний бал
           </p>
 
           <div className="mt-2 flex items-end gap-1">
@@ -417,7 +417,7 @@ useEffect(() => {
 
                 <ScoreRow label="Словниковий запас" score={vocabularyScore} />
 
-                <ScoreRow label="Природність вимови" score={naturalnessScore} />
+                <ScoreRow label="Природність мовлення" score={naturalnessScore} />
               </div>
             )}
           </section>
@@ -473,7 +473,7 @@ useEffect(() => {
 
           {mainIssues.length > 0 && (
             <section className="rounded-3xl border border-slate-200 p-5 sm:p-6">
-              <h3 className="font-bold text-slate-900">Focus for next time</h3>
+              <h3 className="font-bold text-slate-900">На що звернути увагу наступного разу</h3>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {mainIssues.map((issue) => (
@@ -496,7 +496,7 @@ useEffect(() => {
           onClick={onClose}
           className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
         >
-          Повернутись до розмови
+          Повернутися до розмови
         </button>
 
         <button
@@ -505,10 +505,11 @@ useEffect(() => {
           className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white transition hover:bg-indigo-700"
         >
           <RefreshCw className="h-4 w-4" />
-          Почасти нову сесію
+          Почати нову сесію
         </button>
       </div>
     </section>
   </>
 );
 }
+

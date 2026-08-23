@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   useCallback,
@@ -712,13 +712,13 @@ export function SpeakingSession() {
     },
 
     thinking: {
-      title: "Emma слухає...",
-      description: "YВаша відповідь аналізується.",
+      title: "Емма слухає...",
+      description: "Ваша відповідь аналізується.",
       icon: Loader2,
     },
 
     speaking: {
-      title: "Emma говорить",
+      title: "Емма говорить",
       description: "Уважно слухайте її відповідь.",
       icon: Volume2,
     },
@@ -923,7 +923,7 @@ export function SpeakingSession() {
 
                     <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                       <div className="rounded-xl bg-white p-3">
-                        <p className="text-slate-500">Grammar</p>
+                        <p className="text-slate-500">Граматика</p>
 
                         <p className="mt-1 font-bold text-slate-900">
                           {evaluation.grammarScore}
@@ -931,7 +931,7 @@ export function SpeakingSession() {
                       </div>
 
                       <div className="rounded-xl bg-white p-3">
-                        <p className="text-slate-500">Fluency</p>
+                        <p className="text-slate-500">Плавність мовлення</p>
 
                         <p className="mt-1 font-bold text-slate-900">
                           {evaluation.fluencyScore}
@@ -939,7 +939,7 @@ export function SpeakingSession() {
                       </div>
 
                       <div className="rounded-xl bg-white p-3">
-                        <p className="text-slate-500">Vocabulary</p>
+                        <p className="text-slate-500">Словниковий запас</p>
 
                         <p className="mt-1 font-bold text-slate-900">
                           {evaluation.vocabularyScore}
@@ -947,7 +947,7 @@ export function SpeakingSession() {
                       </div>
 
                       <div className="rounded-xl bg-white p-3">
-                        <p className="text-slate-500">Naturalness</p>
+                        <p className="text-slate-500">Природність</p>
 
                         <p className="mt-1 font-bold text-slate-900">
                           {evaluation.naturalnessScore}
@@ -958,7 +958,7 @@ export function SpeakingSession() {
                     {!evaluation.wasCorrect && evaluation.correctedSentence && (
                       <div className="mt-4">
                         <p className="text-sm font-semibold text-slate-800">
-                          Better sentence
+                          Краще речення
                         </p>
 
                         <p className="mt-2 rounded-xl bg-white p-3 text-sm italic text-slate-700">
@@ -990,7 +990,7 @@ export function SpeakingSession() {
             <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 sm:px-7">
               {phase === "thinking" && currentTranscript && (
                 <p className="text-sm text-slate-500">
-                  <strong className="text-slate-700">You said:</strong>{" "}
+                  <strong className="text-slate-700">Ви сказали:</strong>{" "}
                   {currentTranscript}
                 </p>
               )}
@@ -1008,3 +1008,4 @@ export function SpeakingSession() {
     </section>
   );
 }
+

@@ -370,11 +370,7 @@ export async function evaluateAIScene(
 
   const prompt = buildConversationPrompt(input);
 
-  console.log("=== AI EVALUATOR INPUT ===", {
-    sceneCode: input.scene.scene_code,
-    userInput: input.userInput,
-    promptUser: prompt.user,
-  });
+
 
   const model = process.env.OPENAI_EVALUATION_MODEL?.trim() || DEFAULT_MODEL;
 

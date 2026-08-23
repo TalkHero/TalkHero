@@ -373,16 +373,7 @@ export async function checkAndUpdateMastery({
     0,
     MAX_ERRORS_TO_CHECK,
   );
-  console.log(
-    activeErrors.map((error) => ({
-      id: error.id,
-      errorKey: error.error_key,
-      errorType: error.error_type,
-      originalText: error.original_text,
-      correctedText: error.corrected_text,
-      successfulUses: error.successful_uses,
-    })),
-  );
+
 
   if (activeErrors.length === 0) {
     return {

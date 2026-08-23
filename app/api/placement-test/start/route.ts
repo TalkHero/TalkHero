@@ -505,20 +505,7 @@ export async function POST() {
       questionIndex >=
       expectedQuestionCount
     ) {
-      console.log(
-        "Placement test is ready to finish:",
-        {
-          sessionId:
-            session.id,
-          userId:
-            user.id,
-          questionIndex,
-          totalQuestions:
-            session.total_questions,
-          testPlanLength:
-            TEST_PLAN.length,
-        },
-      );
+
 
       return createReadyToFinishResponse(
         session,

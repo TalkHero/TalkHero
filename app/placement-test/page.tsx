@@ -263,7 +263,7 @@ function FinalResult({
           />
 
           <ScoreBar
-            label="Виконання завдань"
+            label="Виконання завдання"
             value={
               result.scores.taskCompletion
             }
@@ -295,6 +295,38 @@ function FinalResult({
     </main>
   );
 }
+
+const SKILL_LABELS: Record<string, string> = {
+  grammar: "Граматика",
+  vocabulary: "Словниковий запас",
+  reading: "Читання",
+  writing: "Письмо",
+  speaking: "Говоріння",
+  comprehension: "Розуміння",
+};
+
+const TOPIC_LABELS: Record<string, string> = {
+  personal_information:
+    "Особиста інформація",
+  daily_life:
+    "Повсякденне життя",
+  past_simple:
+    "Минулий час",
+  description:
+    "Опис",
+  experience:
+    "Досвід",
+  future_forms:
+    "Майбутній час",
+  opinion:
+    "Власна думка",
+  comparison:
+    "Порівняння",
+  argumentation:
+    "Аргументація",
+  hypothetical_reasoning:
+    "Гіпотетичне міркування",
+};
 
 export default function PlacementTestPage() {
   const {
@@ -440,7 +472,7 @@ export default function PlacementTestPage() {
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-slate-500">
-              Placement Test
+              Тест на визначення рівня
             </p>
 
             <h1 className="mt-1 text-2xl font-bold text-slate-900">
@@ -488,7 +520,9 @@ export default function PlacementTestPage() {
             </span>
 
             <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-              {question.skill}
+              {TOPIC_LABELS[question.skill] ??
+                SKILL_LABELS[question.skill] ??
+                question.skill}
             </span>
           </div>
 

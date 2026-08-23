@@ -1046,23 +1046,7 @@ export async function POST(
     const completedAt =
       new Date().toISOString();
 
-    console.log(
-      "Completing placement session:",
-      {
-        sessionId:
-          session.id,
-        userId:
-          user.id,
-        answeredQuestions:
-          result.answeredQuestions,
-        finalLevel:
-          result.finalLevel,
-        finalScore:
-          result.finalScore,
-        confidence:
-          result.confidence,
-      },
-    );
+
 
     const completedSession =
       await completePlacementSession(
@@ -1126,21 +1110,7 @@ export async function POST(
       );
     }
 
-    console.log(
-      "Placement session completed. Updating profile:",
-      {
-        sessionId:
-          completedSession.id,
-        userId:
-          user.id,
-        finalLevel:
-          result.finalLevel,
-        finalScore:
-          result.finalScore,
-        confidence:
-          result.confidence,
-      },
-    );
+
 
     await syncProfileResult(
       supabase,
@@ -1157,15 +1127,7 @@ export async function POST(
       },
     );
 
-    console.log(
-      "Placement test completed successfully:",
-      {
-        sessionId:
-          completedSession.id,
-        userId:
-          user.id,
-      },
-    );
+
 
     return NextResponse.json(
       createPublicResult({

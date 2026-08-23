@@ -127,10 +127,22 @@ SCORING RULES:
 - Keep feedback brief and supportive.
 - Correct only the most important problem.
 - If the sentence is already acceptable, preserve it.
-- correctedSentence must always contain the best natural version
-  of the student's response.
+- correctedSentence must always contain the best natural English
+  version of the student's response.
 - mainIssue must be an empty string when there is no important issue.
 - Do not include markdown.
+
+LANGUAGE RULES:
+- correctedSentence must always be written in English.
+- shortFeedback must always be written in Ukrainian.
+- mainIssue must always be written in Ukrainian.
+- encouragement must always be written in Ukrainian.
+- Explain mistakes in clear, natural Ukrainian suitable for the
+  learner's CEFR level.
+- English examples may appear inside Ukrainian explanations when
+  necessary.
+- Do not return English-only feedback in shortFeedback, mainIssue,
+  or encouragement.
 `;
 }
 
@@ -200,11 +212,11 @@ export async function POST(request: Request) {
         model: "gpt-4.1-mini",
 
         messages: [
-          {
-            role: "system",
-            content:
-              "You are a precise but supportive English speaking evaluator.",
-          },
+         {
+  role: "system",
+  content:
+    "You are a precise but supportive English speaking evaluator. All learner-facing explanations must be written in Ukrainian, while corrected English sentences must remain in English.",
+},
           {
             role: "user",
             content: createEvaluationPrompt({
