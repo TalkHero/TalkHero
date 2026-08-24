@@ -451,16 +451,29 @@ export function HomeScreen() {
             </p>
           </div>
 
-          <Link
-            href="/profile"
-            className={buttonVariants({
-              variant: "ghost",
-              size: "sm",
-            })}
-          >
-            Відкрити профіль
-            <ArrowRight aria-hidden="true" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+  <Link
+    href="/speaking/history"
+    className={buttonVariants({
+      variant: "ghost",
+      size: "sm",
+    })}
+  >
+    <Mic aria-hidden="true" />
+    Історія розмовної практики
+  </Link>
+
+  <Link
+    href="/profile"
+    className={buttonVariants({
+      variant: "ghost",
+      size: "sm",
+    })}
+  >
+    Відкрити профіль
+    <ArrowRight aria-hidden="true" />
+  </Link>
+</div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import SpeakingAnalytics from "@/components/speaking/SpeakingAnalytics";
+import Link from "next/link";
 
 type SpeakingSession = {
   id: string;
@@ -52,14 +53,14 @@ function formatDuration(seconds: number) {
   const remainingSeconds = safeSeconds % 60;
 
   if (minutes === 0) {
-    return `${remainingSeconds} sec`;
+    return `${remainingSeconds} с`;
   }
 
   if (remainingSeconds === 0) {
-    return `${minutes} min`;
+    return `${minutes} хв`;
   }
 
-  return `${minutes} min ${remainingSeconds} sec`;
+  return `${minutes} хв ${remainingSeconds} с`;
 }
 
 function formatDate(value: string) {
@@ -91,22 +92,22 @@ function formatTime(value: string) {
 
 function getScoreLabel(score: number) {
   if (score >= 90) {
-    return "Excellent";
+    return "Відмінно";
   }
 
   if (score >= 80) {
-    return "Great";
+    return "Дуже добре";
   }
 
   if (score >= 70) {
-    return "Good";
+    return "Добре";
   }
 
   if (score >= 60) {
-    return "Keep going";
+    return "Продовжуйте";
   }
 
-  return "Needs practice";
+  return "Потрібна практика";
 }
 
 function getScoreStyles(score: number) {
@@ -272,10 +273,10 @@ function SessionCard({
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
             <span>⏱ {formatDuration(session.duration_seconds)}</span>
 
-            <span>
-              💬 {session.answers_count}{" "}
-              {session.answers_count === 1 ? "answer" : "answers"}
-            </span>
+           <span>
+  💬 {session.answers_count}{" "}
+  {session.answers_count === 1 ? "відповідь" : "відповідей"}
+</span>
 
             <span className="font-semibold text-violet-600 dark:text-violet-400">
               +{session.xp_earned} XP
@@ -305,24 +306,24 @@ function SessionCard({
         <div className="border-t border-slate-100 px-5 pb-6 pt-5 dark:border-slate-800 sm:px-6">
           <div className="grid gap-5 sm:grid-cols-2">
             <ScoreBar
-              label="Grammar"
-              score={session.grammar_score}
-            />
+  label="Граматика"
+  score={session.grammar_score}
+/>
 
-            <ScoreBar
-              label="Fluency"
-              score={session.fluency_score}
-            />
+<ScoreBar
+  label="Плавність мовлення"
+  score={session.fluency_score}
+/>
 
-            <ScoreBar
-              label="Vocabulary"
-              score={session.vocabulary_score}
-            />
+<ScoreBar
+  label="Словниковий запас"
+  score={session.vocabulary_score}
+/>
 
-            <ScoreBar
-              label="Naturalness"
-              score={session.naturalness_score}
-            />
+<ScoreBar
+  label="Природність мовлення"
+  score={session.naturalness_score}
+/>
           </div>
         </div>
       ) : null}
@@ -424,30 +425,39 @@ export default function SpeakingHistoryPage() {
       <div className="mx-auto max-w-6xl">
         <header className="mb-8">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-            <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-violet-100 px-3 py-1 text-sm font-semibold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
-                <span aria-hidden="true">🎤</span>
-                Speaking practice
-              </div>
+  <div>
+    <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-violet-100 px-3 py-1 text-sm font-semibold text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+      <span aria-hidden="true">🎤</span>
+      Розмовна практика
+    </div>
 
-              <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                Історія розмовної практики
-              </h1>
+    <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+      Історія розмовної практики
+    </h1>
 
-              <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">
-                Стежте за розмовними сесіями, оцінками, часом практики та отриманими XP.
-              </p>
-            </div>
+    <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-400">
+      Стежте за розмовними сесіями, оцінками, часом практики та отриманими XP.
+    </p>
+  </div>
 
-            <button
-              type="button"
-              onClick={() => void loadHistory()}
-              disabled={isLoading}
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              {isLoading ? "Refreshing..." : "↻ Refresh"}
-            </button>
-          </div>
+  <div className="flex flex-wrap gap-2">
+    <Link
+      href="/dashboard"
+      className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+    >
+      ← На головну
+    </Link>
+
+    <button
+      type="button"
+      onClick={() => void loadHistory()}
+      disabled={isLoading}
+      className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+    >
+      {isLoading ? "Оновлюємо…" : "↻ Оновити"}
+    </button>
+  </div>
+</div>
         </header>
 
         {errorMessage ? (
@@ -456,7 +466,7 @@ export default function SpeakingHistoryPage() {
             className="mb-8 rounded-2xl border border-rose-200 bg-rose-50 p-5 dark:border-rose-900/50 dark:bg-rose-950/30"
           >
             <h2 className="font-semibold text-rose-800 dark:text-rose-300">
-              Could not load history
+              Не вдалося завантажити історію
             </h2>
 
             <p className="mt-1 text-sm text-rose-700 dark:text-rose-400">
@@ -468,7 +478,7 @@ export default function SpeakingHistoryPage() {
               onClick={() => void loadHistory()}
               className="mt-4 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
             >
-              Спробуйте ще
+              Спробувати ще раз
             </button>
           </div>
         ) : null}
@@ -500,7 +510,7 @@ export default function SpeakingHistoryPage() {
 
           <StatCard
             icon="⚡"
-            label="розмовний досвід XP"
+            label="Досвід за розмовну практику"
             value={`+${stats.totalXP}`}
             helper="XP отримано за час розмовної практики"
           />
@@ -508,7 +518,7 @@ export default function SpeakingHistoryPage() {
           <StatCard
             icon="⏱"
             label="Час практики"
-            value={`${stats.totalPracticeMinutes} min`}
+            value={`${stats.totalPracticeMinutes} хв`}
             helper={
               stats.totalSessions > 0
                 ? `У середньому ${formatDuration(averageDuration)} за сесію`
@@ -529,11 +539,6 @@ export default function SpeakingHistoryPage() {
         ) : null}
 
 
-
-        {!isLoading && !errorMessage ? (
-          <SpeakingAnalytics sessions={sessions} />
-        ) : null}
-
         <section aria-labelledby="session-history-title">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
@@ -541,11 +546,11 @@ export default function SpeakingHistoryPage() {
                 id="session-history-title"
                 className="text-xl font-bold text-slate-950 dark:text-white"
               >
-                Recent sessions
+                Останні сесії
               </h2>
 
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Newest sessions appear first.
+                Нові сесії відображаються першими.
               </p>
             </div>
 
@@ -568,19 +573,18 @@ export default function SpeakingHistoryPage() {
               </div>
 
               <h2 className="mt-5 text-xl font-bold text-slate-950 dark:text-white">
-                No speaking sessions yet
+                Розмовних сесій поки немає
               </h2>
 
               <p className="mx-auto mt-2 max-w-md text-slate-500 dark:text-slate-400">
-                Complete your first speaking session and your scores, XP and
-                progress will appear here.
+                Завершіть першу розмовну практику, і тут з’являться ваші оцінки, XP та прогрес.
               </p>
 
               <a
                 href="/speaking"
                 className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-violet-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
               >
-                Start speaking
+                Почати розмовну практику
               </a>
             </div>
           ) : null}
