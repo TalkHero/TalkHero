@@ -9,6 +9,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+
 import { trackEvent } from "@/lib/analytics";
 
 type VocabularyStatus = "new" | "learning" | "learned";
@@ -26,9 +27,9 @@ type VocabularyItem = {
 };
 
 const STATUS_LABELS: Record<VocabularyStatus, string> = {
-  new: "New",
-  learning: "Learning",
-  learned: "Learned",
+  new: "Нове",
+  learning: "Вивчається",
+  learned: "Вивчено",
 };
 
 const NEXT_STATUS: Record<VocabularyStatus, VocabularyStatus> = {
@@ -36,7 +37,8 @@ const NEXT_STATUS: Record<VocabularyStatus, VocabularyStatus> = {
   learning: "learned",
   learned: "new",
 };
-  function getWordCountLabel(count: number) {
+
+function getWordCountLabel(count: number) {
   const lastTwoDigits = count % 100;
   const lastDigit = count % 10;
 
@@ -54,10 +56,9 @@ const NEXT_STATUS: Record<VocabularyStatus, VocabularyStatus> = {
 
   return "слів";
 }
+
 export function VocabularyManager() {
-  const [vocabulary, setVocabulary] = useState<VocabularyItem[]>(
-    [],
-  );
+  const [vocabulary, setVocabulary] = useState<VocabularyItem[]>([]);
 
   const [word, setWord] = useState("");
   const [translation, setTranslation] = useState("");
@@ -68,13 +69,8 @@ export function VocabularyManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [updatingId, setUpdatingId] = useState<string | null>(
-    null,
-  );
-
-  const [deletingId, setDeletingId] = useState<string | null>(
-    null,
-  );
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -179,7 +175,7 @@ export function VocabularyManager() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Не вдалося оновити слово.",
+          : "Не вдалося додати слово.",
       );
     } finally {
       setSaving(false);
@@ -193,7 +189,9 @@ export function VocabularyManager() {
 
     setUpdatingId(item.id);
     setErrorMessage("");
-const nextStatus = NEXT_STATUS[item.status];
+
+    const nextStatus = NEXT_STATUS[item.status];
+
     try {
       const response = await fetch(
         `/api/vocabulary/${encodeURIComponent(item.id)}`,
@@ -203,8 +201,8 @@ const nextStatus = NEXT_STATUS[item.status];
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-  status: nextStatus,
-}),
+            status: nextStatus,
+          }),
         },
       );
 
@@ -223,6 +221,12 @@ const nextStatus = NEXT_STATUS[item.status];
             : currentItem,
         ),
       );
+
+      if (nextStatus === "learned") {
+        trackEvent("vocabulary_word_learned", {
+          word_id: item.id,
+        });
+      }
     } catch (error) {
       console.error("UPDATE VOCABULARY ERROR:", error);
 
@@ -242,7 +246,7 @@ const nextStatus = NEXT_STATUS[item.status];
     }
 
     const confirmed = window.confirm(
-      `Delete "${item.word}" from your vocabulary?`,
+      `Видалити "${item.word}" зі словника?`,
     );
 
     if (!confirmed) {
@@ -273,12 +277,6 @@ const nextStatus = NEXT_STATUS[item.status];
           (currentItem) => currentItem.id !== item.id,
         ),
       );
-
-      if (data.vocabularyItem.status === "learned") {
-  trackEvent("vocabulary_word_learned", {
-    word_id: item.id,
-  });
-}
     } catch (error) {
       console.error("DELETE VOCABULARY ERROR:", error);
 
@@ -354,7 +352,7 @@ const nextStatus = NEXT_STATUS[item.status];
               <Plus className="h-4 w-4" />
             )}
 
-            {saving ? "додаванyz..." : "Додати слово"}
+            {saving ? "Додаємо..." : "Додати слово"}
           </button>
 
           {errorMessage && (
@@ -373,7 +371,8 @@ const nextStatus = NEXT_STATUS[item.status];
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-
+              {vocabulary.length}{" "}
+              {getWordCountLabel(vocabulary.length)}
             </p>
           </div>
 
@@ -392,7 +391,7 @@ const nextStatus = NEXT_STATUS[item.status];
         {loading ? (
           <div className="flex items-center justify-center gap-3 p-12 text-sm text-slate-500">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading vocabulary...
+            Завантажуємо словник...
           </div>
         ) : filteredVocabulary.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
@@ -401,11 +400,11 @@ const nextStatus = NEXT_STATUS[item.status];
             </div>
 
             <h3 className="mt-4 font-semibold text-slate-900">
-              No words found
+              Слів не знайдено
             </h3>
 
             <p className="mt-1 max-w-sm text-sm text-slate-500">
-              Add your first word or change the search query.
+              Додайте перше слово або змініть пошуковий запит.
             </p>
           </div>
         ) : (
@@ -485,7 +484,7 @@ const nextStatus = NEXT_STATUS[item.status];
                           Boolean(updatingId)
                         }
                         className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                        aria-label={`Delete ${item.word}`}
+                        aria-label={`Видалити ${item.word}`}
                       >
                         {isDeleting ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
