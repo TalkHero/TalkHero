@@ -9,6 +9,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 type VocabularyStatus = "new" | "learning" | "learned";
 
@@ -192,7 +193,7 @@ export function VocabularyManager() {
 
     setUpdatingId(item.id);
     setErrorMessage("");
-
+const nextStatus = NEXT_STATUS[item.status];
     try {
       const response = await fetch(
         `/api/vocabulary/${encodeURIComponent(item.id)}`,
@@ -202,8 +203,8 @@ export function VocabularyManager() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            status: NEXT_STATUS[item.status],
-          }),
+  status: nextStatus,
+}),
         },
       );
 
@@ -272,6 +273,12 @@ export function VocabularyManager() {
           (currentItem) => currentItem.id !== item.id,
         ),
       );
+
+      if (data.vocabularyItem.status === "learned") {
+  trackEvent("vocabulary_word_learned", {
+    word_id: item.id,
+  });
+}
     } catch (error) {
       console.error("DELETE VOCABULARY ERROR:", error);
 

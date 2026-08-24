@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -16,6 +17,9 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false);
 
   async function handleGoogleRegister() {
+    trackEvent("sign_up", {
+  method: "google",
+});
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -57,6 +61,10 @@ export function RegisterForm() {
       alert("Не вдалося створити акаунт. Перевірте введені дані.");
       return;
     }
+
+    trackEvent("sign_up", {
+  method: "email",
+});
 
     if (data.session) {
       router.push("/dashboard");

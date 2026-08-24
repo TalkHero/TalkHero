@@ -28,6 +28,7 @@ import {
 } from "@/components/speaking/SpeakingReport";
 import { UI_ERRORS } from "@/lib/i18n/errors";
 import { useRouter } from "next/navigation";
+import { trackEvent } from "@/lib/analytics";
 
 type SessionPhase = "idle" | "listening" | "thinking" | "speaking" | "error";
 
@@ -574,7 +575,7 @@ export function SpeakingSession() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Не можливо почтаку розмовну практику.",
+          : "Не вдалося розпочати розмовну практику.",
       );
     } finally {
       setStartingSession(false);
@@ -586,7 +587,9 @@ export function SpeakingSession() {
     }
 
     completingSessionRef.current = true;
-
+const durationSeconds = Math.floor(
+  (Date.now() - sessionStartedAt) / 1000,
+);
     try {
       const response = await fetch("/api/speaking/complete", {
         method: "POST",
@@ -596,7 +599,7 @@ export function SpeakingSession() {
         body: JSON.stringify({
           conversationId,
           startedAt: new Date(sessionStartedAt).toISOString(),
-          durationSeconds: Math.floor((Date.now() - sessionStartedAt) / 1000),
+          durationSeconds,
           evaluations: sessionEvaluations,
         }),
       });
@@ -615,7 +618,11 @@ export function SpeakingSession() {
         xpEarned: data.session.xpEarned,
         progress: data.progress,
       });
-
+trackEvent("speaking_completed", {
+  duration_seconds: durationSeconds,
+  answers_count: sessionEvaluations.length,
+  xp_earned: data.session.xpEarned,
+});
       router.refresh();
     } catch (error) {
       console.error(error);

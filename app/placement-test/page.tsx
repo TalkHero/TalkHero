@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 
 import {
@@ -16,6 +17,7 @@ import type {
   AnswerLength,
   PlacementEvaluation,
 } from "@/lib/ai/placement-test";
+import { trackEvent } from "@/lib/analytics";
 
 const ANSWER_PLACEHOLDERS: Record<
   AnswerLength,
@@ -343,11 +345,28 @@ export default function PlacementTestPage() {
 
   const [answer, setAnswer] =
     useState("");
-
+const trackedCompletionRef =
+  useRef(false);
   useEffect(() => {
     setAnswer("");
   }, [question?.id]);
+useEffect(() => {
+  if (
+    status !== "completed" ||
+    !result ||
+    trackedCompletionRef.current
+  ) {
+    return;
+  }
 
+  trackedCompletionRef.current = true;
+
+  trackEvent("placement_test_completed", {
+    level: result.finalLevel,
+    score: result.finalScore,
+    confidence: result.confidence,
+  });
+}, [status, result]);
   const isSubmitting =
     status === "answering" ||
     status === "finishing";

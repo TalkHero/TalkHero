@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Loader2, RotateCcw } from "lucide-react";
 
 import { AIFeedbackCard } from "./AIFeedbackCard";
@@ -19,6 +19,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { trackEvent } from "@/lib/analytics";
+
 export type QuestPlayerProps = {
   campaignSlug: string;
   episodeSlug: string;
@@ -34,28 +36,77 @@ export function QuestPlayer({
 }: QuestPlayerProps) {
   const quest = useQuest();
   const { startQuest } = quest;
+const trackedCompletionRef = useRef(false);
+  useEffect(() => {
+  if (
+    !quest.completed ||
+    trackedCompletionRef.current
+  ) {
+    return;
+  }
+
+  trackedCompletionRef.current = true;
+
+  trackEvent("quest_completed", {
+    campaign: campaignSlug,
+    episode: episodeSlug,
+    quest: questSlug,
+    score: quest.score,
+    max_score: quest.maxScore,
+    xp_earned: quest.xpEarned,
+    coins_earned: quest.coinsEarned,
+  });
+
+  onComplete?.();
+}, [
+  quest.completed,
+  quest.score,
+  quest.maxScore,
+  quest.xpEarned,
+  quest.coinsEarned,
+  campaignSlug,
+  episodeSlug,
+  questSlug,
+  onComplete,
+]);
 
   useEffect(() => {
-    void startQuest({
-      campaignSlug,
-      episodeSlug,
-      questSlug,
-    });
-  }, [campaignSlug, episodeSlug, questSlug, startQuest]);
+  if (!quest.completed) {
+    return;
+  }
 
-  useEffect(() => {
-    if (quest.completed) {
-      onComplete?.();
-    }
-  }, [quest.completed, onComplete]);
+  trackEvent("quest_completed", {
+    campaign: campaignSlug,
+    episode: episodeSlug,
+    quest: questSlug,
+    score: quest.score,
+    max_score: quest.maxScore,
+    xp_earned: quest.xpEarned,
+    coins_earned: quest.coinsEarned,
+  });
+
+  onComplete?.();
+}, [
+  quest.completed,
+  quest.score,
+  quest.maxScore,
+  quest.xpEarned,
+  quest.coinsEarned,
+  campaignSlug,
+  episodeSlug,
+  questSlug,
+  onComplete,
+]);
 
   const restartQuest = () => {
-    void startQuest({
-      campaignSlug,
-      episodeSlug,
-      questSlug,
-    });
-  };
+  trackedCompletionRef.current = false;
+
+  void startQuest({
+    campaignSlug,
+    episodeSlug,
+    questSlug,
+  });
+};
 
   if (quest.loading) {
     return (

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics";
 
 export function LoginForm() {
   const router = useRouter();
@@ -46,6 +47,10 @@ export function LoginForm() {
       alert("Не вдалося увійти. Перевірте електронну пошту та пароль.");
       return;
     }
+
+    trackEvent("login", {
+  method: "email",
+});
 
     router.push("/dashboard");
     router.refresh();
