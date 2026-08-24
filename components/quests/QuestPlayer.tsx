@@ -34,10 +34,27 @@ export function QuestPlayer({
   questSlug,
   onComplete,
 }: QuestPlayerProps) {
-  const quest = useQuest();
-  const { startQuest } = quest;
+const quest = useQuest();
+const { startQuest } = quest;
+
 const trackedCompletionRef = useRef(false);
-  useEffect(() => {
+
+useEffect(() => {
+  trackedCompletionRef.current = false;
+
+  void startQuest({
+    campaignSlug,
+    episodeSlug,
+    questSlug,
+  });
+}, [
+  campaignSlug,
+  episodeSlug,
+  questSlug,
+  startQuest,
+]);
+
+useEffect(() => {
   if (
     !quest.completed ||
     trackedCompletionRef.current
@@ -70,35 +87,7 @@ const trackedCompletionRef = useRef(false);
   onComplete,
 ]);
 
-  useEffect(() => {
-  if (!quest.completed) {
-    return;
-  }
-
-  trackEvent("quest_completed", {
-    campaign: campaignSlug,
-    episode: episodeSlug,
-    quest: questSlug,
-    score: quest.score,
-    max_score: quest.maxScore,
-    xp_earned: quest.xpEarned,
-    coins_earned: quest.coinsEarned,
-  });
-
-  onComplete?.();
-}, [
-  quest.completed,
-  quest.score,
-  quest.maxScore,
-  quest.xpEarned,
-  quest.coinsEarned,
-  campaignSlug,
-  episodeSlug,
-  questSlug,
-  onComplete,
-]);
-
-  const restartQuest = () => {
+const restartQuest = () => {
   trackedCompletionRef.current = false;
 
   void startQuest({
