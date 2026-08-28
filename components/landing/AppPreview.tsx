@@ -60,9 +60,9 @@ export function AppPreview() {
                 <div>
                   <p className="font-bold text-slate-950">Привіт 👋</p>
 
-                  <p className="text-sm text-slate-500">
-                    Готові продовжити навчання?
-                  </p>
+                  <p className="text-base text-slate-600">
+  Готові продовжити навчання?
+</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -100,29 +100,26 @@ export function AppPreview() {
 
                     <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-sm text-slate-500">Щоденна ціль</p>
+                       <p className="text-base text-slate-600">Щоденна ціль</p>
 
                         <p className="mt-1 text-xl font-bold text-slate-950">
                           Повторення слів
                         </p>
                       </div>
 
-                      <button
-                        type="button"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white"
-                      >
-                        Почати повторення
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
+                      <div className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white">
+  Почати повторення
+  <ArrowRight className="h-4 w-4" />
+</div>
                     </div>
                   </div>
 
                   <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:rounded-3xl sm:p-6">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm text-slate-500">
-                          Рівень користувача
-                        </p>
+                        <p className="text-base text-slate-600">
+  Рівень користувача
+</p>
 
                         <p className="mt-2 text-4xl font-black text-slate-950">
                           28
@@ -159,10 +156,10 @@ export function AppPreview() {
                         Цілі на сьогодні
                       </h3>
 
-                      <p className="mt-1 text-sm text-slate-500">
-                        Виконуйте короткі навчальні цілі та підтримуйте
-                        регулярний прогрес.
-                      </p>
+                      <p className="mt-2 text-base leading-7 text-slate-600">
+  Виконуйте короткі навчальні цілі та підтримуйте
+  регулярний прогрес.
+</p>
                     </div>
 
                     <div className="rounded-2xl border border-slate-200 px-4 py-3">
@@ -303,7 +300,9 @@ function GoalCard({
 
       <h4 className="mt-4 font-bold text-slate-950">{title}</h4>
 
-      <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
+     <p className="mt-2 text-base leading-6 text-slate-600">
+  {description}
+</p>
     </div>
   );
 }

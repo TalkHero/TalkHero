@@ -9,6 +9,7 @@ import { Footer } from "@/components/landing/Footer";
 import { ProductDemo } from "@/components/landing/ProductDemo";
 import { AdaptiveLearning } from "@/components/landing/AdaptiveLearning";
 import { VideoDemo } from "@/components/landing/VideoDemo";
+import { AdventureShowcase } from "@/components/landing/AdventureShowcase";
 
 export default function HomePage() {
   return (
@@ -26,6 +27,10 @@ export default function HomePage() {
         <section id="how-it-works" className="scroll-mt-24">
           <HowItWorks />
         </section>
+
+        <section id="adventure-showcase" className="scroll-mt-24">
+  <AdventureShowcase />
+</section>
 
         <section id="personalization" className="scroll-mt-24">
           <AdaptiveLearning />

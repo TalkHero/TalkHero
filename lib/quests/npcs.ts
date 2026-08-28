@@ -44,11 +44,15 @@ export type NPC = {
 };
 
 export const NPCS: Record<string, NPC> = {
+  // ========================================================
+  // Global / legacy characters
+  // ========================================================
+
   emma: {
     id: "emma",
     name: "Емма",
     role: "Ваш наставник",
-    avatar: "🙂",
+    avatar: "/images/emma/emma-hero.png",
     emotion: "encouraging",
     accent: "british",
     voiceId: "marin",
@@ -62,16 +66,20 @@ export const NPCS: Record<string, NPC> = {
     avatar: "☕",
     emotion: "happy",
     accent: "british",
-    voiceId: "coral",
+    voiceId: "nova",
     theme: "emerald",
   },
 
-  oliver: {
-    id: "oliver",
-    name: "Oliver",
-    role: "Station assistant",
-    avatar: "🚇",
-    emotion: "neutral",
+  // ========================================================
+  // London First Day
+  // ========================================================
+
+  james: {
+    id: "james",
+    name: "James",
+    role: "Місцевий житель",
+    avatar: "/images/characters/james/james.png",
+    emotion: "happy",
     accent: "british",
     voiceId: "cedar",
     theme: "blue",
@@ -80,27 +88,187 @@ export const NPCS: Record<string, NPC> = {
   sophie: {
     id: "sophie",
     name: "Sophie",
-    role: "Receptionist",
-    avatar: "🏨",
+    role: "Бариста",
+    avatar: "/images/characters/sophie/sophie.png",
     emotion: "happy",
     accent: "british",
-    voiceId: "nova",
-    theme: "amber",
+    voiceId: "coral",
+    theme: "rose",
   },
 
   daniel: {
     id: "daniel",
     name: "Daniel",
-    role: "Check-in agent",
-    avatar: "✈️",
+    role: "Менеджер готелю",
+    avatar: "/images/characters/daniel/daniel.png",
     emotion: "neutral",
+    accent: "british",
+    voiceId: "onyx",
+    theme: "slate",
+  },
+
+  // ========================================================
+  // London Life
+  // ========================================================
+
+  "london-life-renting-a-flat-rebecca": {
+    id: "london-life-renting-a-flat-rebecca",
+    name: "Rebecca",
+    role: "Estate Agent",
+    avatar:
+      "/images/characters/london-life/rebecca-estate-agent.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "shimmer",
+    theme: "emerald",
+  },
+
+  "london-life-meeting-a-neighbor-daniel": {
+    id: "london-life-meeting-a-neighbor-daniel",
+    name: "Daniel",
+    role: "Neighbor",
+    avatar:
+      "/images/characters/london-life/daniel-neighbor.png",
+    emotion: "happy",
     accent: "british",
     voiceId: "onyx",
     theme: "blue",
   },
+
+  "london-life-grocery-shopping-alex": {
+    id: "london-life-grocery-shopping-alex",
+    name: "Alex",
+    role: "Shop Assistant",
+    avatar:
+      "/images/characters/london-life/alex-shop-assistant.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "ash",
+    theme: "emerald",
+  },
+
+  "london-life-grocery-shopping-maya": {
+    id: "london-life-grocery-shopping-maya",
+    name: "Maya",
+    role: "Cashier",
+    avatar:
+      "/images/characters/london-life/maya-cashier.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "nova",
+    theme: "emerald",
+  },
+
+  "london-life-getting-a-mobile-plan-nina": {
+    id: "london-life-getting-a-mobile-plan-nina",
+    name: "Nina",
+    role: "Mobile Adviser",
+    avatar:
+      "/images/characters/london-life/nina-mobile-adviser.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "coral",
+    theme: "blue",
+  },
+
+  "london-life-at-the-pharmacy-olivia": {
+    id: "london-life-at-the-pharmacy-olivia",
+    name: "Olivia",
+    role: "Pharmacist",
+    avatar:
+      "/images/characters/london-life/olivia-pharmacist-v2.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "shimmer",
+    theme: "rose",
+  },
+
+  "london-life-booking-a-gp-appointment-sarah": {
+    id: "london-life-booking-a-gp-appointment-sarah",
+    name: "Sarah",
+    role: "Receptionist",
+    avatar:
+      "/images/characters/london-life/sarah-receptionist.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "sage",
+    theme: "blue",
+  },
+
+  "london-life-post-office-henry": {
+    id: "london-life-post-office-henry",
+    name: "Henry",
+    role: "Postal Clerk",
+    avatar:
+      "/images/characters/london-life/henry-postal-clerk.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "echo",
+    theme: "blue",
+  },
+
+  "london-life-opening-a-bank-account-ethan": {
+    id: "london-life-opening-a-bank-account-ethan",
+    name: "Ethan",
+    role: "Bank Adviser",
+    avatar:
+      "/images/characters/london-life/ethan-bank-adviser.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "echo",
+    theme: "blue",
+  },
+
+  "london-life-setting-up-utilities-grace": {
+    id: "london-life-setting-up-utilities-grace",
+    name: "Grace",
+    role: "Customer Service Adviser",
+    avatar:
+      "/images/characters/london-life/grace-utilities-adviser.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "ballad",
+    theme: "blue",
+  },
+
+  "london-life-reporting-a-problem-daniel": {
+    id: "london-life-reporting-a-problem-daniel",
+    name: "Daniel",
+    role: "Landlord",
+    avatar:
+      "/images/characters/daniel/daniel.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "onyx",
+    theme: "slate",
+  },
+
+  "london-life-at-the-launderette-chloe": {
+    id: "london-life-at-the-launderette-chloe",
+    name: "Chloe",
+    role: "Launderette Assistant",
+    avatar:
+      "/images/characters/london-life/chloe-launderette-assistant.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "fable",
+    theme: "blue",
+  },
+
+  "london-life-buying-a-travelcard-marcus": {
+    id: "london-life-buying-a-travelcard-marcus",
+    name: "Marcus",
+    role: "Station Assistant",
+    avatar:
+      "/images/characters/london-life/marcus-station-assistant.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "cedar",
+    theme: "blue",
+  },
 };
 
-export function getNPC(
+export function getNPCById(
   id: string | null | undefined,
 ): NPC | null {
   if (!id) {
@@ -110,6 +278,12 @@ export function getNPC(
   return NPCS[id.trim().toLowerCase()] ?? null;
 }
 
+export function getNPC(
+  id: string | null | undefined,
+): NPC | null {
+  return getNPCById(id);
+}
+
 export function getNPCBySpeaker(
   speaker: string | null | undefined,
 ): NPC | null {
@@ -117,9 +291,7 @@ export function getNPCBySpeaker(
     return null;
   }
 
-  const normalized = speaker
-    .trim()
-    .toLowerCase();
+  const normalized = speaker.trim().toLowerCase();
 
   return (
     Object.values(NPCS).find(

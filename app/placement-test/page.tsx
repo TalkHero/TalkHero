@@ -312,6 +312,8 @@ const TOPIC_LABELS: Record<string, string> = {
     "Особиста інформація",
   daily_life:
     "Повсякденне життя",
+  present_simple:
+    "Теперішній час",
   past_simple:
     "Минулий час",
   description:
@@ -328,6 +330,16 @@ const TOPIC_LABELS: Record<string, string> = {
     "Аргументація",
   hypothetical_reasoning:
     "Гіпотетичне міркування",
+  abstract_discussion:
+    "Абстрактне обговорення",
+  problem_solving:
+    "Розв’язання проблем",
+  critical_evaluation:
+    "Критичне оцінювання",
+  abstract_synthesis:
+    "Синтез абстрактних ідей",
+  perspective_analysis:
+    "Аналіз точок зору",
 };
 
 export default function PlacementTestPage() {
@@ -387,20 +399,40 @@ useEffect(() => {
       );
     }, [progress]);
 
-  function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
+  async function handleSubmit(
+  event: FormEvent<HTMLFormElement>,
+) {
+  event.preventDefault();
+
+  if (
+    isSubmitting ||
+    !answer.trim()
   ) {
-    event.preventDefault();
-
-    if (
-      isSubmitting ||
-      !answer.trim()
-    ) {
-      return;
-    }
-
-    void submitAnswer(answer);
+    return;
   }
+
+  const submittedAnswer = answer;
+
+  /*
+   * Clear immediately so the previous answer can never
+   * appear under the next question while React is
+   * switching question state.
+   */
+  setAnswer("");
+
+  const submittedSuccessfully =
+    await submitAnswer(submittedAnswer);
+
+  /*
+   * If the request failed before the answer was accepted,
+   * restore what the learner typed so they can retry.
+   */
+  if (!submittedSuccessfully) {
+    setAnswer(submittedAnswer);
+  }
+}
+
+
 
   if (
     status === "idle" ||

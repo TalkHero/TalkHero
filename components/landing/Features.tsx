@@ -9,6 +9,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
+import Link from "next/link";
 
 const features = [
   {
@@ -16,27 +17,30 @@ const features = [
     description:
       "Говоріть англійською вголос і тренуйте впевненість у реальних діалогах.",
     visual: "speaking",
+    href: "/speaking",
   },
   {
     title: "Миттєві виправлення",
     description:
       "Emma пояснює помилки зрозумілою українською та показує правильний варіант.",
     visual: "corrections",
+    href: "/chat",
   },
   {
     title: "Розумний словник",
     description:
       "Нові слова зберігаються для повторення та поступово закріплюються в пам’яті.",
     visual: "vocabulary",
+    href: "/vocabulary",
   },
   {
     title: "Прогрес і мотивація",
     description:
       "XP, серії занять і досягнення допомагають бачити результат і не втрачати темп.",
     visual: "progress",
+    href: "/profile",
   },
 ];
-
 function SpeakingVisual() {
   return (
     <div className="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4">
@@ -253,10 +257,13 @@ export function Features() {
                   {feature.description}
                 </p>
 
-                <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600">
-                  Дізнатися більше
-                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                </div>
+                <Link
+  href={feature.href}
+  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 transition hover:text-indigo-800"
+>
+  Дізнатися більше
+  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+</Link>
               </div>
             </div>
           ))}

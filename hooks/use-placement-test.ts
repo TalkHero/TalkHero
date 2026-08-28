@@ -108,8 +108,8 @@ interface UsePlacementTestResult {
 
   startTest: () => Promise<void>;
   submitAnswer: (
-    answer: string,
-  ) => Promise<void>;
+  answer: string,
+) => Promise<boolean>;
   retryFinish: () => Promise<void>;
 }
 
@@ -222,54 +222,56 @@ export function usePlacementTest():
   const startedRef = useRef(false);
 
   const finishTest = useCallback(
-    async (
-      activeSessionId: string,
-    ): Promise<void> => {
-      setStatus("finishing");
-      setError(null);
+  async (
+    activeSessionId: string,
+  ): Promise<void> => {
+    setStatus("finishing");
+    setError(null);
 
-      try {
-        const response = await fetch(
-          "/api/placement-test/finish",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              sessionId:
-                activeSessionId,
-            }),
+    try {
+      const response = await fetch(
+        "/api/placement-test/finish",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
           },
+          body: JSON.stringify({
+            sessionId:
+              activeSessionId,
+          }),
+        },
+      );
+
+      const finalResult =
+        await parseApiResponse<PlacementFinalResult>(
+          response,
         );
 
-        const finalResult =
-          await parseApiResponse<PlacementFinalResult>(
-            response,
-          );
+      setResult(finalResult);
+      setQuestion(null);
+      setProgress(null);
+      setStatus("completed");
+    } catch (finishError) {
+      console.warn(
+        "Failed to finish placement test:",
+        finishError,
+      );
 
-        setResult(finalResult);
-        setQuestion(null);
-        setProgress(null);
-        setStatus("completed");
-      } catch (finishError) {
-        console.warn(
-  "Failed to finish placement test:",
-  finishError,
+      setError(
+        finishError instanceof Error
+          ? finishError.message
+          : DEFAULT_ERROR,
+      );
+
+      setStatus("error");
+    }
+  },
+  [],
 );
 
-        setError(
-          finishError instanceof Error
-            ? finishError.message
-            : DEFAULT_ERROR,
-        );
 
-        setStatus("error");
-      }
-    },
-    [],
-  );
 
   const startTest =
     useCallback(async (): Promise<void> => {
@@ -349,112 +351,116 @@ export function usePlacementTest():
     }, [finishTest]);
 
   const submitAnswer = useCallback(
-    async (
-      answer: string,
-    ): Promise<void> => {
-      const normalizedAnswer =
-        answer.trim();
+  async (
+    answer: string,
+  ): Promise<boolean> => {
+    const normalizedAnswer =
+      answer.trim();
+
+    if (
+      !sessionId ||
+      !question ||
+      !normalizedAnswer ||
+      status === "answering" ||
+      status === "finishing"
+    ) {
+      return false;
+    }
+
+    setStatus("answering");
+    setError(null);
+    setEvaluation(null);
+
+    try {
+      const response = await fetch(
+        "/api/placement-test/answer",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            sessionId,
+            questionId:
+              question.id,
+            answer:
+              normalizedAnswer,
+          }),
+        },
+      );
+
+      const answerResponse =
+        await parseApiResponse<AnswerPlacementResponse>(
+          response,
+        );
+
+      setEvaluation(
+        answerResponse.evaluation,
+      );
 
       if (
-        !sessionId ||
-        !question ||
-        !normalizedAnswer ||
-        status === "answering" ||
-        status === "finishing"
+        answerResponse.completed ||
+        !answerResponse.nextQuestion
       ) {
-        return;
-      }
-
-      setStatus("answering");
-      setError(null);
-      setEvaluation(null);
-
-      try {
-        const response = await fetch(
-          "/api/placement-test/answer",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              sessionId,
-              questionId:
-                question.id,
-              answer:
-                normalizedAnswer,
-            }),
-          },
-        );
-
-        const answerResponse =
-          await parseApiResponse<AnswerPlacementResponse>(
-            response,
-          );
-
-        setEvaluation(
-          answerResponse.evaluation,
-        );
-
-        if (
-  answerResponse.completed ||
-  !answerResponse.nextQuestion
-) {
-  /*
-   * The answer has already been saved.
-   * Remove the question before finishing so it cannot
-   * be submitted for a second time.
-   */
-  setQuestion(null);
-  setProgress(null);
-
-  await finishTest(sessionId);
-
-  return;
-}
-
-        setQuestion(
-          answerResponse.nextQuestion,
-        );
-
-        setProgress(
-          answerResponse.progress ??
-            createProgress({
-              currentQuestionIndex:
-                answerResponse.currentQuestionIndex,
-              totalQuestions:
-                answerResponse.totalQuestions,
-            }),
-        );
-
-        setStatus("active");
-      } catch (answerError) {
-        console.warn(
-  "Failed to submit placement answer:",
-  answerError,
-);
-
-        setError(
-          answerError instanceof Error
-            ? answerError.message
-            : DEFAULT_ERROR,
-        );
-
         /*
-         * Keep the current question available so the
-         * user can retry without losing their answer.
+         * The answer has already been saved.
+         * Remove the question before finishing so it
+         * cannot be submitted for a second time.
          */
-        setStatus("active");
+        setQuestion(null);
+        setProgress(null);
+
+        await finishTest(sessionId);
+
+        return true;
       }
-    },
-    [
-      finishTest,
-      question,
-      sessionId,
-      status,
-    ],
-  );
+
+      setQuestion(
+        answerResponse.nextQuestion,
+      );
+
+      setProgress(
+        answerResponse.progress ??
+          createProgress({
+            currentQuestionIndex:
+              answerResponse.currentQuestionIndex,
+            totalQuestions:
+              answerResponse.totalQuestions,
+          }),
+      );
+
+      setStatus("active");
+
+      return true;
+    } catch (answerError) {
+      console.warn(
+        "Failed to submit placement answer:",
+        answerError,
+      );
+
+      setError(
+        answerError instanceof Error
+          ? answerError.message
+          : DEFAULT_ERROR,
+      );
+
+      /*
+       * Keep the current question available so the
+       * user can retry without losing their answer.
+       */
+      setStatus("active");
+
+      return false;
+    }
+  },
+  [
+    finishTest,
+    question,
+    sessionId,
+    status,
+  ],
+);
 
   const retryFinish =
     useCallback(async (): Promise<void> => {

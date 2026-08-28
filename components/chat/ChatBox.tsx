@@ -44,6 +44,15 @@ export function ChatBox() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  const [autoPlaybackEnabled, setAutoPlaybackEnabled] =
+  useState(false);
+
+const autoPlaybackReadyRef = useRef(false);
+
+const lastAutoPlayedMessageIdRef =
+  useRef<string | null>(null);
 
   const [xpToast, setXpToast] = useState<XpToastData | null>(null);
   const [dailyStreak, setDailyStreak] = useState<DailyStreak | null>(null);
@@ -51,25 +60,27 @@ export function ChatBox() {
     useState<UnlockedAchievement | null>(null);
 
   const achievementQueue = useRef<UnlockedAchievement[]>([]);
+  const shouldAutoPlayOpeningMessageRef =
+  useRef(false);
 
-  const {
-    messages,
-    setMessages,
-    conversations,
-    conversationId,
-    setConversationId,
-    historyLoading,
-    deletingConversationId,
-    renamingConversationId,
-    controlsDisabled,
-    loadConversations,
-    startNewConversation,
-    openConversation,
-    renameConversation,
-    deleteConversation,
-  } = useConversationManager({
-    chatLoading: loading,
-  });
+ const {
+  messages,
+  setMessages,
+  conversations,
+  conversationId,
+  setConversationId,
+  historyLoading,
+  deletingConversationId,
+  renamingConversationId,
+  controlsDisabled,
+  loadConversations,
+  startNewConversation,
+  openConversation,
+  renameConversation,
+  deleteConversation,
+} = useConversationManager({
+  chatLoading: loading,
+});
 
   const {
     selectedWord,
@@ -89,6 +100,16 @@ export function ChatBox() {
     resetSpeech,
   } = useSpeechControls();
 
+  useEffect(() => {
+  const savedValue = window.localStorage.getItem(
+    "talkhero:auto-playback",
+  );
+
+  setAutoPlaybackEnabled(
+    savedValue === "true",
+  );
+}, []);
+
   const {
     isSupported: isRecognitionSupported,
     isListening,
@@ -102,11 +123,110 @@ export function ChatBox() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+  setMounted(true);
+}, []);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "end",
     });
   }, [messages, loading]);
+
+  useEffect(() => {
+  /*
+   * When another conversation is opened,
+   * treat its existing messages as history.
+   * Never autoplay the last historical Emma message.
+   */
+
+
+  if (historyLoading || loading) {
+    return;
+  }
+
+  const lastAssistantMessage =
+    [...messages]
+      .reverse()
+      .find(
+        (message) =>
+          message.role === "assistant" &&
+          message.content.trim().length > 0,
+      ) ?? null;
+
+  /*
+   * First stable render after history/new conversation:
+   * remember the current Emma message but do not play it.
+   */
+  if (!autoPlaybackReadyRef.current) {
+  autoPlaybackReadyRef.current = true;
+
+  if (
+    shouldAutoPlayOpeningMessageRef.current &&
+    autoPlaybackEnabled &&
+    isSpeechSupported &&
+    lastAssistantMessage
+  ) {
+    shouldAutoPlayOpeningMessageRef.current =
+      false;
+
+    lastAutoPlayedMessageIdRef.current =
+      lastAssistantMessage.id;
+
+    handleSpeakMessage(lastAssistantMessage);
+
+    return;
+  }
+
+  shouldAutoPlayOpeningMessageRef.current =
+    false;
+
+  lastAutoPlayedMessageIdRef.current =
+    lastAssistantMessage?.id ?? null;
+
+  return;
+}
+
+  if (
+    !autoPlaybackEnabled ||
+    !isSpeechSupported ||
+    !lastAssistantMessage ||
+    lastAssistantMessage.id ===
+      lastAutoPlayedMessageIdRef.current
+  ) {
+    return;
+  }
+
+  lastAutoPlayedMessageIdRef.current =
+    lastAssistantMessage.id;
+
+  handleSpeakMessage(lastAssistantMessage);
+}, [
+  autoPlaybackEnabled,
+  conversationId,
+  handleSpeakMessage,
+  historyLoading,
+  isSpeechSupported,
+  loading,
+  messages,
+]);
+
+  function handleAutoPlaybackToggle() {
+  setAutoPlaybackEnabled((current) => {
+    const nextValue = !current;
+
+    window.localStorage.setItem(
+      "talkhero:auto-playback",
+      String(nextValue),
+    );
+
+    if (!nextValue) {
+      handleStopSpeaking();
+    }
+
+    return nextValue;
+  });
+}
 
   function handleStartNewConversation() {
     const started = startNewConversation();
@@ -114,6 +234,9 @@ export function ChatBox() {
     if (!started) {
       return;
     }
+
+    shouldAutoPlayOpeningMessageRef.current =
+  autoPlaybackEnabled;
 
     resetSpeech();
     stopListening();
@@ -125,7 +248,9 @@ export function ChatBox() {
     if (loading || deletingConversationId || id === conversationId) {
       return;
     }
-
+autoPlaybackReadyRef.current = false;
+lastAutoPlayedMessageIdRef.current = null;
+shouldAutoPlayOpeningMessageRef.current = false;
     resetSpeech();
     stopListening();
     clearSelectedWord();
@@ -333,7 +458,48 @@ export function ChatBox() {
             </p>
           </div>
 
-          <StreakBadge streak={dailyStreak} />
+          <div className="flex items-center gap-3">
+  {mounted && isSpeechSupported && (
+  <button
+      type="button"
+      role="switch"
+      aria-checked={autoPlaybackEnabled}
+      onClick={handleAutoPlaybackToggle}
+      className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+      title="Автоматично озвучувати нові відповіді Emma"
+    >
+      <Volume2
+        className={`h-4 w-4 ${
+          autoPlaybackEnabled
+            ? "text-indigo-600"
+            : "text-slate-400"
+        }`}
+      />
+
+      <span className="hidden sm:inline">
+        Автоозвучення
+      </span>
+
+      <span
+        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition ${
+          autoPlaybackEnabled
+            ? "bg-indigo-600"
+            : "bg-slate-300"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+            autoPlaybackEnabled
+              ? "translate-x-[22px]"
+              : "translate-x-0.5"
+          }`}
+        />
+      </span>
+    </button>
+  )}
+
+  <StreakBadge streak={dailyStreak} />
+</div>
         </div>
 
         {historyLoading ? (

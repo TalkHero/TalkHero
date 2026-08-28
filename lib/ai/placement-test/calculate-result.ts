@@ -158,21 +158,52 @@ function calculateLevelPerformance(
 ): PlacementLevelPerformance[] {
   return CEFR_LEVELS.map((level) => {
     const matchingQuestions = questions.filter(
-      (question) => question.targetLevel === level,
+      (question) =>
+        question.targetLevel === level,
     );
 
     const averageScore = roundScore(
-      average(matchingQuestions.map((question) => question.overallScore)),
+      average(
+        matchingQuestions.map(
+          (question) =>
+            question.overallScore,
+        ),
+      ),
     );
+
+    const demonstratedLevelCount =
+      matchingQuestions.filter(
+        (question) =>
+          getLevelIndex(
+            question.estimatedLevel,
+          ) >= getLevelIndex(level),
+      ).length;
+
+    const requiredLevelEvidence =
+      Math.ceil(
+        matchingQuestions.length / 2,
+      );
+
+    const hasEnoughEvaluatorEvidence =
+      matchingQuestions.length > 0 &&
+      demonstratedLevelCount >=
+        requiredLevelEvidence;
 
     return {
       level,
-      questionCount: matchingQuestions.length,
+      questionCount:
+        matchingQuestions.length,
       averageScore,
       passed:
-        matchingQuestions.length > 0 && averageScore >= PASSING_LEVEL_SCORE,
+        matchingQuestions.length > 0 &&
+        averageScore >=
+          PASSING_LEVEL_SCORE &&
+        hasEnoughEvaluatorEvidence,
     };
-  }).filter((performance) => performance.questionCount > 0);
+  }).filter(
+    (performance) =>
+      performance.questionCount > 0,
+  );
 }
 
 function calculateConfirmedLevel(
@@ -291,37 +322,61 @@ function calculateFinalLevel(
   questions: ScoredPlacementQuestion[],
   confirmedLevel: CEFRLevel,
 ): CEFRLevel {
-  const performanceAbility = calculatePerformanceAbility(questions);
-
-  const evaluatorAbility = calculateEvaluatorAbility(questions);
+  const levelPerformance = calculateLevelPerformance(questions);
 
   const confirmedLevelIndex = getLevelIndex(confirmedLevel);
 
-  /*
-   * The final estimate combines:
-   * - demonstrated performance against difficulty;
-   * - per-answer CEFR estimates;
-   * - the highest consistently confirmed level.
-   */
-  const combinedAbility =
-    performanceAbility * 0.55 +
-    evaluatorAbility * 0.4 +
-    confirmedLevelIndex * 0.05;
+  const confirmedPerformance = levelPerformance.find(
+    (performance) => performance.level === confirmedLevel,
+  );
 
-  const highestTargetLevelIndex = Math.max(
-    ...questions.map((question) => getLevelIndex(question.targetLevel)),
+  const nextLevelIndex = confirmedLevelIndex + 1;
+
+  if (nextLevelIndex >= CEFR_LEVELS.length) {
+    return confirmedLevel;
+  }
+
+  const nextLevel = CEFR_LEVELS[nextLevelIndex];
+
+  const nextPerformance = levelPerformance.find(
+    (performance) => performance.level === nextLevel,
   );
 
   /*
-   * Do not assign more than one CEFR band above the
-   * hardest level that was actually tested.
+   * No evidence for the next level means we keep
+   * the highest consistently confirmed level.
    */
-  const maximumAllowedLevel = Math.min(
-    CEFR_LEVELS.length - 1,
-    highestTargetLevelIndex + 1,
-  );
+  if (!nextPerformance) {
+    return confirmedLevel;
+  }
 
-  return getLevelByIndex(clamp(combinedAbility, 0, maximumAllowedLevel));
+  /*
+   * Higher CEFR levels require slightly stronger
+   * evidence because the placement test contains
+   * fewer advanced questions.
+   */
+  const promotionThreshold =
+    nextLevel === "C1" || nextLevel === "C2"
+      ? 72
+      : 68;
+
+  /*
+   * Do not promote when the confirmed level itself
+   * was only barely demonstrated.
+   */
+  const confirmedLevelIsStable =
+    !confirmedPerformance ||
+    confirmedPerformance.averageScore >= PASSING_LEVEL_SCORE;
+
+  if (
+  confirmedLevelIsStable &&
+  nextPerformance.passed &&
+  nextPerformance.averageScore >= promotionThreshold
+) {
+  return nextLevel;
+}
+
+  return confirmedLevel;
 }
 
 function calculateConfidence({
@@ -333,13 +388,21 @@ function calculateConfidence({
   finalLevel: CEFRLevel;
   levelPerformance: PlacementLevelPerformance[];
 }): number {
-  const questionCountConfidence = clamp(questions.length / 12, 0, 1);
+  const questionCountConfidence = clamp(
+  questions.length / 16,
+  0,
+  1,
+);
 
   const testedLevels = new Set(
     questions.map((question) => question.targetLevel),
   );
 
-  const levelCoverageConfidence = clamp(testedLevels.size / 5, 0, 1);
+  const levelCoverageConfidence = clamp(
+  testedLevels.size / 6,
+  0,
+  1,
+);
 
   const questionScores = questions.map((question) => question.overallScore);
 

@@ -14,6 +14,10 @@ import type {
 } from "@/lib/ai/placement-test";
 import { API_ERRORS } from "@/lib/i18n/errors";
 import { createClient } from "@/lib/supabase/server";
+import {
+  decideAdaptiveProgress,
+  type AdaptiveQuestionResult,
+} from "@/lib/ai/placement-test/adaptive-plan";
 
 const MAX_ANSWER_LENGTH = 10_000;
 const MAX_DATABASE_INSERT_ATTEMPTS = 4;
@@ -347,18 +351,109 @@ async function saveEvaluation(
     | null;
 }
 
+interface AdaptiveQuestionRow {
+  target_level: CEFRLevel;
+  estimated_level: CEFRLevel | null;
+  grammar_score: number | null;
+  vocabulary_score: number | null;
+  comprehension_score: number | null;
+  complexity_score: number | null;
+  task_completion_score: number | null;
+}
+
+async function getAdaptiveQuestionResults(
+  supabase: SupabaseClient,
+  sessionId: string,
+  userId: string,
+): Promise<AdaptiveQuestionResult[]> {
+  const { data, error } = await supabase
+    .from("placement_test_questions")
+    .select(
+      [
+        "target_level",
+        "estimated_level",
+        "grammar_score",
+        "vocabulary_score",
+        "comprehension_score",
+        "complexity_score",
+        "task_completion_score",
+      ].join(", "),
+    )
+    .eq("session_id", sessionId)
+    .eq("user_id", userId)
+    .not("answer", "is", null)
+    .order("question_index", {
+      ascending: true,
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  const rows =
+    (data ?? []) as unknown as
+      AdaptiveQuestionRow[];
+
+  return rows
+    .filter(
+      (
+        row,
+      ): row is AdaptiveQuestionRow & {
+        estimated_level: CEFRLevel;
+        grammar_score: number;
+        vocabulary_score: number;
+        comprehension_score: number;
+        complexity_score: number;
+        task_completion_score: number;
+      } =>
+        row.estimated_level !== null &&
+        typeof row.grammar_score === "number" &&
+        typeof row.vocabulary_score === "number" &&
+        typeof row.comprehension_score === "number" &&
+        typeof row.complexity_score === "number" &&
+        typeof row.task_completion_score === "number",
+    )
+    .map((row) => ({
+      targetLevel: row.target_level,
+      estimatedLevel: row.estimated_level,
+      grammar: row.grammar_score,
+      vocabulary: row.vocabulary_score,
+      comprehension: row.comprehension_score,
+      complexity: row.complexity_score,
+      taskCompletion:
+        row.task_completion_score,
+    }));
+}
+
 async function advancePlacementSession(
   supabase: SupabaseClient,
   {
     session,
     userId,
     nextQuestionIndex,
+    totalQuestions,
   }: {
     session: PlacementSessionRow;
     userId: string;
     nextQuestionIndex: number;
+    totalQuestions?: number;
   },
 ): Promise<PlacementSessionRow> {
+  const sessionUpdate: {
+    current_question_index: number;
+    total_questions?: number;
+  } = {
+    current_question_index:
+      nextQuestionIndex,
+  };
+
+  if (
+    typeof totalQuestions === "number"
+  ) {
+    sessionUpdate.total_questions =
+      totalQuestions;
+  }
+
   /*
    * Matching current_question_index makes this a
    * compare-and-set update and protects against
@@ -366,10 +461,7 @@ async function advancePlacementSession(
    */
   const { data, error } = await supabase
     .from("placement_test_sessions")
-    .update({
-      current_question_index:
-        nextQuestionIndex,
-    })
+    .update(sessionUpdate)
     .eq("id", session.id)
     .eq("user_id", userId)
     .eq("status", "in_progress")
@@ -394,7 +486,8 @@ async function advancePlacementSession(
   }
 
   if (data) {
-    return data as unknown as PlacementSessionRow;
+    return data as unknown as
+      PlacementSessionRow;
   }
 
   /*
@@ -410,7 +503,8 @@ async function advancePlacementSession(
 
   if (
     currentSession &&
-    currentSession.status === "in_progress" &&
+    currentSession.status ===
+      "in_progress" &&
     currentSession.current_question_index >=
       nextQuestionIndex
   ) {
@@ -781,22 +875,52 @@ export async function POST(request: Request) {
     }
 
     const nextQuestionIndex =
-      question.question_index + 1;
+  question.question_index + 1;
 
-    const updatedSession =
-      await advancePlacementSession(
-        supabase,
-        {
-          session,
-          userId: user.id,
-          nextQuestionIndex,
-        },
-      );
+const adaptiveResults =
+  await getAdaptiveQuestionResults(
+    supabase,
+    session.id,
+    user.id,
+  );
 
-    const testIsFinished =
-      nextQuestionIndex >=
-        updatedSession.total_questions ||
-      nextQuestionIndex >= TEST_PLAN.length;
+const adaptiveDecision =
+  decideAdaptiveProgress(
+    adaptiveResults,
+    question.target_level,
+  );
+
+const adaptiveFinish =
+  adaptiveDecision.action === "finish";
+
+/*
+ * When adaptive evaluation determines that enough
+ * evidence has been collected, shrink total_questions
+ * to the number of questions actually answered.
+ *
+ * /finish can then use its existing completeness checks
+ * without requiring unanswered future TEST_PLAN steps.
+ */
+const updatedSession =
+  await advancePlacementSession(
+    supabase,
+    {
+      session,
+      userId: user.id,
+      nextQuestionIndex,
+      totalQuestions:
+        adaptiveFinish
+          ? nextQuestionIndex
+          : undefined,
+    },
+  );
+
+const testIsFinished =
+  adaptiveFinish ||
+  nextQuestionIndex >=
+    updatedSession.total_questions ||
+  nextQuestionIndex >=
+    TEST_PLAN.length;
 
     const publicEvaluation = {
       grammar: evaluation.grammar,

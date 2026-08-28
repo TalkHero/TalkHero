@@ -87,14 +87,14 @@ export function ProductDemo() {
         </div>
 
         <div className="mt-8 flex justify-center">
-          <a
-            href="/register"
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
-          >
-            Почати перше заняття
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </div>
+  <a
+    href="/register"
+    className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-50"
+  >
+    Спробувати TalkHero
+    <ArrowRight className="h-4 w-4" />
+  </a>
+</div>
       </div>
     </section>
   );

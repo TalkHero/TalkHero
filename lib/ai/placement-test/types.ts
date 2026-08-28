@@ -18,7 +18,11 @@ export type PlacementSkill =
   | "comparison"
   | "argumentation"
   | "hypothetical_reasoning"
-  | "abstract_discussion";
+  | "abstract_discussion"
+  | "problem_solving"
+  | "critical_evaluation"
+  | "abstract_synthesis"
+  | "perspective_analysis";
 
 export type AnswerLength =
   | "short"
@@ -26,7 +30,6 @@ export type AnswerLength =
   | "long";
 
 export interface PlacementQuestion {
-
   question: string;
 
   questionKey: string;
@@ -39,7 +42,6 @@ export interface PlacementQuestion {
 }
 
 export interface PlacementEvaluation {
-
   grammar: number;
 
   vocabulary: number;

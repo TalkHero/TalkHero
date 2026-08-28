@@ -66,12 +66,6 @@ const PlacementQuestionSchema = z.object({
       /^[a-z0-9]+(?:_[a-z0-9]+)*$/,
       "questionKey must use snake_case",
     ),
-
-  level: z.enum(CEFR_LEVELS),
-
-  skill: z.enum(PLACEMENT_SKILLS),
-
-  expectedAnswerLength: z.enum(ANSWER_LENGTHS),
 });
 
 export interface GeneratePlacementQuestionParams {
@@ -214,23 +208,7 @@ function validateGeneratedQuestion(
   previousQuestions: string[],
   previousQuestionKeys: Set<string>,
 ): string | null {
-  if (candidate.level !== params.level) {
-    return `Wrong level: ${candidate.level}`;
-  }
 
-  if (candidate.skill !== params.skill) {
-    return `Wrong skill: ${candidate.skill}`;
-  }
-
-  if (
-    candidate.expectedAnswerLength !==
-    params.expectedAnswerLength
-  ) {
-    return (
-      "Wrong expected answer length: " +
-      candidate.expectedAnswerLength
-    );
-  }
 
   const normalizedKey = normalizeQuestionKey(
     candidate.questionKey,
@@ -324,16 +302,16 @@ export async function generatePlacementQuestion({
       }
 
       const candidate: PlacementQuestion = {
-        question: parsedQuestion.question.trim(),
-        questionKey: normalizeQuestionKey(
-          parsedQuestion.questionKey,
-        ),
-        level: parsedQuestion.level,
-        skill: parsedQuestion.skill,
-        expectedAnswerLength:
-          parsedQuestion.expectedAnswerLength,
-      };
+  question: parsedQuestion.question.trim(),
 
+  questionKey: normalizeQuestionKey(
+    parsedQuestion.questionKey,
+  ),
+
+  level,
+  skill,
+  expectedAnswerLength,
+};
       const rejectionReason =
         validateGeneratedQuestion(
           candidate,

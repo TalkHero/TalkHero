@@ -41,12 +41,12 @@ export function VideoDemo() {
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/register"
-            className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-6 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 sm:w-auto"
-          >
-            Почати безкоштовно
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+  href="/register"
+  className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-indigo-200 bg-white px-6 text-sm font-bold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-50 sm:w-auto"
+>
+  Спробувати TalkHero
+  <ArrowRight className="h-4 w-4" />
+</Link>
 
           <div className="inline-flex items-center gap-2 text-sm font-medium text-slate-500">
             <Sparkles className="h-4 w-4 text-indigo-500" />
