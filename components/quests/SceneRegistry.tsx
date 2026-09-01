@@ -7,6 +7,7 @@ import type { PublicQuestScene } from "@/lib/quests";
 import { ChoiceScene } from "./scenes/ChoiceScene";
 import { DialogueScene } from "./scenes/DialogueScene";
 import { InputScene } from "./scenes/InputScene";
+import { NarrationScene } from "./scenes/NarrationScene";
 import { TranslateScene } from "./scenes/TranslateScene";
 import { VoiceScene } from "./scenes/VoiceScene";
 
@@ -16,6 +17,20 @@ export type RegisteredSceneProps = {
   onContinue: () => void;
   onSubmit: (value: unknown) => Promise<void>;
 };
+
+function NarrationSceneAdapter({
+  scene,
+  loading,
+  onContinue,
+}: RegisteredSceneProps) {
+  return (
+    <NarrationScene
+      scene={scene}
+      loading={loading}
+      onContinue={onContinue}
+    />
+  );
+}
 
 function DialogueSceneAdapter({
   scene,
@@ -93,7 +108,7 @@ export const SCENE_REGISTRY: Partial<
     ComponentType<RegisteredSceneProps>
   >
 > = {
-  narration: DialogueSceneAdapter,
+  narration: NarrationSceneAdapter,
   dialogue: DialogueSceneAdapter,
   completion: DialogueSceneAdapter,
   choice: ChoiceSceneAdapter,

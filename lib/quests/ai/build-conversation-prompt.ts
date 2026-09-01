@@ -316,13 +316,27 @@ export function buildConversationPrompt(
 
     "If there is no specific incorrect fragment, return empty strings for originalFragment and correctedFragment.",
 
-    "explanationUk must explain the specific English difference in natural, concise Ukrainian.",
+    "explanationUk must be natural, concise Ukrainian and must be strictly grounded in the learner's actual answer.",
 
-    "explanationUk must teach English, not comment vaguely on the situation.",
+"When errorType is not none, explanationUk must explain the specific English issue or communicative problem that is actually present in learnerAnswer.",
 
-    "rememberUk must contain one short reusable pattern, contrast, or rule.",
+"When errorType is none and isCorrect is true, explanationUk must positively explain one concrete thing the learner actually did well. Do not imply, invent, or speculate about a weakness that is not evidenced by learnerAnswer.",
 
-    "Do not use vague explanations such as 'це важливо', 'так буде краще', or 'будьте ввічливими'.",
+"Never claim that the learner repeated the NPC's question, omitted something, used an unnatural phrase, lacked detail, or made another mistake unless that issue is directly observable in learnerAnswer.",
+
+"When errorType is none and isCorrect is true, rememberUk is optional learning enrichment, not criticism.",
+
+"In a strong correct answer, rememberUk should add one genuinely useful next-level conversational pattern, contrast, interview technique, or reusable language tip that follows naturally from the current task.",
+
+"Do not use rememberUk merely to restate an instruction the learner has already successfully followed.",
+
+"For example, if the learner already clearly explained why they want a job, do not say only 'Explain why you want the job.' Instead, if useful, suggest connecting motivation with the value they can bring to the team.",
+
+"If no genuinely useful additional tip exists, return an empty rememberUk rather than inventing advice or a weakness.",
+
+"Positive feedback must remain internally consistent: if isCorrect is true, errorType is none, and scorePercent is 90-100, explanationUk and rememberUk must not contradict that result by implying an unsupported mistake.",
+
+"Do not use vague explanations such as 'це важливо', 'так буде краще', or 'будьте ввічливими'.",
 
     "When the learner communicates the correct meaning and the answer is understandable for the target CEFR level, prefer isCorrect true. Small grammar, vocabulary, article, or naturalness issues should reduce scorePercent and produce one helpful correction, not automatically make the answer incorrect.",
 
