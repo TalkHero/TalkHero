@@ -334,9 +334,6 @@ function buildFeedback(evaluation: AIConversationEvaluation): string {
     parts.push(`Запам'ятайте: ${evaluation.rememberUk}`);
   }
 
-  if (evaluation.npcReply) {
-    parts.push(`Відповідь персонажа: ${evaluation.npcReply}`);
-  }
 
   return parts.filter(Boolean).join("\n\n");
 }

@@ -256,25 +256,39 @@ async function saveSubmittedConversation({
     });
   }
 
-  if (evaluation.mode === "ai") {
-    const npcReply = getAiNpcReply(evaluation);
+  const aiConversation =
+    scene.metadata?.aiConversation === true;
+
+  if (
+    evaluation.mode === "ai" &&
+    aiConversation
+  ) {
+    const npcReply =
+      getAiNpcReply(evaluation);
 
     if (npcReply) {
       await recordConversationMessage({
         runId: run.id,
         sceneId: scene.id,
-        messageKey: `scene:${scene.id}:attempt:${attemptNumber}:npc-ai`,
+        messageKey:
+          `scene:${scene.id}:attempt:${attemptNumber}:npc-ai`,
         role: "npc",
         speaker:
           scene.speaker ??
-          getMetadataString(scene.metadata, "role") ??
+          getMetadataString(
+            scene.metadata,
+            "role",
+          ) ??
           "Персонаж",
         content: npcReply,
         metadata: {
-          sceneCode: scene.scene_code,
+          sceneCode:
+            scene.scene_code,
           attemptNumber,
           generatedByAI: true,
-          scorePercent: evaluation.metadata?.scorePercent ?? null,
+          scorePercent:
+            evaluation.metadata
+              ?.scorePercent ?? null,
         },
       });
     }

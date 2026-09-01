@@ -1,4 +1,4 @@
-export type NPCEmotion =
+﻿export type NPCEmotion =
   | "happy"
   | "neutral"
   | "thinking"
@@ -266,6 +266,142 @@ export const NPCS: Record<string, NPC> = {
     voiceId: "cedar",
     theme: "blue",
   },
+
+  // ========================================================
+  // London Independence — B1
+  // ========================================================
+
+  "london-independence-job-interview-victoria": {
+    id: "london-independence-job-interview-victoria",
+    name: "Victoria",
+    role: "Hiring Manager",
+    avatar:
+      "/images/characters/london-independence/victoria-hiring-manager.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "shimmer",
+    theme: "slate",
+  },
+
+    "london-independence-first-day-at-work-nathan": {
+    id: "london-independence-first-day-at-work-nathan",
+    name: "Nathan",
+    role: "Team Lead",
+    avatar:
+      "/images/characters/london-independence/nathan-team-lead.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "cedar",
+    theme: "blue",
+  },
+
+    "london-independence-customer-support-harriet": {
+    id: "london-independence-customer-support-harriet",
+    name: "Harriet",
+    role: "Customer Support Agent",
+    avatar:
+      "/images/characters/london-independence/harriet-customer-support.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "coral",
+    theme: "rose",
+  },
+
+    "london-independence-returning-purchase-priya": {
+    id: "london-independence-returning-purchase-priya",
+    name: "Priya",
+    role: "Store Assistant",
+    avatar:
+      "/images/characters/london-independence/priya-store-assistant.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "sage",
+    theme: "violet",
+  },
+
+    "london-independence-dinner-with-friends-leo": {
+    id: "london-independence-dinner-with-friends-leo",
+    name: "Leo",
+    role: "Friend",
+    avatar:
+      "/images/characters/london-independence/leo-friend.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "ash",
+    theme: "amber",
+  },
+
+    "london-independence-weekend-trip-megan": {
+    id: "london-independence-weekend-trip-megan",
+    name: "Megan",
+    role: "Friend",
+    avatar:
+      "/images/characters/london-independence/megan-friend.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "marin",
+    theme: "emerald",
+  },
+
+    "london-independence-hotel-problem-george": {
+    id: "london-independence-hotel-problem-george",
+    name: "George",
+    role: "Hotel Receptionist",
+    avatar:
+      "/images/characters/london-independence/george-hotel-receptionist.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "echo",
+    theme: "slate",
+  },
+  "london-independence-missing-train-aisha": {
+    id: "london-independence-missing-train-aisha",
+    name: "Aisha",
+    role: "Station Supervisor",
+    avatar:
+      "/images/characters/london-independence/aisha-station-supervisor.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "nova",
+    theme: "rose",
+  },
+
+    "london-independence-at-the-doctor-eleanor": {
+    id: "london-independence-at-the-doctor-eleanor",
+    name: "Dr. Eleanor Price",
+    role: "GP",
+    avatar:
+      "/images/characters/london-independence/eleanor-gp.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "shimmer",
+    theme: "emerald",
+  },
+
+    "london-independence-office-meeting-monica": {
+    id: "london-independence-office-meeting-monica",
+    name: "Monica",
+    role: "Project Manager",
+    avatar:
+      "/images/characters/london-independence/monica-project-manager.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "coral",
+    theme: "amber",
+  },
+
+    "london-independence-making-new-friends-callum": {
+    id: "london-independence-making-new-friends-callum",
+    name: "Callum",
+    role: "Graphic Designer",
+    avatar:
+      "/images/characters/london-independence/callum-graphic-designer.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "ash",
+    theme: "violet",
+  },
+
 };
 
 export function getNPCById(

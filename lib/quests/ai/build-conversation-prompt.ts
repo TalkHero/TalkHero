@@ -201,6 +201,10 @@ export function buildConversationPrompt(
     "For example, after 'What size would you like?', 'A small one, please.' is fully acceptable because the drink is already established in context.",
     "For example, 'A coffee, please.' is valid English when ordering a drink. If the mission requires a more specific drink choice, ask a natural clarification in npcReply rather than treating the English itself as wrong.",
     "Do not invent a correction merely to make the learner answer more similar to a reference answer.",
+    "Do not replace one correct and natural expression with another merely because the reference answer uses different vocabulary.",
+    "If the learner says 'I don't have permission' and the reference says 'I don't have access', both can be correct when they naturally communicate the required meaning.",
+    "Vocabulary alternatives are not errors when the learner's wording is grammatical, natural, contextually appropriate, and preserves the intended meaning.",
+    "In that situation set isCorrect true, scorePercent 90-100, errorType none, and do not generate a corrective naturalAnswer.",
     "When no language correction is needed, use errorType none, naturalAnswer empty, originalFragment empty, correctedFragment empty, and explain positively in feedbackUk.",
 
     "errorKey must identify the reusable underlying language rule, not the complete learner sentence.",
