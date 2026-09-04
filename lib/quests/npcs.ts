@@ -402,6 +402,154 @@ export const NPCS: Record<string, NPC> = {
     theme: "violet",
   },
 
+    // ========================================================
+  // London Professional — B2
+  // ========================================================
+
+  "london-professional-salary-negotiation-richard": {
+    id: "london-professional-salary-negotiation-richard",
+    name: "Richard",
+    role: "Department Manager",
+    avatar:
+      "/images/characters/london-professional/richard-department-manager.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "cedar",
+    theme: "slate",
+  },
+
+  "london-professional-presenting-an-idea-sophie": {
+    id: "london-professional-presenting-an-idea-sophie",
+    name: "Sophie",
+    role: "Marketing Director",
+    avatar:
+      "/images/characters/london-professional/sophie-marketing-director.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "shimmer",
+    theme: "violet",
+  },
+
+  "london-professional-handling-criticism-daniel": {
+    id: "london-professional-handling-criticism-daniel",
+    name: "Daniel",
+    role: "Senior Project Lead",
+    avatar:
+      "/images/characters/london-professional/daniel-senior-project-lead.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "onyx",
+    theme: "slate",
+  },
+
+  "london-professional-team-conflict-emily": {
+    id: "london-professional-team-conflict-emily",
+    name: "Emily",
+    role: "HR Business Partner",
+    avatar:
+      "/images/characters/london-professional/emily-hr-business-partner.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "coral",
+    theme: "rose",
+  },
+
+  "london-professional-client-meeting-arjun": {
+    id: "london-professional-client-meeting-arjun",
+    name: "Arjun",
+    role: "Client Partner",
+    avatar:
+      "/images/characters/london-professional/arjun-client-partner.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "ash",
+    theme: "blue",
+  },
+
+  "london-professional-deadline-problem-chloe": {
+    id: "london-professional-deadline-problem-chloe",
+    name: "Chloe",
+    role: "Creative Lead",
+    avatar:
+      "/images/characters/london-professional/chloe-creative-lead.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "fable",
+    theme: "amber",
+  },
+
+  "london-professional-apartment-dispute-mark": {
+    id: "london-professional-apartment-dispute-mark",
+    name: "Mark",
+    role: "Operations Manager",
+    avatar:
+      "/images/characters/london-professional/mark-operations-manager.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "echo",
+    theme: "slate",
+  },
+
+  "london-professional-networking-event-isabella": {
+    id: "london-professional-networking-event-isabella",
+    name: "Isabella",
+    role: "Finance Controller",
+    avatar:
+      "/images/characters/london-professional/isabella-finance-controller.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "nova",
+    theme: "emerald",
+  },
+
+  "london-professional-giving-a-presentation-tom": {
+    id: "london-professional-giving-a-presentation-tom",
+    name: "Tom",
+    role: "Junior Analyst",
+    avatar:
+      "/images/characters/london-professional/tom-junior-analyst.png",
+    emotion: "encouraging",
+    accent: "british",
+    voiceId: "sage",
+    theme: "blue",
+  },
+
+  "london-professional-debating-an-issue-maya": {
+    id: "london-professional-debating-an-issue-maya",
+    name: "Maya",
+    role: "Product Manager",
+    avatar:
+      "/images/characters/london-professional/maya-product-manager.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "marin",
+    theme: "violet",
+  },
+
+  "london-professional-crisis-at-work-jonathan": {
+    id: "london-professional-crisis-at-work-jonathan",
+    name: "Jonathan",
+    role: "Executive Director",
+    avatar:
+      "/images/characters/london-professional/jonathan-executive-director.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "cedar",
+    theme: "slate",
+  },
+
+  "london-professional-promotion-laura": {
+    id: "london-professional-promotion-laura",
+    name: "Laura",
+    role: "Client Success Manager",
+    avatar:
+      "/images/characters/london-professional/laura-client-success-manager.png",
+    emotion: "encouraging",
+    accent: "british",
+    voiceId: "shimmer",
+    theme: "rose",
+  },
+
 };
 
 export function getNPCById(

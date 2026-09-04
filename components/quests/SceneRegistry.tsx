@@ -109,9 +109,8 @@ export const SCENE_REGISTRY: Partial<
   >
 > = {
   narration: NarrationSceneAdapter,
-  dialogue: DialogueSceneAdapter,
-  completion: DialogueSceneAdapter,
-  choice: ChoiceSceneAdapter,
+dialogue: DialogueSceneAdapter,
+choice: ChoiceSceneAdapter,
   input: InputSceneAdapter,
   translate: TranslateSceneAdapter,
   voice: VoiceSceneAdapter,

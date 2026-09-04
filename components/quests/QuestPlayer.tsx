@@ -87,6 +87,25 @@ useEffect(() => {
   onComplete,
 ]);
 
+useEffect(() => {
+  if (
+    quest.completed ||
+    quest.submitting ||
+    quest.scene?.sceneType !== "completion"
+  ) {
+    return;
+  }
+
+  void quest.submitAnswer({
+    userInput: null,
+  });
+}, [
+  quest.completed,
+  quest.submitting,
+  quest.scene?.sceneType,
+  quest.submitAnswer,
+]);
+
 const restartQuest = () => {
   trackedCompletionRef.current = false;
 
@@ -159,6 +178,29 @@ const restartQuest = () => {
       </main>
     );
   }
+
+  if (quest.scene?.sceneType === "completion") {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mx-auto flex min-h-[360px] w-full max-w-4xl items-center justify-center px-4 py-8 sm:px-6"
+    >
+      <Card className="w-full max-w-sm">
+        <CardContent className="flex items-center justify-center gap-3">
+          <Loader2
+            className="size-5 animate-spin text-primary"
+            aria-hidden="true"
+          />
+
+          <span className="text-sm text-muted-foreground">
+            Завершуємо місію…
+          </span>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
   const livingNPC = quest.scene?.metadata.aiConversation === true;
 
