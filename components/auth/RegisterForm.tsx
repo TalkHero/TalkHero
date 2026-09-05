@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -22,10 +22,29 @@ export function RegisterForm() {
   const [googleLoading, setGoogleLoading] =
     useState(false);
 
+  const signUpStartedTracked =
+    useRef(false);
+
+  function trackSignUpStarted(
+    method: "email" | "google",
+  ) {
+    if (signUpStartedTracked.current) {
+      return;
+    }
+
+    signUpStartedTracked.current = true;
+
+    trackEvent("sign_up_started", {
+      method,
+    });
+  }
+
   async function handleGoogleRegister() {
     if (googleLoading) {
       return;
     }
+
+    trackSignUpStarted("google");
 
     setGoogleLoading(true);
 
@@ -206,6 +225,9 @@ export function RegisterForm() {
             type="text"
             autoComplete="name"
             value={fullName}
+            onFocus={() => {
+              trackSignUpStarted("email");
+            }}
             onChange={(event) => {
               setFullName(
                 event.target.value,
@@ -234,6 +256,9 @@ export function RegisterForm() {
             autoComplete="email"
             inputMode="email"
             value={email}
+            onFocus={() => {
+              trackSignUpStarted("email");
+            }}
             onChange={(event) => {
               setEmail(
                 event.target.value,
@@ -261,6 +286,9 @@ export function RegisterForm() {
             type="password"
             autoComplete="new-password"
             value={password}
+            onFocus={() => {
+              trackSignUpStarted("email");
+            }}
             onChange={(event) => {
               setPassword(
                 event.target.value,

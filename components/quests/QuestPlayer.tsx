@@ -37,9 +37,10 @@ export function QuestPlayer({
 const quest = useQuest();
 const { startQuest } = quest;
 
+const trackedStartRef = useRef(false);
 const trackedCompletionRef = useRef(false);
-
 useEffect(() => {
+  trackedStartRef.current = false;
   trackedCompletionRef.current = false;
 
   void startQuest({
@@ -52,6 +53,34 @@ useEffect(() => {
   episodeSlug,
   questSlug,
   startQuest,
+]);
+
+useEffect(() => {
+  if (
+    quest.loading ||
+    quest.error ||
+    !quest.runId ||
+    !quest.scene ||
+    trackedStartRef.current
+  ) {
+    return;
+  }
+
+  trackedStartRef.current = true;
+
+  trackEvent("quest_started", {
+    campaign: campaignSlug,
+    episode: episodeSlug,
+    quest: questSlug,
+  });
+}, [
+  quest.loading,
+  quest.error,
+  quest.runId,
+  quest.scene,
+  campaignSlug,
+  episodeSlug,
+  questSlug,
 ]);
 
 useEffect(() => {
@@ -107,6 +136,7 @@ useEffect(() => {
 ]);
 
 const restartQuest = () => {
+  trackedStartRef.current = false;
   trackedCompletionRef.current = false;
 
   void startQuest({

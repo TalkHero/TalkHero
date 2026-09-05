@@ -533,10 +533,12 @@ export function SpeakingSession() {
       }
 
       if (typeof data.message !== "string") {
-        throw new Error("Початкове повідомлення відсутнє.");
-      }
+  throw new Error("Початкове повідомлення відсутнє.");
+}
 
-      const openingMessage = data.message;
+trackEvent("speaking_started");
+
+const openingMessage = data.message;
 
       const openingMessageId = crypto.randomUUID();
 

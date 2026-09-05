@@ -1,9 +1,13 @@
 export type AnalyticsEventName =
+  | "sign_up_started"
   | "sign_up"
   | "login"
+  | "placement_test_started"
   | "placement_test_completed"
-  | "speaking_completed"
+  | "quest_started"
   | "quest_completed"
+  | "speaking_started"
+  | "speaking_completed"
   | "vocabulary_word_learned";
 
 type AnalyticsEventParams = Record<

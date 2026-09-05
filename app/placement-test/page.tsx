@@ -357,11 +357,30 @@ export default function PlacementTestPage() {
 
   const [answer, setAnswer] =
     useState("");
+    const trackedStartRef =
+  useRef(false);
 const trackedCompletionRef =
   useRef(false);
   useEffect(() => {
     setAnswer("");
   }, [question?.id]);
+
+  useEffect(() => {
+  if (
+    status !== "active" ||
+    !question ||
+    trackedStartRef.current
+  ) {
+    return;
+  }
+
+  trackedStartRef.current = true;
+
+  trackEvent("placement_test_started", {
+    level: question.level,
+    skill: question.skill,
+  });
+}, [status, question]);
 useEffect(() => {
   if (
     status !== "completed" ||
