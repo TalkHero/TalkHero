@@ -550,6 +550,153 @@ export const NPCS: Record<string, NPC> = {
     theme: "rose",
   },
 
+    // ========================================================
+  // London Advanced — C1
+  // ========================================================
+
+  "london-advanced-difficult-interview-evelyn": {
+    id: "london-advanced-difficult-interview-evelyn",
+    name: "Evelyn",
+    role: "Senior Hiring Director",
+    avatar:
+      "/images/characters/london-advanced/evelyn-senior-hiring-director.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "verse",
+    theme: "slate",
+  },
+
+     "london-advanced-pitching-to-investors-marcus": {
+    id: "london-advanced-pitching-to-investors-marcus",
+    name: "Marcus",
+    role: "Venture Capital Partner",
+    avatar:
+      "/images/characters/london-advanced/marcus-venture-capital-partner.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "onyx",
+    theme: "blue",
+  },
+
+    "london-advanced-office-politics-naomi": {
+    id: "london-advanced-office-politics-naomi",
+    name: "Naomi",
+    role: "Strategy Director",
+    avatar:
+      "/images/characters/london-advanced/naomi-strategy-director.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "coral",
+    theme: "rose",
+  },
+
+    "london-advanced-ethical-dilemma-adrian": {
+    id: "london-advanced-ethical-dilemma-adrian",
+    name: "Adrian",
+    role: "Commercial Director",
+    avatar:
+      "/images/characters/london-advanced/adrian-commercial-director.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "ash",
+    theme: "amber",
+  },
+
+    "london-advanced-media-interview-rachel": {
+    id: "london-advanced-media-interview-rachel",
+    name: "Rachel",
+    role: "Investigative Journalist",
+    avatar:
+      "/images/characters/london-advanced/rachel-investigative-journalist.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "nova",
+    theme: "rose",
+  },
+
+    "london-advanced-leading-negotiation-victor": {
+    id: "london-advanced-leading-negotiation-victor",
+    name: "Victor",
+    role: "Procurement Director",
+    avatar:
+      "/images/characters/london-advanced/victor-procurement-director.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "echo",
+    theme: "blue",
+  },
+
+    "london-advanced-difficult-employee-rebecca": {
+    id: "london-advanced-difficult-employee-rebecca",
+    name: "Rebecca",
+    role: "Senior Product Manager",
+    avatar:
+      "/images/characters/london-advanced/rebecca-senior-product-manager.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "sage",
+    theme: "emerald",
+  },
+
+    "london-advanced-board-meeting-helen": {
+    id: "london-advanced-board-meeting-helen",
+    name: "Helen",
+    role: "Board Chair",
+    avatar:
+      "/images/characters/london-advanced/helen-board-chair.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "ballad",
+    theme: "slate",
+  },
+
+    "london-advanced-public-debate-amelia": {
+    id: "london-advanced-public-debate-amelia",
+    name: "Amelia",
+    role: "Debate Moderator",
+    avatar:
+      "/images/characters/london-advanced/amelia-debate-moderator.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "coral",
+    theme: "violet",
+  },
+
+    "london-advanced-cross-cultural-conflict-kenji": {
+    id: "london-advanced-cross-cultural-conflict-kenji",
+    name: "Kenji",
+    role: "Regional Operations Director",
+    avatar:
+      "/images/characters/london-advanced/kenji-regional-operations-director.png",
+    emotion: "neutral",
+    accent: "neutral",
+    voiceId: "ash",
+    theme: "blue",
+  },
+
+    "london-advanced-reputation-crisis-diana": {
+    id: "london-advanced-reputation-crisis-diana",
+    name: "Diana",
+    role: "Director of Corporate Communications",
+    avatar:
+      "/images/characters/london-advanced/diana-corporate-communications-director.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "nova",
+    theme: "rose",
+  },
+
+    "london-advanced-final-decision-eleanor": {
+    id: "london-advanced-final-decision-eleanor",
+    name: "Eleanor",
+    role: "Chief Strategy Officer",
+    avatar:
+      "/images/characters/london-advanced/eleanor-chief-strategy-officer.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "marin",
+    theme: "violet",
+  },
 };
 
 export function getNPCById(
