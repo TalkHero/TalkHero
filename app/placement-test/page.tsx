@@ -537,8 +537,18 @@ useEffect(() => {
   }
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
-      <header className="mb-6">
+  <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
+    <div className="mb-6">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+      >
+        <span aria-hidden="true">←</span>
+        <span>Повернутися на головну</span>
+      </Link>
+    </div>
+
+    <header className="mb-6">
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-slate-500">
