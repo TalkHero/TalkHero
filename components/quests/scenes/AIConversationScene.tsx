@@ -5,11 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import {
   Loader2,
   MessageCircle,
-  Mic,
   Send,
   Sparkles,
-  Square,
-    Volume2,
+  Volume2,
 } from "lucide-react";
 
 import { AIFeedbackCard } from "@/components/quests/AIFeedbackCard";
@@ -27,7 +25,7 @@ import { cn } from "@/lib/utils";
 
 import { SceneShell } from "./SceneShell";
 import { useNPCSpeech } from "@/components/quests/hooks/useNPCSpeech";
-
+import { VoiceInputControls } from "@/components/quests/VoiceInputControls";
 type Props = {
   scene: PublicQuestScene;
   evaluation: QuestSceneEvaluation | null;
@@ -304,16 +302,22 @@ return;
             className="w-full sm:w-auto"
           >
             {loading ? (
-              <>
-                <Loader2 className="animate-spin" aria-hidden="true" />
-                {npc.name} відповідає…
-              </>
-            ) : (
-              <>
-                Надіслати
-                <Send aria-hidden="true" />
-              </>
-            )}
+  <>
+    <Loader2
+      className="h-4 w-4 animate-spin"
+      aria-hidden="true"
+    />
+    {npc.name} відповідає…
+  </>
+) : (
+  <>
+    <Send
+      className="h-4 w-4"
+      aria-hidden="true"
+    />
+    Надіслати
+  </>
+)}
           </Button>
         </div>
       }
@@ -392,51 +396,18 @@ return;
             )}
           />
 
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <Button
-              type="button"
-              variant={
-                recorder.state === "recording" ? "destructive" : "outline"
-              }
-              disabled={
-                loading ||
-                recorder.state === "requesting" ||
-                recorder.state === "processing"
-              }
-              onClick={() => {
-                void handleVoiceClick();
-              }}
-              className="gap-2"
-            >
-              {recorder.state === "requesting" ||
-              recorder.state === "processing" ? (
-                <Loader2
-                  className="h-4 w-4 animate-spin"
-                  aria-hidden="true"
-                />
-              ) : recorder.state === "recording" ? (
-                <Square className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <Mic className="h-4 w-4" aria-hidden="true" />
-              )}
-
-              {recorder.state === "requesting"
-                ? "Підключення…"
-                : recorder.state === "processing"
-                  ? "Розпізнавання…"
-                  : recorder.state === "recording"
-                    ? "Зупинити запис"
-                    : "Відповісти голосом"}
-            </Button>
-
-            <span className="text-xs text-muted-foreground">
-              {recorder.state === "recording"
-                ? `Запис: ${recorder.durationSeconds} с`
-                : recorder.state === "processing"
-                  ? "Перетворюємо голос на текст…"
-                  : "Можна писати або говорити"}
-            </span>
-          </div>
+          <div className="mt-3">
+  <VoiceInputControls
+    state={recorder.state}
+    durationSeconds={recorder.durationSeconds}
+    error={recorder.error}
+    disabled={loading}
+    hasValue={Boolean(value)}
+    onClick={() => {
+      void handleVoiceClick();
+    }}
+  />
+</div>
 
           {recorder.error && (
             <p role="alert" className="mt-2 text-sm text-destructive">

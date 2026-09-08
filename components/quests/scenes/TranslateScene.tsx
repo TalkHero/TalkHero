@@ -5,9 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Languages,
   Loader2,
-  Mic,
   Send,
-  Square,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +13,7 @@ import { useVoiceRecorder } from "@/components/quests/hooks/useVoiceRecorder";
 import type { PublicQuestScene } from "@/lib/quests";
 import { cn } from "@/lib/utils";
 import { SceneShell } from "./SceneShell";
+import { VoiceInputControls } from "@/components/quests/VoiceInputControls";
 
 type TranslateSceneProps = {
   scene: PublicQuestScene;
@@ -133,10 +132,22 @@ export function TranslateScene({
             disabled={!canSubmit}
           >
             {loading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="mr-2 h-4 w-4" />
-            )}
+  <>
+    <Loader2
+      className="mr-2 h-4 w-4 animate-spin"
+      aria-hidden="true"
+    />
+    Перевіряємо…
+  </>
+) : (
+  <>
+    <Send
+      className="mr-2 h-4 w-4"
+      aria-hidden="true"
+    />
+    Перевірити переклад
+  </>
+)}
 
             Перевірити переклад
           </Button>
@@ -190,51 +201,16 @@ export function TranslateScene({
           />
         </div>
 
-        <div className="space-y-3">
-          <Button
-            type="button"
-            variant={
-              recorder.state === "recording"
-                ? "destructive"
-                : "outline"
-            }
-            onClick={handleVoiceClick}
-            disabled={
-              loading ||
-              recorder.state === "requesting" ||
-              recorder.state === "processing"
-            }
-            className="w-full sm:w-auto"
-          >
-            {recorder.state === "requesting" ||
-            recorder.state === "processing" ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : recorder.state === "recording" ? (
-              <Square className="mr-2 h-4 w-4" />
-            ) : (
-              <Mic className="mr-2 h-4 w-4" />
-            )}
-
-            {voiceButtonLabel}
-          </Button>
-
-          {recorder.state === "recording" && (
-            <p className="text-xs text-muted-foreground">
-              Запис: {recorder.durationSeconds} с
-            </p>
-          )}
-
-          {recorder.error && (
-            <p className="text-sm text-destructive" role="alert">
-              {recorder.error}
-            </p>
-          )}
-
-          <p className="text-xs text-muted-foreground">
-            Перевірте переклад перед надсиланням. Розпізнаний текст
-            можна відредагувати.
-          </p>
-        </div>
+        <VoiceInputControls
+  state={recorder.state}
+  durationSeconds={recorder.durationSeconds}
+  error={recorder.error}
+  disabled={loading}
+  hasValue={Boolean(value)}
+  onClick={() => {
+    void handleVoiceClick();
+  }}
+/>
       </div>
     </SceneShell>
   );
