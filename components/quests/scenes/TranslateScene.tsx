@@ -1,13 +1,19 @@
 ﻿"use client";
 
 import type { KeyboardEvent } from "react";
-import { useEffect, useState } from "react";
-import { Languages, Loader2, Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Languages,
+  Loader2,
+  Mic,
+  Send,
+  Square,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useVoiceRecorder } from "@/components/quests/hooks/useVoiceRecorder";
 import type { PublicQuestScene } from "@/lib/quests";
 import { cn } from "@/lib/utils";
-
 import { SceneShell } from "./SceneShell";
 
 type TranslateSceneProps = {
@@ -24,15 +30,31 @@ export function TranslateScene({
   onSubmit,
 }: TranslateSceneProps) {
   const [value, setValue] = useState("");
+  const recorder = useVoiceRecorder();
+
+  const sceneIdRef = useRef(scene.id);
 
   useEffect(() => {
+    sceneIdRef.current = scene.id;
     setValue("");
+    recorder.cancel();
+
+    // Скидаємо голосовий запис лише при зміні сцени.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
 
   const trimmed = value.trim();
 
+  const voiceBusy =
+    recorder.state === "requesting" ||
+    recorder.state === "recording" ||
+    recorder.state === "processing";
+
   const canSubmit =
-    trimmed.length > 0 && trimmed.length <= MAX_LENGTH && !loading;
+    trimmed.length > 0 &&
+    trimmed.length <= MAX_LENGTH &&
+    !loading &&
+    !voiceBusy;
 
   async function handleSubmit() {
     if (!canSubmit) {
@@ -42,104 +64,176 @@ export function TranslateScene({
     await onSubmit(trimmed);
   }
 
-  async function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+  async function handleKeyDown(
+    event: KeyboardEvent<HTMLInputElement>,
+  ) {
     if (event.key === "Enter") {
       event.preventDefault();
       await handleSubmit();
     }
   }
 
+  async function handleVoiceClick() {
+    if (loading || recorder.state === "processing") {
+      return;
+    }
+
+    if (recorder.state === "recording") {
+      const currentSceneId = sceneIdRef.current;
+
+      const text = await recorder.stopAndTranscribe();
+
+      if (!text || sceneIdRef.current !== currentSceneId) {
+        return;
+      }
+
+      const voiceAnswer = text.slice(0, MAX_LENGTH).trim();
+
+      if (!voiceAnswer) {
+        return;
+      }
+
+      // Голос лише заповнює поле.
+      // Користувач може відредагувати текст перед надсиланням.
+      setValue(voiceAnswer);
+
+      return;
+    }
+
+    if (recorder.state === "idle") {
+      await recorder.start();
+    }
+  }
+
+  const voiceButtonLabel =
+    recorder.state === "requesting"
+      ? "Підключення…"
+      : recorder.state === "processing"
+        ? "Розпізнавання…"
+        : recorder.state === "recording"
+          ? "Зупинити запис"
+          : "Відповісти голосом";
+
   return (
     <SceneShell
       title={scene.prompt || "Перекладіть фразу англійською"}
       description={scene.content}
       footer={
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm text-muted-foreground">
-              {value.length} із {MAX_LENGTH} символів
-            </span>
-
-            <span className="text-xs text-muted-foreground">
-              Натисніть Enter або кнопку перевірки
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-muted-foreground">
+            {value.length}/{MAX_LENGTH} символів
+            <span className="ml-3 hidden sm:inline">
+              Enter — перевірити переклад
             </span>
           </div>
 
           <Button
             type="button"
+            onClick={handleSubmit}
             disabled={!canSubmit}
-            onClick={() => {
-              void handleSubmit();
-            }}
-            className="w-full sm:w-auto"
           >
             {loading ? (
-              <>
-                <Loader2 className="animate-spin" aria-hidden="true" />
-                Перевіряємо…
-              </>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <>
-                Перевірити переклад
-                <Send aria-hidden="true" />
-              </>
+              <Send className="mr-2 h-4 w-4" />
             )}
+
+            Перевірити переклад
           </Button>
         </div>
       }
     >
       <div className="space-y-5">
-        <section className="rounded-xl border border-violet-100 bg-violet-50 p-4 dark:border-violet-900 dark:bg-violet-950/40">
+        <div className="rounded-xl border border-violet-200 bg-violet-50/70 p-4 dark:border-violet-900/50 dark:bg-violet-950/20">
           <div className="flex items-start gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200">
-              <Languages className="size-5" aria-hidden="true" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
+              <Languages className="h-5 w-5" />
             </div>
 
-            <div>
-              <h3 className="text-sm font-bold text-violet-800 dark:text-violet-200">
-                Завдання
-              </h3>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold">
+                Завдання на переклад
+              </p>
 
-              <p className="mt-1 text-sm leading-6 text-foreground/80">
-                Введіть природний англійський переклад наведеної фрази.
+              <p className="text-sm text-muted-foreground">
+                Введіть або скажіть природний англійський переклад
+                наведеної фрази.
               </p>
             </div>
           </div>
-        </section>
+        </div>
 
-        <div>
+        <div className="space-y-2">
           <label
-            htmlFor={`translation-${scene.id}`}
-            className="mb-2 block text-sm font-semibold text-foreground"
+            htmlFor={`translate-answer-${scene.id}`}
+            className="text-sm font-medium"
           >
             Ваш переклад
           </label>
 
           <input
-            id={`translation-${scene.id}`}
+            id={`translate-answer-${scene.id}`}
             type="text"
             value={value}
-            disabled={loading}
-            onChange={(event) => {
-              setValue(event.target.value);
-            }}
-            onKeyDown={(event) => {
-              void handleKeyDown(event);
-            }}
-            placeholder="Введіть відповідь англійською…"
+            onChange={(event) => setValue(event.target.value)}
+            onKeyDown={handleKeyDown}
             maxLength={MAX_LENGTH}
+            disabled={loading || voiceBusy}
+            placeholder="Введіть або скажіть відповідь англійською…"
             autoComplete="off"
-            autoCapitalize="sentences"
-            spellCheck
             className={cn(
-              "min-h-14 w-full rounded-xl border border-input bg-card px-4 py-3",
-              "text-base text-foreground",
-              "outline-none transition-[border-color,box-shadow,background-color] duration-150",
+              "flex h-12 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm",
               "placeholder:text-muted-foreground",
-              "focus:border-primary focus:ring-3 focus:ring-ring/20",
-              "disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-70",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "disabled:cursor-not-allowed disabled:opacity-50",
             )}
           />
+        </div>
+
+        <div className="space-y-3">
+          <Button
+            type="button"
+            variant={
+              recorder.state === "recording"
+                ? "destructive"
+                : "outline"
+            }
+            onClick={handleVoiceClick}
+            disabled={
+              loading ||
+              recorder.state === "requesting" ||
+              recorder.state === "processing"
+            }
+            className="w-full sm:w-auto"
+          >
+            {recorder.state === "requesting" ||
+            recorder.state === "processing" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : recorder.state === "recording" ? (
+              <Square className="mr-2 h-4 w-4" />
+            ) : (
+              <Mic className="mr-2 h-4 w-4" />
+            )}
+
+            {voiceButtonLabel}
+          </Button>
+
+          {recorder.state === "recording" && (
+            <p className="text-xs text-muted-foreground">
+              Запис: {recorder.durationSeconds} с
+            </p>
+          )}
+
+          {recorder.error && (
+            <p className="text-sm text-destructive" role="alert">
+              {recorder.error}
+            </p>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            Перевірте переклад перед надсиланням. Розпізнаний текст
+            можна відредагувати.
+          </p>
         </div>
       </div>
     </SceneShell>

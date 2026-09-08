@@ -93,6 +93,23 @@ export async function POST(request: Request) {
     openAIForm.append("model", "gpt-4o-mini-transcribe");
     openAIForm.append("response_format", "json");
 
+openAIForm.append(
+  "prompt",
+  [
+    "This is an English learning conversation between a student and a tutor.",
+    "Transcribe exactly what the speaker says.",
+    "The speaker may use either English or Ukrainian.",
+    "Preserve the language actually spoken. Do not translate.",
+    "When the speaker uses English, write the entire English utterance in Latin script.",
+    "Use standard English spellings for place names and proper nouns in English speech.",
+    "For example, write Lviv, Kyiv, Ukraine, and Andriy when spoken as part of an English sentence.",
+    "Do not write Ukrainian place names in Cyrillic inside an otherwise English sentence.",
+    "When the speaker genuinely switches to Ukrainian, transcribe Ukrainian in Cyrillic.",
+    "Do not transliterate English speech into Cyrillic.",
+    "Do not correct grammar or pronunciation.",
+  ].join(" "),
+);
+
     const response = await fetch(
       "https://api.openai.com/v1/audio/transcriptions",
       {
@@ -123,6 +140,7 @@ export async function POST(request: Request) {
     };
 
     const text = typeof result.text === "string" ? result.text.trim() : "";
+    console.log("STT RAW TRANSCRIPT:", JSON.stringify(text));
 
     if (!text) {
       return NextResponse.json(

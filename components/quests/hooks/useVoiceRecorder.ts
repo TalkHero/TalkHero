@@ -75,6 +75,10 @@ export function useVoiceRecorder() {
 
   const chunksRef = useRef<Blob[]>([]);
 
+  const manualResolveRef = useRef<
+  ((text: string | null) => void) | null
+>(null);
+
   const startedAtRef = useRef<number | null>(null);
 
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -506,28 +510,31 @@ export function useVoiceRecorder() {
         });
 
         recorder.addEventListener(
-          "stop",
-          () => {
-            const wasAutoMode = autoStopRef.current;
+  "stop",
+  () => {
+    const wasAutoMode = autoStopRef.current;
+    const onTranscript = autoTranscriptCallbackRef.current;
+    const onError = autoErrorCallbackRef.current;
 
-            const onTranscript = autoTranscriptCallbackRef.current;
+    void processRecorderStop(recorder).then((text) => {
+      if (wasAutoMode && text && onTranscript) {
+        onTranscript(text);
+      }
 
-            const onError = autoErrorCallbackRef.current;
+      if (wasAutoMode && !text && onError) {
+        onError("Не вдалося розпізнати голос.");
+      }
 
-            void processRecorderStop(recorder).then((text) => {
-              if (wasAutoMode && text && onTranscript) {
-                onTranscript(text);
-              }
+      const resolve = manualResolveRef.current;
+      manualResolveRef.current = null;
 
-              if (wasAutoMode && !text && onError) {
-                onError("Не вдалося розпізнати голос.");
-              }
+      resolve?.(text);
 
-              clearAutoMode();
-            });
-          },
-          { once: true },
-        );
+      clearAutoMode();
+    });
+  },
+  { once: true },
+);
 
         /*
          * 250 мс дає невеликі
@@ -585,32 +592,27 @@ export function useVoiceRecorder() {
   );
 
   const stopAndTranscribe = useCallback(async (): Promise<string | null> => {
-    const recorder = recorderRef.current;
+  const recorder = recorderRef.current;
 
-    if (!recorder || recorder.state === "inactive") {
-      return null;
-    }
+  if (!recorder || recorder.state === "inactive") {
+    return null;
+  }
 
-    /*
-     * Для ручного режиму
-     * auto callback не потрібен.
-     */
-    autoStopRef.current = false;
+  autoStopRef.current = false;
 
-    stopVad();
+  stopVad();
 
-    return await new Promise((resolve) => {
-      recorder.addEventListener(
-        "stop",
-        () => {
-          void processRecorderStop(recorder).then(resolve);
-        },
-        { once: true },
-      );
+  return await new Promise<string | null>((resolve) => {
+    manualResolveRef.current = resolve;
 
+    try {
       recorder.stop();
-    });
-  }, [processRecorderStop, stopVad]);
+    } catch {
+      manualResolveRef.current = null;
+      resolve(null);
+    }
+  });
+}, [stopVad]);
 
   const cancel = useCallback(() => {
     const recorder = recorderRef.current;

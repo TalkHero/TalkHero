@@ -204,7 +204,7 @@ export function useSpeechSynthesis() {
 
         body: JSON.stringify({
           text,
-          voice: "marin",
+          voice: "nova",
           instructions: createVoiceInstructions(text),
         }),
 

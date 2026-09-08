@@ -297,6 +297,7 @@ export function SpeakingSession() {
         body: JSON.stringify({
           message: text,
           conversationId,
+          mode: "speaking",
         }),
       });
 
@@ -918,77 +919,45 @@ trackEvent("speaking_completed", {
                   );
                 })}
 
-                {evaluation && (
-                  <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-lg font-bold text-slate-900">
-                        Зворотний зв&apos;язок
-                      </h3>
+                {evaluation && !evaluation.wasCorrect && (
+  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+        <Sparkles className="h-4 w-4" />
+      </div>
 
-                      <div className="rounded-full bg-white px-3 py-1 text-sm font-bold text-indigo-600">
-                        {evaluation.overallScore}/100
-                      </div>
-                    </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-slate-900">
+          Підказка
+        </p>
 
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                      <div className="rounded-xl bg-white p-3">
-                        <p className="text-slate-500">Граматика</p>
+        {!evaluation.wasCorrect && evaluation.correctedSentence ? (
+          <>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Краще сказати:
+            </p>
 
-                        <p className="mt-1 font-bold text-slate-900">
-                          {evaluation.grammarScore}
-                        </p>
-                      </div>
+            <p className="mt-1 text-sm font-medium leading-6 text-slate-900">
+              {evaluation.correctedSentence}
+            </p>
+          </>
+        ) : (
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Добре. Продовжуйте розмову.
+          </p>
+        )}
 
-                      <div className="rounded-xl bg-white p-3">
-                        <p className="text-slate-500">Плавність мовлення</p>
+        {evaluation.shortFeedback && !evaluation.wasCorrect && (
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            {evaluation.shortFeedback}
+          </p>
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
-                        <p className="mt-1 font-bold text-slate-900">
-                          {evaluation.fluencyScore}
-                        </p>
-                      </div>
 
-                      <div className="rounded-xl bg-white p-3">
-                        <p className="text-slate-500">Словниковий запас</p>
-
-                        <p className="mt-1 font-bold text-slate-900">
-                          {evaluation.vocabularyScore}
-                        </p>
-                      </div>
-
-                      <div className="rounded-xl bg-white p-3">
-                        <p className="text-slate-500">Природність</p>
-
-                        <p className="mt-1 font-bold text-slate-900">
-                          {evaluation.naturalnessScore}
-                        </p>
-                      </div>
-                    </div>
-
-                    {!evaluation.wasCorrect && evaluation.correctedSentence && (
-                      <div className="mt-4">
-                        <p className="text-sm font-semibold text-slate-800">
-                          Краще речення
-                        </p>
-
-                        <p className="mt-2 rounded-xl bg-white p-3 text-sm italic text-slate-700">
-                          {evaluation.correctedSentence}
-                        </p>
-                      </div>
-                    )}
-
-                    {evaluation.shortFeedback && (
-                      <p className="mt-4 text-sm leading-6 text-slate-600">
-                        {evaluation.shortFeedback}
-                      </p>
-                    )}
-
-                    {evaluation.encouragement && (
-                      <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">
-                        {evaluation.encouragement}
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 <div ref={messagesBottomRef} />
               </div>

@@ -59,41 +59,23 @@ function createOpeningMessage({
   nativeLanguage: string;
   targetLanguage: string;
 }): string {
-  /*
-   * Для українських користувачів
-   * перший вступ генеруємо локально.
-   *
-   * Це прибирає окремий AI-запит
-   * перед початком розмови.
-   */
-  if (nativeLanguage === "Ukrainian") {
-    const greeting = firstName ? `Привіт, ${firstName}!` : "Привіт!";
+  if (targetLanguage === "English") {
+    if (firstName) {
+      return `Hi, ${firstName}! I'm Emma. Nice to meet you. What do you like doing in your free time?`;
+    }
 
-    return [
-      greeting,
-      `Давай трохи попрактикуємо ${targetLanguage === "English" ? "англійську" : "мову, яку ти вивчаєш"}.`,
-      "Можемо спочатку трохи познайомитися або ти можеш обрати тему, яка тобі цікава.",
-      "Якщо поки складно щось сказати англійською, можеш відповісти українською — я допоможу.",
-      "З чого хочеш почати?",
-    ].join(" ");
+    return "Hi! I'm Emma. Nice to meet you. What's your name?";
   }
 
-  /*
-   * Тимчасовий fallback для інших
-   * native languages.
-   *
-   * Коли додамо повну локалізацію,
-   * винесемо ці тексти в i18n.
-   */
-  const greeting = firstName ? `Hi, ${firstName}!` : "Hi!";
+  if (nativeLanguage === "Ukrainian") {
+    return firstName
+      ? `Привіт, ${firstName}! Почнімо розмову. Спробуй сказати мені щось ${targetLanguage}.`
+      : `Привіт! Почнімо розмову. Спробуй сказати мені щось ${targetLanguage}.`;
+  }
 
-  return [
-    greeting,
-    `Let's practise ${targetLanguage} together.`,
-    "We can get to know each other first, or you can choose a topic you are interested in.",
-    "If you do not know how to say something yet, you can use your native language and I will help.",
-    "What would you like to start with?",
-  ].join(" ");
+  return firstName
+    ? `Hi, ${firstName}! Let's practise ${targetLanguage}. Tell me something about yourself.`
+    : `Hi! Let's practise ${targetLanguage}. Tell me something about yourself.`;
 }
 
 export async function POST() {

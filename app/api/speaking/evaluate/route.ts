@@ -98,11 +98,11 @@ function createEvaluationPrompt({
   return `
 You are evaluating a language learner's spoken English.
 
-The speech was converted to text by browser speech recognition.
+The speech was converted to text by speech recognition.
 Do not evaluate pronunciation or accent because you do not have
 access to the original audio.
 
-STUDENT LEVEL:
+PROFILE CEFR LEVEL:
 ${englishLevel}
 
 EMMA'S PREVIOUS MESSAGE:
@@ -118,31 +118,82 @@ Evaluate only these areas:
 3. Vocabulary
 4. Naturalness
 
+IMPORTANT EVALUATION PRINCIPLES:
+
+- Evaluate whether the student's actual response is correct, natural,
+  and appropriate for the conversation.
+- Do NOT mark a response incorrect merely because it is simple.
+- A grammatically correct simple sentence is still correct at B2, C1,
+  or C2.
+- CEFR level may influence how you interpret vocabulary range and
+  fluency, but it must NEVER be used to invent an error.
+- Do NOT require the student to demonstrate their full CEFR level in
+  every individual reply.
+- Do NOT rewrite a correct sentence into a more advanced sentence just
+  because the profile level is high.
+- Do NOT add facts, meanings, time periods, reasons, opinions, or
+  details that the student did not say.
+- Preserve the student's intended meaning exactly.
+- Example:
+  Student: "I am from Lviv."
+  This is a correct natural sentence.
+  Do NOT replace it with:
+  "I have been living in Lviv all my life."
+  because that changes the meaning.
+- If Emma asks a broad question and the student gives a short but valid
+  answer, do not classify it as a language error merely because the
+  answer could have been longer.
+- Conversation quality and language correctness are different things.
+  Lack of detail is not automatically a grammar or naturalness error.
+
 SCORING RULES:
+
 - Every score must be an integer from 0 to 100.
-- Adapt expectations to CEFR level ${englishLevel}.
-- Do not punish an A1 or A2 learner for using simple language.
-- Do not assume speech recognition errors are definitely the
-  student's mistakes.
-- Keep feedback brief and supportive.
-- Correct only the most important problem.
-- If the sentence is already acceptable, preserve it.
-- correctedSentence must always contain the best natural English
-  version of the student's response.
-- mainIssue must be an empty string when there is no important issue.
-- Do not include markdown.
+- Judge grammar based on actual grammatical correctness.
+- Judge fluency only from the structure and flow visible in the
+  transcript.
+- Judge vocabulary based on whether the words used are appropriate and
+  accurate, not on whether they are advanced enough for the profile
+  level.
+- Judge naturalness based on whether a native speaker could reasonably
+  say the sentence in this conversational context.
+- Do not assume speech recognition errors are definitely the student's
+  mistakes.
+- Correct only genuine, meaningful language problems.
+- Do not invent corrections.
+- Do not overcorrect stylistic preferences.
+- If several natural phrasings are possible, do not treat the student's
+  version as wrong merely because another version is also natural.
+
+CORRECTION RULES:
+
+- wasCorrect must be true when there is no meaningful grammar,
+  vocabulary, or naturalness error.
+- If wasCorrect is true:
+  - correctedSentence must preserve the student's sentence.
+  - mainIssue must be an empty string.
+  - shortFeedback must briefly confirm that the response is correct.
+- If wasCorrect is false:
+  - correctedSentence must contain a corrected natural English version.
+  - Preserve the student's meaning.
+  - Correct only the most important issue.
+  - mainIssue must briefly identify that genuine issue.
+- correctedSentence must never introduce information that was not
+  present in the student's response.
 
 LANGUAGE RULES:
+
 - correctedSentence must always be written in English.
 - shortFeedback must always be written in Ukrainian.
 - mainIssue must always be written in Ukrainian.
 - encouragement must always be written in Ukrainian.
-- Explain mistakes in clear, natural Ukrainian suitable for the
-  learner's CEFR level.
+- Explain mistakes in clear, natural Ukrainian.
 - English examples may appear inside Ukrainian explanations when
   necessary.
 - Do not return English-only feedback in shortFeedback, mainIssue,
   or encouragement.
+- Keep all feedback brief.
+- Do not include markdown.
 `;
 }
 

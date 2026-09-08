@@ -1,18 +1,32 @@
 ﻿"use client";
 
 import type { KeyboardEvent } from "react";
-import { useEffect, useState } from "react";
-import { Loader2, MessageCircle, Send, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Loader2,
+  MessageCircle,
+  Mic,
+  Send,
+  Sparkles,
+  Square,
+    Volume2,
+} from "lucide-react";
 
 import { AIFeedbackCard } from "@/components/quests/AIFeedbackCard";
 import { NPCCard } from "@/components/quests/NPCCard";
+import { useVoiceRecorder } from "@/components/quests/hooks/useVoiceRecorder";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { PublicQuestScene, QuestSceneEvaluation } from "@/lib/quests";
-import { getNPCBySpeaker, type NPC } from "@/lib/quests/npcs";
+import {
+  getNPCById,
+  getNPCBySpeaker,
+  type NPC,
+} from "@/lib/quests/npcs";
 import { cn } from "@/lib/utils";
 
 import { SceneShell } from "./SceneShell";
+import { useNPCSpeech } from "@/components/quests/hooks/useNPCSpeech";
 
 type Props = {
   scene: PublicQuestScene;
@@ -20,6 +34,36 @@ type Props = {
   loading?: boolean;
   onSubmit: (value: unknown) => Promise<void>;
 };
+
+const MAX_LENGTH = 500;
+
+const AUTO_SPEECH_STORAGE_KEY =
+  "talkhero-adventure-auto-speech";
+
+function buildVoiceInstructions(npc: NPC): string {
+  const accentInstruction =
+    npc.accent === "british"
+      ? "Use a natural British English accent."
+      : npc.accent === "american"
+        ? "Use a natural American English accent."
+        : "Use clear neutral English pronunciation.";
+
+  const emotionInstruction = {
+    happy: "Sound friendly, warm, and cheerful.",
+    neutral: "Sound calm, professional, and natural.",
+    thinking: "Sound thoughtful and slightly slower.",
+    surprised: "Sound pleasantly surprised.",
+    encouraging:
+      "Sound supportive, patient, and encouraging.",
+    celebrating: "Sound excited and celebratory.",
+  }[npc.emotion];
+
+  return [
+    accentInstruction,
+    emotionInstruction,
+    "Speak clearly and at a comfortable pace for an English learner.",
+  ].join(" ");
+}
 
 function getString(
   metadata: Record<string, unknown>,
@@ -71,9 +115,39 @@ export function AIConversationScene({
 }: Props) {
   const [value, setValue] = useState("");
 
-  const npc = getNPCBySpeaker(scene.speaker) ?? fallbackNPC(scene);
+  const [autoSpeech, setAutoSpeech] = useState(false);
+const [autoSpeechReady, setAutoSpeechReady] =
+  useState(false);
 
-  const npcReply = getEvalString(evaluation, "npcReply");
+const lastAutoPlayedRef =
+  useRef<string | null>(null);
+
+  const recorder = useVoiceRecorder();
+
+  const sceneIdRef = useRef(scene.id);
+  const turnRef = useRef<number | null>(null);
+
+const metadataNpcId =
+  getString(scene.metadata, "npcId");
+
+const npc =
+  (metadataNpcId
+    ? getNPCById(metadataNpcId)
+    : null) ??
+  getNPCBySpeaker(scene.speaker) ??
+  fallbackNPC(scene);
+
+const npcReply =
+  getEvalString(evaluation, "npcReply");
+
+const npcSpeechText =
+  npcReply || scene.content;
+
+const speech = useNPCSpeech({
+  text: npcSpeechText,
+  voice: npc.voiceId,
+  instructions: buildVoiceInstructions(npc),
+});
 
   const currentTurn = getEvalNumber(evaluation, "currentTurn");
 
@@ -83,13 +157,85 @@ export function AIConversationScene({
   const maxTurns = getEvalNumber(evaluation, "maxTurns") ?? metadataMaxTurns;
 
   useEffect(() => {
+  try {
+    setAutoSpeech(
+      window.localStorage.getItem(
+        AUTO_SPEECH_STORAGE_KEY,
+      ) === "true",
+    );
+  } catch {
+    setAutoSpeech(false);
+  } finally {
+    setAutoSpeechReady(true);
+  }
+}, []);
+
+useEffect(() => {
+  if (
+    !autoSpeechReady ||
+    !autoSpeech ||
+    !npc.voiceId ||
+    !npcSpeechText.trim()
+  ) {
+    return;
+  }
+
+  const autoPlayKey = [
+    scene.id,
+    metadataNpcId || npc.id,
+    currentTurn ?? 0,
+    npcSpeechText,
+  ].join("::");
+
+  if (
+    lastAutoPlayedRef.current ===
+    autoPlayKey
+  ) {
+    return;
+  }
+
+  lastAutoPlayedRef.current =
+    autoPlayKey;
+
+  void speech.play();
+}, [
+  autoSpeech,
+  autoSpeechReady,
+  currentTurn,
+  metadataNpcId,
+  npc.id,
+  npc.voiceId,
+  npcSpeechText,
+  scene.id,
+  speech.play,
+]);
+
+  useEffect(() => {
+    sceneIdRef.current = scene.id;
+    turnRef.current = currentTurn;
+
     setValue("");
-  }, [scene.id, evaluation?.metadata?.currentTurn]);
+    recorder.cancel();
+
+    // Скидаємо голосовий запис при зміні сцени або репліки.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene.id, currentTurn]);
 
   const trimmed = value.trim();
 
+  const voiceBusy =
+    recorder.state === "requesting" ||
+    recorder.state === "recording" ||
+    recorder.state === "processing";
+
+  const canSubmit =
+    trimmed.length > 0 &&
+    trimmed.length <= MAX_LENGTH &&
+    !loading &&
+    !voiceBusy;
+
   async function handleSubmit() {
-    if (!trimmed || loading) {
+    if (!canSubmit) {
       return;
     }
 
@@ -100,6 +246,41 @@ export function AIConversationScene({
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       await handleSubmit();
+    }
+  }
+
+  async function handleVoiceClick() {
+    if (loading || recorder.state === "processing") {
+      return;
+    }
+
+    if (recorder.state === "recording") {
+      const currentSceneId = sceneIdRef.current;
+      const currentConversationTurn = turnRef.current;
+
+      const text = await recorder.stopAndTranscribe();
+
+      if (
+  !text ||
+  sceneIdRef.current !== currentSceneId ||
+  turnRef.current !== currentConversationTurn
+) {
+  return;
+}
+
+const voiceAnswer = text.slice(0, MAX_LENGTH).trim();
+
+if (!voiceAnswer) {
+  return;
+}
+
+setValue(voiceAnswer);
+
+return;
+    }
+
+    if (recorder.state === "idle") {
+      await recorder.start();
     }
   }
 
@@ -116,7 +297,7 @@ export function AIConversationScene({
 
           <Button
             type="button"
-            disabled={!trimmed || loading}
+            disabled={!canSubmit}
             onClick={() => {
               void handleSubmit();
             }}
@@ -149,9 +330,27 @@ export function AIConversationScene({
           </Badge>
         </div>
 
-        <NPCCard npc={npc}>
-          <p className="whitespace-pre-line">{npcReply || scene.content}</p>
-        </NPCCard>
+        <NPCCard
+  npc={npc}
+  showListenButton={npc.voiceId !== null}
+  listening={speech.loading || speech.playing}
+  onListen={() => {
+    void speech.play();
+  }}
+>
+  <p className="whitespace-pre-line">
+    {npcSpeechText}
+  </p>
+</NPCCard>
+
+{speech.error ? (
+  <p
+    role="alert"
+    className="text-sm text-destructive"
+  >
+    {speech.error}
+  </p>
+) : null}
 
         {evaluation?.feedback ? (
           <AIFeedbackCard
@@ -173,7 +372,7 @@ export function AIConversationScene({
           <textarea
             id={`ai-conversation-${scene.id}`}
             value={value}
-            disabled={loading}
+            disabled={loading || voiceBusy}
             onChange={(event) => {
               setValue(event.target.value);
             }}
@@ -181,8 +380,8 @@ export function AIConversationScene({
               void handleKeyDown(event);
             }}
             rows={3}
-            maxLength={500}
-            placeholder={`Напишіть відповідь для ${npc.name}…`}
+            maxLength={MAX_LENGTH}
+            placeholder={`Напишіть або скажіть відповідь для ${npc.name}…`}
             className={cn(
               "min-h-28 w-full resize-y rounded-xl border border-input bg-card p-4",
               "text-base leading-7 text-foreground",
@@ -193,10 +392,71 @@ export function AIConversationScene({
             )}
           />
 
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant={
+                recorder.state === "recording" ? "destructive" : "outline"
+              }
+              disabled={
+                loading ||
+                recorder.state === "requesting" ||
+                recorder.state === "processing"
+              }
+              onClick={() => {
+                void handleVoiceClick();
+              }}
+              className="gap-2"
+            >
+              {recorder.state === "requesting" ||
+              recorder.state === "processing" ? (
+                <Loader2
+                  className="h-4 w-4 animate-spin"
+                  aria-hidden="true"
+                />
+              ) : recorder.state === "recording" ? (
+                <Square className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Mic className="h-4 w-4" aria-hidden="true" />
+              )}
+
+              {recorder.state === "requesting"
+                ? "Підключення…"
+                : recorder.state === "processing"
+                  ? "Розпізнавання…"
+                  : recorder.state === "recording"
+                    ? "Зупинити запис"
+                    : "Відповісти голосом"}
+            </Button>
+
+            <span className="text-xs text-muted-foreground">
+              {recorder.state === "recording"
+                ? `Запис: ${recorder.durationSeconds} с`
+                : recorder.state === "processing"
+                  ? "Перетворюємо голос на текст…"
+                  : "Можна писати або говорити"}
+            </span>
+          </div>
+
+          {recorder.error && (
+            <p role="alert" className="mt-2 text-sm text-destructive">
+              {recorder.error}
+            </p>
+          )}
+
+          {value && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Перевірте відповідь перед надсиланням. Розпізнаний текст можна
+              відредагувати.
+            </p>
+          )}
+
           <div className="mt-2 flex items-center justify-between gap-4 text-xs text-muted-foreground">
             <span>Enter — надіслати, Shift + Enter — новий рядок</span>
 
-            <span className="shrink-0 tabular-nums">{value.length}/500</span>
+            <span className="shrink-0 tabular-nums">
+              {value.length}/{MAX_LENGTH}
+            </span>
           </div>
         </div>
       </div>

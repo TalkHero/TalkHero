@@ -1,9 +1,15 @@
 ﻿"use client";
 
 import type { KeyboardEvent } from "react";
-import { useEffect, useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Loader2,
+  Mic,
+  Send,
+  Square,
+} from "lucide-react";
 
+import { useVoiceRecorder } from "@/components/quests/hooks/useVoiceRecorder";
 import { Button } from "@/components/ui/button";
 import type { PublicQuestScene } from "@/lib/quests";
 import { cn } from "@/lib/utils";
@@ -24,15 +30,30 @@ export function InputScene({
   onSubmit,
 }: InputSceneProps) {
   const [value, setValue] = useState("");
+  const recorder = useVoiceRecorder();
+  const sceneIdRef = useRef(scene.id);
 
   useEffect(() => {
+    sceneIdRef.current = scene.id;
     setValue("");
+    recorder.cancel();
+
+    // Скидаємо голосовий запис лише при зміні сцени.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
 
   const trimmed = value.trim();
 
+  const voiceBusy =
+    recorder.state === "requesting" ||
+    recorder.state === "recording" ||
+    recorder.state === "processing";
+
   const canSubmit =
-    trimmed.length > 0 && trimmed.length <= MAX_LENGTH && !loading;
+    trimmed.length > 0 &&
+    trimmed.length <= MAX_LENGTH &&
+    !loading &&
+    !voiceBusy;
 
   async function handleSubmit() {
     if (!canSubmit) {
@@ -42,12 +63,46 @@ export function InputScene({
     await onSubmit(trimmed);
   }
 
-  async function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+  async function handleKeyDown(
+    event: KeyboardEvent<HTMLTextAreaElement>,
+  ) {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       await handleSubmit();
     }
   }
+
+  async function handleVoiceClick() {
+  if (loading || recorder.state === "processing") {
+    return;
+  }
+
+  if (recorder.state === "recording") {
+    const currentSceneId = sceneIdRef.current;
+
+    const text = await recorder.stopAndTranscribe();
+
+    if (!text || sceneIdRef.current !== currentSceneId) {
+      return;
+    }
+
+    const voiceAnswer = text.slice(0, MAX_LENGTH).trim();
+
+    if (!voiceAnswer) {
+      return;
+    }
+
+    // Голос лише заповнює поле.
+    // Користувач може відредагувати текст перед надсиланням.
+    setValue(voiceAnswer);
+
+    return;
+  }
+
+  if (recorder.state === "idle") {
+    await recorder.start();
+  }
+}
 
   return (
     <SceneShell
@@ -75,7 +130,10 @@ export function InputScene({
           >
             {loading ? (
               <>
-                <Loader2 className="animate-spin" aria-hidden="true" />
+                <Loader2
+                  className="animate-spin"
+                  aria-hidden="true"
+                />
                 Надсилання…
               </>
             ) : (
@@ -98,7 +156,7 @@ export function InputScene({
       <textarea
         id={`quest-answer-${scene.id}`}
         value={value}
-        disabled={loading}
+        disabled={loading || voiceBusy}
         onChange={(event) => {
           setValue(event.target.value);
         }}
@@ -106,7 +164,7 @@ export function InputScene({
           void handleKeyDown(event);
         }}
         rows={6}
-        placeholder="Введіть відповідь англійською…"
+        placeholder="Введіть або скажіть відповідь англійською…"
         maxLength={MAX_LENGTH}
         className={cn(
           "min-h-40 w-full resize-y rounded-xl border border-input bg-card p-4",
@@ -117,6 +175,76 @@ export function InputScene({
           "disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-70",
         )}
       />
+
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          variant={
+            recorder.state === "recording"
+              ? "destructive"
+              : "outline"
+          }
+          disabled={
+            loading ||
+            recorder.state === "requesting" ||
+            recorder.state === "processing"
+          }
+          onClick={() => {
+            void handleVoiceClick();
+          }}
+          className="gap-2"
+        >
+          {recorder.state === "requesting" ||
+          recorder.state === "processing" ? (
+            <Loader2
+              className="h-4 w-4 animate-spin"
+              aria-hidden="true"
+            />
+          ) : recorder.state === "recording" ? (
+            <Square
+              className="h-4 w-4"
+              aria-hidden="true"
+            />
+          ) : (
+            <Mic
+              className="h-4 w-4"
+              aria-hidden="true"
+            />
+          )}
+
+          {recorder.state === "requesting"
+            ? "Підключення…"
+            : recorder.state === "processing"
+              ? "Розпізнавання…"
+              : recorder.state === "recording"
+                ? "Зупинити запис"
+                : "Відповісти голосом"}
+        </Button>
+
+        <span className="text-xs text-muted-foreground">
+          {recorder.state === "recording"
+            ? `Запис: ${recorder.durationSeconds} с`
+            : recorder.state === "processing"
+              ? "Перетворюємо голос на текст…"
+              : "Можна писати або говорити"}
+        </span>
+      </div>
+
+      {recorder.error && (
+        <p
+          role="alert"
+          className="mt-2 text-sm text-destructive"
+        >
+          {recorder.error}
+        </p>
+      )}
+
+      {value && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Розпізнаний текст можна відредагувати перед
+          надсиланням.
+        </p>
+      )}
     </SceneShell>
   );
 }

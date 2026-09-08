@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import type {
   PublicQuest,
@@ -64,9 +64,10 @@ export function useQuest() {
 
   const [loading, setLoading] = useState(false);
 
-  const [submitting, setSubmitting] = useState(false);
+const [submitting, setSubmitting] = useState(false);
+const submitLockRef = useRef(false);
 
-  const [completed, setCompleted] = useState(false);
+const [completed, setCompleted] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -108,48 +109,52 @@ export function useQuest() {
   }, []);
 
   const submitAnswer = useCallback(
-    async ({ userInput, responseTimeMs }: SubmitAnswerParams) => {
-      if (!runId || submitting) {
-        return;
-      }
+  async ({ userInput, responseTimeMs }: SubmitAnswerParams) => {
+    if (!runId || submitLockRef.current) {
+      return;
+    }
 
-      setSubmitting(true);
-      setError(null);
+    submitLockRef.current = true;
+    setSubmitting(true);
+    setError(null);
 
-      try {
-        const response = await fetch("/api/quests/submit", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            runId,
-            userInput,
-            responseTimeMs,
-          }),
-        });
+    try {
+      const response = await fetch("/api/quests/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          runId,
+          userInput,
+          responseTimeMs,
+        }),
+      });
 
-        const result = await readJson<SubmitQuestSceneResult>(response);
+      const result = await readJson<SubmitQuestSceneResult>(response);
 
-        setScene(result.scene);
-        setProgress(result.progress);
-        setEvaluation(result.evaluation);
-        setScore(result.score);
-        setXpEarned(result.xpEarned);
-        setCoinsEarned(result.coinsEarned);
-        setCompleted(result.completed);
+      setScene(result.scene);
+      setProgress(result.progress);
+      setEvaluation(result.evaluation);
+      setScore(result.score);
+      setXpEarned(result.xpEarned);
+      setCoinsEarned(result.coinsEarned);
+      setCompleted(result.completed);
 
-        setCompletionSummary(result.completionSummary ?? null);
-      } catch (caught) {
-        setError(
-          caught instanceof Error ? caught.message : "Failed to submit answer",
-        );
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    [runId, submitting],
-  );
+      setCompletionSummary(result.completionSummary ?? null);
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Failed to submit answer",
+      );
+    } finally {
+      submitLockRef.current = false;
+      setSubmitting(false);
+    }
+  },
+  [runId],
+);
 
   return {
     runId,

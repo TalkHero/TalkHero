@@ -14,7 +14,7 @@ import { API_ERRORS, UI_ERRORS } from "@/lib/i18n/errors";
 import { awardXp } from "@/lib/progress/awardXp";
 import { createClient } from "@/lib/supabase/server";
 import { analyzeAndSaveUserMemories } from "@/lib/ai/user-memory/analyze-and-save-memories";
-
+import { buildSpeakingPrompt } from "@/lib/ai/tutor/build-speaking-prompt";
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -22,6 +22,7 @@ const openai = new OpenAI({
 type ChatRequest = {
   message?: string;
   conversationId?: string | null;
+  mode?: "chat" | "speaking";
 };
 
 type Profile = {
@@ -173,6 +174,8 @@ export async function POST(request: Request) {
     const body = (await request.json()) as ChatRequest;
     const message = body.message?.trim();
 
+    const mode = body.mode === "speaking" ? "speaking" : "chat";
+
     if (!message) {
       return NextResponse.json(
         {
@@ -317,19 +320,28 @@ ${memoryLines.join("\n")}
       console.error("CHAT ERROR MEMORY LOAD ERROR:", errorMemoryLoadError);
     }
 
-    const tutorPrompt = buildTutorPrompt({
-      profile: {
-        fullName,
-        nativeLanguage,
-        targetLanguage,
-        level: englishLevel,
-      },
-      lesson: currentLesson,
-    });
+    const tutorContext = {
+  profile: {
+    fullName,
+    nativeLanguage,
+    targetLanguage,
+    level: englishLevel,
+  },
+  lesson: currentLesson,
+};
 
-    const systemPrompt = [tutorPrompt, userMemoryPrompt, errorMemoryPrompt]
-      .filter(Boolean)
-      .join("\n\n");
+const tutorPrompt =
+  mode === "speaking"
+    ? buildSpeakingPrompt(tutorContext)
+    : buildTutorPrompt(tutorContext);
+
+const systemPrompt = [
+  tutorPrompt,
+  userMemoryPrompt,
+  mode === "speaking" ? "" : errorMemoryPrompt,
+]
+  .filter(Boolean)
+  .join("\n\n");
 
     const encoder = new TextEncoder();
     const currentConversationId = conversationId;

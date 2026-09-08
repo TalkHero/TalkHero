@@ -21,123 +21,305 @@ export function useNPCSpeech({
 
   const objectUrlRef = useRef<string | null>(null);
 
+  const abortControllerRef =
+    useRef<AbortController | null>(null);
+
+  const sessionIdRef = useRef(0);
+
+  const loadingRef = useRef(false);
+
   const [loading, setLoading] = useState(false);
 
   const [playing, setPlaying] = useState(false);
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] =
+    useState<string | null>(null);
 
   const cleanupAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.removeAttribute("src");
+    const audio = audioRef.current;
+
+    if (audio) {
+      audio.pause();
+
+      audio.onplay = null;
+      audio.onended = null;
+      audio.onerror = null;
+
+      audio.removeAttribute("src");
+      audio.load();
+
       audioRef.current = null;
     }
 
     if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
+      URL.revokeObjectURL(
+        objectUrlRef.current,
+      );
+
       objectUrlRef.current = null;
     }
 
     setPlaying(false);
   }, []);
 
-  useEffect(() => {
-    return cleanupAudio;
-  }, [cleanupAudio]);
+  const cancelRequest = useCallback(() => {
+    abortControllerRef.current?.abort();
 
-  useEffect(() => {
+    abortControllerRef.current = null;
+
+    loadingRef.current = false;
+
+    setLoading(false);
+  }, []);
+
+  const stop = useCallback(() => {
+    /*
+     * Інвалідуємо всі попередні
+     * асинхронні операції.
+     */
+    sessionIdRef.current += 1;
+
+    cancelRequest();
     cleanupAudio();
+  }, [cancelRequest, cleanupAudio]);
+
+  /*
+   * При зміні репліки або голосу
+   * старе аудіо та старий TTS-запит
+   * більше не повинні продовжуватися.
+   */
+  useEffect(() => {
+    sessionIdRef.current += 1;
+
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+
+    loadingRef.current = false;
+
+    cleanupAudio();
+
+    setLoading(false);
     setError(null);
   }, [text, voice, cleanupAudio]);
 
-  const stop = useCallback(() => {
-    cleanupAudio();
-  }, [cleanupAudio]);
+  /*
+   * Повне очищення при демонтуванні.
+   */
+  useEffect(() => {
+    return () => {
+      sessionIdRef.current += 1;
+
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = null;
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+
+        audioRef.current.onplay = null;
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
+
+        audioRef.current.removeAttribute(
+          "src",
+        );
+
+        audioRef.current = null;
+      }
+
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(
+          objectUrlRef.current,
+        );
+
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   const play = useCallback(async () => {
     if (!voice || !text.trim()) {
-      setError("Для цього персонажа озвучення ще не налаштовано.");
+      setError(
+        "Для цього персонажа озвучення ще не налаштовано.",
+      );
 
       return;
     }
 
-    if (playing) {
+    /*
+     * Якщо репліка вже грає —
+     * кнопка працює як Stop.
+     */
+    if (audioRef.current) {
       stop();
+
       return;
     }
+
+    /*
+     * Не дозволяємо створити два
+     * паралельні TTS-запити подвійним кліком.
+     */
+    if (loadingRef.current) {
+      return;
+    }
+
+    sessionIdRef.current += 1;
+
+    const sessionId =
+      sessionIdRef.current;
+
+    abortControllerRef.current?.abort();
+
+    const controller =
+      new AbortController();
+
+    abortControllerRef.current =
+      controller;
+
+    loadingRef.current = true;
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/tts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "/api/tts",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            text,
+            voice,
+            instructions,
+          }),
+
+          signal: controller.signal,
         },
-        body: JSON.stringify({
-          text,
-          voice,
-          instructions,
-        }),
-      });
+      );
+
+      if (
+        sessionId !==
+        sessionIdRef.current
+      ) {
+        return;
+      }
 
       if (!response.ok) {
-        let message = "Не вдалося завантажити озвучення.";
+        let message =
+          "Не вдалося завантажити озвучення.";
 
         try {
-          const result = (await response.json()) as TTSFailure;
+          const result =
+            (await response.json()) as TTSFailure;
 
           if (result.error) {
             message = result.error;
           }
         } catch {
-          // Сервер міг повернути відповідь не у форматі JSON.
+          // Сервер міг повернути не JSON.
         }
 
         throw new Error(message);
       }
 
+      const contentType =
+        response.headers.get(
+          "content-type",
+        );
+
+      if (
+        !contentType?.includes("audio")
+      ) {
+        throw new Error(
+          "TTS повернув некоректний формат аудіо.",
+        );
+      }
+
+      const blob =
+        await response.blob();
+
+      if (
+        sessionId !==
+        sessionIdRef.current
+      ) {
+        return;
+      }
+
+      if (blob.size === 0) {
+        throw new Error(
+          "TTS повернув порожній аудіофайл.",
+        );
+      }
+
       cleanupAudio();
 
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+      const objectUrl =
+        URL.createObjectURL(blob);
 
-      const audio = new Audio(objectUrl);
+      const audio =
+        new Audio(objectUrl);
 
-      objectUrlRef.current = objectUrl;
+      objectUrlRef.current =
+        objectUrl;
+
       audioRef.current = audio;
 
-      audio.addEventListener("play", () => setPlaying(true), { once: true });
+      audio.onplay = () => {
+        if (
+          sessionId ===
+          sessionIdRef.current
+        ) {
+          setPlaying(true);
+        }
+      };
 
-      audio.addEventListener(
-        "ended",
-        () => {
-          audioRef.current = null;
+      audio.onended = () => {
+        if (
+          sessionId !==
+          sessionIdRef.current
+        ) {
+          return;
+        }
 
-          if (objectUrlRef.current) {
-            URL.revokeObjectURL(objectUrlRef.current);
-            objectUrlRef.current = null;
-          }
+        cleanupAudio();
+      };
 
-          setPlaying(false);
-        },
-        { once: true },
-      );
+      audio.onerror = () => {
+        if (
+          sessionId !==
+          sessionIdRef.current
+        ) {
+          return;
+        }
 
-      audio.addEventListener(
-        "error",
-        () => {
-          setError("Браузеру не вдалося відтворити аудіо.");
+        setError(
+          "Браузеру не вдалося відтворити аудіо.",
+        );
 
-          cleanupAudio();
-        },
-        { once: true },
-      );
+        cleanupAudio();
+      };
 
       await audio.play();
     } catch (caught) {
+      if (
+        sessionId !==
+        sessionIdRef.current
+      ) {
+        return;
+      }
+
+      if (
+        caught instanceof DOMException &&
+        caught.name === "AbortError"
+      ) {
+        return;
+      }
+
       cleanupAudio();
 
       setError(
@@ -146,9 +328,29 @@ export function useNPCSpeech({
           : "Сталася невідома помилка озвучення.",
       );
     } finally {
-      setLoading(false);
+      /*
+       * Старий запит не повинен
+       * змінити стан уже нової сесії.
+       */
+      if (
+        sessionId ===
+        sessionIdRef.current
+      ) {
+        abortControllerRef.current =
+          null;
+
+        loadingRef.current = false;
+
+        setLoading(false);
+      }
     }
-  }, [cleanupAudio, instructions, playing, stop, text, voice]);
+  }, [
+    cleanupAudio,
+    instructions,
+    stop,
+    text,
+    voice,
+  ]);
 
   return {
     loading,
