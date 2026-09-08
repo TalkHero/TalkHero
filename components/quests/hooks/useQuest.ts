@@ -12,6 +12,8 @@ import type {
   SubmitQuestSceneResult,
 } from "@/lib/quests";
 
+import type { PendingQuestFeedback } from "./quest-feedback";
+
 type StartQuestParams = {
   campaignSlug: string;
   episodeSlug: string;
@@ -47,9 +49,11 @@ export function useQuest() {
 
   const [progress, setProgress] = useState<QuestProgress | null>(null);
 
-  const [evaluation, setEvaluation] = useState<QuestSceneEvaluation | null>(
-    null,
-  );
+  const [evaluation, setEvaluation] =
+    useState<QuestSceneEvaluation | null>(null);
+
+  const [pendingFeedback, setPendingFeedback] =
+    useState<PendingQuestFeedback | null>(null);
 
   const [score, setScore] = useState(0);
 
@@ -64,10 +68,11 @@ export function useQuest() {
 
   const [loading, setLoading] = useState(false);
 
-const [submitting, setSubmitting] = useState(false);
-const submitLockRef = useRef(false);
+  const [submitting, setSubmitting] = useState(false);
 
-const [completed, setCompleted] = useState(false);
+  const submitLockRef = useRef(false);
+
+  const [completed, setCompleted] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -75,6 +80,7 @@ const [completed, setCompleted] = useState(false);
     setLoading(true);
     setError(null);
     setEvaluation(null);
+    setPendingFeedback(null);
     setCompletionSummary(null);
     setCompleted(false);
 
@@ -108,31 +114,8 @@ const [completed, setCompleted] = useState(false);
     }
   }, []);
 
-  const submitAnswer = useCallback(
-  async ({ userInput, responseTimeMs }: SubmitAnswerParams) => {
-    if (!runId || submitLockRef.current) {
-      return;
-    }
-
-    submitLockRef.current = true;
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/quests/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          runId,
-          userInput,
-          responseTimeMs,
-        }),
-      });
-
-      const result = await readJson<SubmitQuestSceneResult>(response);
-
+  const applySubmitResult = useCallback(
+    (result: SubmitQuestSceneResult) => {
       setScene(result.scene);
       setProgress(result.progress);
       setEvaluation(result.evaluation);
@@ -140,21 +123,107 @@ const [completed, setCompleted] = useState(false);
       setXpEarned(result.xpEarned);
       setCoinsEarned(result.coinsEarned);
       setCompleted(result.completed);
-
       setCompletionSummary(result.completionSummary ?? null);
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : "Failed to submit answer",
-      );
-    } finally {
-      submitLockRef.current = false;
-      setSubmitting(false);
-    }
-  },
-  [runId],
-);
+    },
+    [],
+  );
+
+  const continueAfterFeedback = useCallback(() => {
+  if (!pendingFeedback) {
+    return;
+  }
+
+  const result = pendingFeedback.result;
+
+  setPendingFeedback(null);
+
+  setScene(result.scene);
+  setProgress(result.progress);
+
+  // Feedback уже показали окремим кроком.
+  // Не переносимо evaluation попередньої відповіді
+  // на наступну або retry-сцену.
+  setEvaluation(null);
+
+  setScore(result.score);
+  setXpEarned(result.xpEarned);
+  setCoinsEarned(result.coinsEarned);
+  setCompleted(result.completed);
+  setCompletionSummary(result.completionSummary ?? null);
+}, [pendingFeedback]);
+
+  const submitAnswer = useCallback(
+    async ({ userInput, responseTimeMs }: SubmitAnswerParams) => {
+      if (
+        !runId ||
+        !scene ||
+        submitLockRef.current ||
+        pendingFeedback
+      ) {
+        return;
+      }
+
+      const answeredScene = scene;
+
+      submitLockRef.current = true;
+      setSubmitting(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/quests/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            runId,
+            userInput,
+            responseTimeMs,
+          }),
+        });
+
+        const result =
+          await readJson<SubmitQuestSceneResult>(response);
+
+        const aiConversation =
+          answeredScene.metadata.aiConversation === true;
+
+        const shouldPauseForFeedback =
+          !aiConversation &&
+          Boolean(result.evaluation.feedback);
+
+        if (shouldPauseForFeedback) {
+          setEvaluation(result.evaluation);
+
+          setPendingFeedback({
+            answeredScene,
+            evaluation: result.evaluation,
+            result,
+            userInput,
+          });
+
+          return;
+        }
+
+        applySubmitResult(result);
+      } catch (caught) {
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "Failed to submit answer",
+        );
+      } finally {
+        submitLockRef.current = false;
+        setSubmitting(false);
+      }
+    },
+    [
+      runId,
+      scene,
+      pendingFeedback,
+      applySubmitResult,
+    ],
+  );
 
   return {
     runId,
@@ -162,6 +231,7 @@ const [completed, setCompleted] = useState(false);
     scene,
     progress,
     evaluation,
+    pendingFeedback,
 
     score,
     maxScore,
@@ -178,5 +248,6 @@ const [completed, setCompleted] = useState(false);
 
     startQuest,
     submitAnswer,
+    continueAfterFeedback,
   };
 }

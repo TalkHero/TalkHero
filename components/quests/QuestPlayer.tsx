@@ -1,8 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useRef } from "react";
-import { Loader2, RotateCcw } from "lucide-react";
-
+import { ArrowRight, Loader2, RotateCcw } from "lucide-react";
 import { AIFeedbackCard } from "./AIFeedbackCard";
 import { MissionHUD } from "./MissionHUD";
 import { SceneRenderer } from "./SceneRenderer";
@@ -231,7 +230,69 @@ const restartQuest = () => {
     </div>
   );
 }
+if (quest.pendingFeedback) {
+  const { evaluation, result } = quest.pendingFeedback;
 
+  return (
+    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+      {quest.quest && quest.progress ? (
+        <MissionHUD
+          quest={quest.quest}
+          progress={quest.progress}
+          score={quest.score}
+          xpEarned={quest.xpEarned}
+          coinsEarned={quest.coinsEarned}
+        />
+      ) : null}
+
+      {quest.error ? (
+        <Card
+          role="alert"
+          className="border-destructive/20 bg-destructive-soft"
+        >
+          <CardContent className="py-4 text-sm text-red-700 dark:text-red-300">
+            <span className="font-semibold">Помилка:</span> {quest.error}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {evaluation.feedback ? (
+        <AIFeedbackCard
+          feedback={evaluation.feedback}
+          isCorrect={evaluation.isCorrect}
+          grade={evaluation.grade}
+        />
+      ) : null}
+
+      <Card className="border-primary/15">
+        <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold text-foreground">
+              {result.completed
+                ? "Місію завершено"
+                : "Готові рухатися далі?"}
+            </p>
+
+            <p className="mt-1 text-sm text-muted-foreground">
+              {result.completed
+                ? "Перейдіть до підсумків місії."
+                : "Перегляньте відгук і продовжуйте пригоду."}
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            onClick={quest.continueAfterFeedback}
+            className="shrink-0 gap-2"
+          >
+            {result.completed ? "До результатів" : "Продовжити"}
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Button>
+        </CardContent>
+      </Card>
+    </main>
+  );
+}
   const livingNPC = quest.scene?.metadata.aiConversation === true;
 
   return (
