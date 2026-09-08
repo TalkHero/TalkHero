@@ -12,7 +12,7 @@ import {
 
 import { AIConversationScene } from "./scenes/AIConversationScene";
 import { SCENE_REGISTRY } from "./SceneRegistry";
-
+import { cn } from "@/lib/utils";
 export type SceneRendererProps = {
   scene: PublicQuestScene | null;
   evaluation?: QuestSceneEvaluation | null;
@@ -32,14 +32,24 @@ export function SceneRenderer({
     return null;
   }
 
+  const sceneKey = `${scene.id}:${scene.metadata.aiConversation === true ? "ai" : scene.sceneType}`;
+
   if (scene.metadata.aiConversation === true) {
     return (
-      <AIConversationScene
-        scene={scene}
-        evaluation={evaluation}
-        loading={loading}
-        onSubmit={onSubmit}
-      />
+      <div
+        key={sceneKey}
+        className={cn(
+          "animate-in fade-in slide-in-from-bottom-2 duration-300",
+          "motion-reduce:animate-none",
+        )}
+      >
+        <AIConversationScene
+          scene={scene}
+          evaluation={evaluation}
+          loading={loading}
+          onSubmit={onSubmit}
+        />
+      </div>
     );
   }
 
@@ -69,11 +79,19 @@ export function SceneRenderer({
   }
 
   return (
-    <SceneComponent
-      scene={scene}
-      loading={loading}
-      onContinue={onContinue}
-      onSubmit={onSubmit}
-    />
+    <div
+      key={sceneKey}
+      className={cn(
+        "animate-in fade-in slide-in-from-bottom-2 duration-300",
+        "motion-reduce:animate-none",
+      )}
+    >
+      <SceneComponent
+        scene={scene}
+        loading={loading}
+        onContinue={onContinue}
+        onSubmit={onSubmit}
+      />
+    </div>
   );
 }

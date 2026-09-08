@@ -44,17 +44,17 @@ function ResultCard({
   cardClassName,
 }: ResultCardProps) {
   return (
-    <article className={cn("rounded-xl border p-5 text-center", cardClassName)}>
+    <article className={cn("rounded-xl border p-4 text-center", cardClassName)}>
       <div
         className={cn(
-          "mx-auto flex size-11 items-center justify-center rounded-lg",
+          "mx-auto flex size-10 items-center justify-center rounded-lg",
           iconClassName,
         )}
       >
-        <Icon className="size-5" aria-hidden="true" />
+        <Icon className="size-4.5" aria-hidden="true" />
       </div>
 
-      <p className="mt-4 text-3xl font-bold tracking-tight text-foreground">
+      <p className="mt-3 text-2xl font-bold tracking-tight text-foreground">
         {value}
       </p>
 
@@ -116,7 +116,7 @@ export function CompletionScene({
         "animate-in fade-in zoom-in-95 duration-300",
       )}
     >
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 px-5 py-10 text-center text-white sm:px-10 sm:py-14">
+      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 px-5 py-8 text-center text-white sm:px-8 sm:py-10">
         <div
           aria-hidden="true"
           className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/10 to-transparent"
@@ -125,9 +125,9 @@ export function CompletionScene({
         <div className="relative">
           <div
             aria-hidden="true"
-            className="mx-auto flex size-20 items-center justify-center rounded-xl bg-white/15 shadow-lg backdrop-blur"
+            className="mx-auto flex size-16 items-center justify-center rounded-xl bg-white/15 shadow-lg backdrop-blur"
           >
-            <Trophy className="size-10" />
+            <Trophy className="size-8" />
           </div>
 
           <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-50">
@@ -137,12 +137,12 @@ export function CompletionScene({
 
           <h1
             id="mission-completion-title"
-            className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl"
+           className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl"
           >
             {result.title}
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-emerald-50 sm:text-lg">
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-emerald-50 sm:text-base">
             {result.description}
           </p>
         </div>
@@ -151,7 +151,7 @@ export function CompletionScene({
       <CardContent className="space-y-6 py-6 sm:py-8">
         <section
           aria-label="Результати місії"
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
         >
           <ResultCard
             label="Бали"
@@ -261,14 +261,13 @@ export function CompletionScene({
           </section>
         ) : null}
 
-        <section className="rounded-xl border border-violet-100 bg-violet-50 p-5 dark:border-violet-900 dark:bg-violet-950/40">
-          <div className="flex items-start gap-4">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200">
+<section className="rounded-xl border border-violet-100 bg-violet-50 p-4 dark:border-violet-900 dark:bg-violet-950/40">          <div className="flex items-start gap-4">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200">
               <Sparkles className="size-5" aria-hidden="true" />
             </div>
 
             <div>
-              <CardTitle className="text-lg">Продовжуйте пригоду</CardTitle>
+             <CardTitle className="text-base">Продовжуйте пригоду</CardTitle>
 
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 Повторіть місію, щоб покращити результат, або поверніться до
@@ -279,8 +278,7 @@ export function CompletionScene({
         </section>
       </CardContent>
 
-      <CardFooter className="flex-col-reverse gap-3 sm:flex-row sm:justify-center">
-        <Button
+<CardFooter className="flex-col-reverse gap-2 border-t bg-muted/20 py-4 sm:flex-row sm:justify-center">        <Button
           type="button"
           variant="outline"
           width="full"
