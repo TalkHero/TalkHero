@@ -100,10 +100,10 @@ export function useQuest() {
       setScene(result.scene);
       setProgress(result.progress);
 
-      setScore(0);
-      setMaxScore(result.maxScore);
-      setXpEarned(0);
-      setCoinsEarned(0);
+      setScore(result.score);
+setMaxScore(result.maxScore);
+setXpEarned(result.xpEarned);
+setCoinsEarned(result.coinsEarned);
       setCompletionSummary(null);
     } catch (caught) {
       setError(

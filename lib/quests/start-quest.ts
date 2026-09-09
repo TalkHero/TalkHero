@@ -485,13 +485,16 @@ async function resumeQuestRun({
   });
 
   return {
-    runId: run.id,
-    resumed: true,
-    quest: mapPublicQuest(quest),
-    progress: buildProgress(run, scenes.length),
-    scene: mapPublicScene(currentScene),
-    maxScore: run.max_score,
-  };
+  runId: run.id,
+  resumed: true,
+  quest: mapPublicQuest(quest),
+  progress: buildProgress(run, scenes.length),
+  scene: mapPublicScene(currentScene),
+  score: run.score,
+  maxScore: run.max_score,
+  xpEarned: run.xp_earned,
+  coinsEarned: run.coins_earned,
+};
 }
 
 async function removeFailedRun(runId: string): Promise<void> {
@@ -679,15 +682,18 @@ export async function startQuest({
   }
 
   return {
-    runId: run.id,
-    resumed: false,
-    quest: mapPublicQuest(quest),
-    progress: {
-      current: 1,
-      total: scenes.length,
-      completed: 0,
-    },
-    scene: mapPublicScene(firstScene),
-    maxScore: run.max_score,
-  };
+  runId: run.id,
+  resumed: false,
+  quest: mapPublicQuest(quest),
+  progress: {
+    current: 1,
+    total: scenes.length,
+    completed: 0,
+  },
+  scene: mapPublicScene(firstScene),
+  score: run.score,
+  maxScore: run.max_score,
+  xpEarned: run.xp_earned,
+  coinsEarned: run.coins_earned,
+};
 }

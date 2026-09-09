@@ -272,7 +272,10 @@ export type StartedQuest = {
   quest: PublicQuest;
   progress: QuestProgress;
   scene: PublicQuestScene;
+  score: number;
   maxScore: number;
+  xpEarned: number;
+  coinsEarned: number;
 };
 
 export type QuestEvaluationGrade = "correct" | "almost" | "incorrect";
