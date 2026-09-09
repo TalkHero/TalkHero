@@ -1,8 +1,17 @@
 import "server-only";
-import { completeQuest } from "./completion";
+
+import { checkAndUpdateMastery, loadErrors } from "@/lib/ai/error-memory";
+
+import {
+  commitAtomicQuestSubmission,
+} from "./atomic-quest-commit";
+import type {
+  AtomicConversationMessage,
+  AtomicQuestEvent,
+} from "./atomic-quest-commit";
+import { buildQuestCompletionSummary } from "./completion-summary";
 import {
   listRecentConversationMessages,
-  recordConversationMessage,
   toConversationHistoryJson,
 } from "./conversation-messages";
 import { QuestEngineError } from "./errors";
@@ -15,8 +24,10 @@ import {
   loadQuestStructure,
   mapPublicScene,
 } from "./repository";
-import { recordQuestEvent } from "./run-events";
-import { updateQuestRun } from "./run-updater";
+import { listQuestRunEvents } from "./run-events";
+import { saveCorrectAnswerVocabulary } from "./save-correct-answer-vocabulary";
+import { saveQuestLanguageErrors } from "./quest-error-memory";
+import { loadCompletedQuestSubmission } from "./submission-idempotency";
 
 import type {
   AiQuestSceneEvaluator,
@@ -25,19 +36,17 @@ import type {
 import type {
   QuestJsonObject,
   QuestProgress,
+  QuestRunEventRecord,
   QuestRunRecord,
   QuestSceneRecord,
   SubmitQuestSceneResult,
 } from "./types";
 
-import { saveCorrectAnswerVocabulary } from "./save-correct-answer-vocabulary";
-import { saveQuestLanguageErrors } from "./quest-error-memory";
-
-import { checkAndUpdateMastery, loadErrors } from "@/lib/ai/error-memory";
-
 export type SubmitQuestSceneInput = {
   userId: string;
   runId: string;
+  sceneId: string;
+  submissionId: string;
   userInput: unknown;
   responseTimeMs?: number | null;
   aiEvaluator?: AiQuestSceneEvaluator;
@@ -83,7 +92,6 @@ function createUpdatedState({
   nextScene: QuestSceneRecord | null;
 }): QuestJsonObject {
   const currentState = asJsonObject(run.state);
-
   const attempts = getAttemptMap(currentState);
 
   const persistentState = {
@@ -177,15 +185,10 @@ function shouldRetryScene({
 function toPublicEvaluation(evaluation: QuestSceneEvaluationResult) {
   return {
     isCorrect: evaluation.isCorrect,
-
     grade: evaluation.grade,
-
     scoreAwarded: evaluation.scoreAwarded,
-
     feedback: evaluation.feedback,
-
     nextSceneCode: evaluation.nextSceneCode,
-
     metadata: evaluation.metadata,
   };
 }
@@ -199,33 +202,34 @@ function getMetadataString(
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-function getAiNpcReply(evaluation: QuestSceneEvaluationResult): string | null {
+function getAiNpcReply(
+  evaluation: QuestSceneEvaluationResult,
+): string | null {
   const value = evaluation.metadata?.npcReply;
 
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-async function saveSubmittedConversation({
-  run,
+function buildConversationMessages({
   scene,
   userInput,
   evaluation,
   attemptNumber,
 }: {
-  run: QuestRunRecord;
   scene: QuestSceneRecord;
   userInput: unknown;
   evaluation: QuestSceneEvaluationResult;
   attemptNumber: number;
-}): Promise<void> {
+}): AtomicConversationMessage[] {
+  const messages: AtomicConversationMessage[] = [];
+
   const passive =
     scene.scene_type === "dialogue" ||
     scene.scene_type === "narration" ||
     scene.scene_type === "completion";
 
   if (passive) {
-    await recordConversationMessage({
-      runId: run.id,
+    messages.push({
       sceneId: scene.id,
       messageKey: `scene:${scene.id}:npc`,
       role: "npc",
@@ -237,12 +241,11 @@ async function saveSubmittedConversation({
       },
     });
 
-    return;
+    return messages;
   }
 
   if (typeof userInput === "string" && userInput.trim()) {
-    await recordConversationMessage({
-      runId: run.id,
+    messages.push({
       sceneId: scene.id,
       messageKey: `scene:${scene.id}:attempt:${attemptNumber}:user`,
       role: "user",
@@ -263,15 +266,12 @@ async function saveSubmittedConversation({
     evaluation.mode === "ai" &&
     aiConversation
   ) {
-    const npcReply =
-      getAiNpcReply(evaluation);
+    const npcReply = getAiNpcReply(evaluation);
 
     if (npcReply) {
-      await recordConversationMessage({
-        runId: run.id,
+      messages.push({
         sceneId: scene.id,
-        messageKey:
-          `scene:${scene.id}:attempt:${attemptNumber}:npc-ai`,
+        messageKey: `scene:${scene.id}:attempt:${attemptNumber}:npc-ai`,
         role: "npc",
         speaker:
           scene.speaker ??
@@ -282,34 +282,32 @@ async function saveSubmittedConversation({
           "Персонаж",
         content: npcReply,
         metadata: {
-          sceneCode:
-            scene.scene_code,
+          sceneCode: scene.scene_code,
           attemptNumber,
           generatedByAI: true,
           scorePercent:
-            evaluation.metadata
-              ?.scorePercent ?? null,
+            evaluation.metadata?.scorePercent ?? null,
         },
       });
     }
   }
+
+  return messages;
 }
 
-async function recordSubmissionEvent({
-  run,
+function buildSubmissionEvent({
   scene,
   userInput,
   evaluation,
   responseTimeMs,
   attemptNumber,
 }: {
-  run: QuestRunRecord;
   scene: QuestSceneRecord;
   userInput: unknown;
   evaluation: QuestSceneEvaluationResult;
   responseTimeMs: number | null;
   attemptNumber: number;
-}): Promise<void> {
+}): AtomicQuestEvent {
   const evaluationJson: QuestJsonObject = {
     mode: evaluation.mode,
     isCorrect: evaluation.isCorrect,
@@ -321,11 +319,13 @@ async function recordSubmissionEvent({
     metadata: evaluation.metadata,
   };
 
-  await recordQuestEvent({
-    runId: run.id,
-    scene,
+  return {
+    sceneId: scene.id,
+    sceneCode: scene.scene_code,
     eventType:
-      scene.scene_type === "choice" ? "choice_selected" : "answer_submitted",
+      scene.scene_type === "choice"
+        ? "choice_selected"
+        : "answer_submitted",
     userInput,
     evaluation: evaluationJson,
     isCorrect: evaluation.isCorrect,
@@ -336,18 +336,164 @@ async function recordSubmissionEvent({
       evaluationMode: evaluation.mode,
       grade: evaluation.grade,
     },
-  });
+  };
+}
+
+function buildSceneCompletedEvent({
+  scene,
+  userInput,
+  evaluation,
+  responseTimeMs,
+  attemptNumber,
+  completedSceneCount,
+  nextSceneCode,
+}: {
+  scene: QuestSceneRecord;
+  userInput: unknown;
+  evaluation: QuestSceneEvaluationResult;
+  responseTimeMs: number | null;
+  attemptNumber: number;
+  completedSceneCount: number;
+  nextSceneCode: string | null;
+}): AtomicQuestEvent {
+  return {
+    sceneId: scene.id,
+    sceneCode: scene.scene_code,
+    eventType: "scene_completed",
+    userInput,
+    evaluation: {
+      mode: evaluation.mode,
+      grade: evaluation.grade,
+      feedback: evaluation.feedback,
+      nextSceneCode,
+      metadata: evaluation.metadata,
+    },
+    isCorrect: evaluation.isCorrect,
+    scoreAwarded: evaluation.scoreAwarded,
+    responseTimeMs,
+    metadata: {
+      attemptNumber,
+      completedSceneCount,
+    },
+  };
+}
+
+function buildScenePresentedEvent({
+  scene,
+  retry,
+  attemptNumber,
+  previousScene,
+}: {
+  scene: QuestSceneRecord;
+  retry: boolean;
+  attemptNumber?: number;
+  previousScene?: QuestSceneRecord;
+}): AtomicQuestEvent {
+  return {
+    sceneId: scene.id,
+    sceneCode: scene.scene_code,
+    eventType: "scene_presented",
+    metadata: {
+      resumed: false,
+      retry,
+      ...(attemptNumber !== undefined
+        ? { attemptNumber }
+        : {}),
+      actId: scene.act_id,
+      orderIndex: scene.order_index,
+      ...(previousScene
+        ? {
+            previousSceneId: previousScene.id,
+            previousSceneCode: previousScene.scene_code,
+          }
+        : {}),
+    },
+  };
+}
+
+async function saveLearningSideEffects({
+  userId,
+  scene,
+  userInput,
+  evaluation,
+}: {
+  userId: string;
+  scene: QuestSceneRecord;
+  userInput: unknown;
+  evaluation: QuestSceneEvaluationResult;
+}): Promise<void> {
+  try {
+    await saveQuestLanguageErrors({
+      userId,
+      userInput,
+      evaluation,
+    });
+  } catch (error) {
+    console.error(
+      "FAILED TO SAVE QUEST LANGUAGE ERROR:",
+      error,
+    );
+  }
+
+  if (
+    typeof userInput === "string" &&
+    userInput.trim().length > 0
+  ) {
+    try {
+      await checkAndUpdateMastery({
+        userId,
+        userMessage: userInput,
+      });
+    } catch (error) {
+      console.error(
+        "FAILED TO UPDATE QUEST LANGUAGE MASTERY:",
+        error,
+      );
+    }
+  }
+
+  if (evaluation.isCorrect === true) {
+    try {
+      await saveCorrectAnswerVocabulary({
+        userId,
+        scene,
+        userInput,
+        evaluation,
+      });
+    } catch (error) {
+      console.error(
+        "FAILED TO SAVE CORRECT ANSWER TO VOCABULARY:",
+        error,
+      );
+    }
+  }
+}
+
+function toCompletionSummaryEvent(
+  event: AtomicQuestEvent,
+): QuestRunEventRecord {
+  return {
+    event_type: event.eventType,
+    user_input: event.userInput ?? null,
+    evaluation: event.evaluation ?? null,
+    metadata: event.metadata ?? {},
+  } as QuestRunEventRecord;
 }
 
 export async function submitQuestScene({
   userId,
   runId,
+  sceneId,
+  submissionId,
   userInput,
   responseTimeMs = null,
   aiEvaluator,
 }: SubmitQuestSceneInput): Promise<SubmitQuestSceneResult> {
   if (!userId.trim()) {
-    throw new QuestEngineError("SCENE_SUBMIT_FAILED", "User ID is required");
+    throw new QuestEngineError(
+      "SCENE_SUBMIT_FAILED",
+      "User ID is required",
+    );
   }
 
   if (!runId.trim()) {
@@ -357,7 +503,31 @@ export async function submitQuestScene({
     );
   }
 
+  if (!sceneId.trim()) {
+    throw new QuestEngineError(
+      "SCENE_SUBMIT_FAILED",
+      "Quest scene ID is required",
+    );
+  }
+
+  if (!submissionId.trim()) {
+    throw new QuestEngineError(
+      "SCENE_SUBMIT_FAILED",
+      "Submission ID is required",
+    );
+  }
+
   const run = await loadQuestRun(runId, userId);
+
+  const completedSubmission =
+    await loadCompletedQuestSubmission({
+      runId: run.id,
+      submissionId,
+    });
+
+  if (completedSubmission) {
+    return completedSubmission;
+  }
 
   if (run.status !== "in_progress") {
     throw new QuestEngineError(
@@ -376,18 +546,33 @@ export async function submitQuestScene({
 
   const currentScene = findCurrentScene(run, scenes);
 
+  if (currentScene.id !== sceneId) {
+    throw new QuestEngineError(
+      "SCENE_SUBMIT_FAILED",
+      "Quest scene has already changed",
+      {
+        runId: run.id,
+        expectedSceneId: sceneId,
+        currentSceneId: currentScene.id,
+      },
+    );
+  }
+
   const persistentRunState = asJsonObject(run.state);
 
-  const conversationMessages = await listRecentConversationMessages(run.id, 16);
+  const conversationHistory =
+    await listRecentConversationMessages(run.id, 16);
 
   const runState: QuestJsonObject = {
     ...persistentRunState,
-    conversationHistory: toConversationHistoryJson(conversationMessages),
+    conversationHistory:
+      toConversationHistoryJson(conversationHistory),
   };
 
   const attemptMap = getAttemptMap(persistentRunState);
 
-  const attemptNumber = (attemptMap[currentScene.id] ?? 0) + 1;
+  const attemptNumber =
+    (attemptMap[currentScene.id] ?? 0) + 1;
 
   const isPassiveScene =
     currentScene.scene_type === "dialogue" ||
@@ -423,19 +608,12 @@ export async function submitQuestScene({
   const evaluation: QuestSceneEvaluationResult = isPassiveScene
     ? {
         mode: "manual",
-
         isCorrect: null,
-
         grade: null,
-
         scoreAwarded: 0,
-
         feedback: null,
-
         nextSceneCode: currentScene.next_scene_code,
-
         normalizedInput: null,
-
         metadata: {
           attemptNumber,
           passiveScene: true,
@@ -460,56 +638,22 @@ export async function submitQuestScene({
     scoreAwarded: sanitizeScore(evaluation.scoreAwarded),
   };
 
-  try {
-    await saveQuestLanguageErrors({
-      userId,
+  const conversationMessages =
+    buildConversationMessages({
+      scene: currentScene,
       userInput,
       evaluation: normalizedEvaluation,
+      attemptNumber,
     });
-  } catch (error) {
-    console.error("FAILED TO SAVE QUEST LANGUAGE ERROR:", error);
-  }
 
-  if (typeof userInput === "string" && userInput.trim().length > 0) {
-    try {
-      await checkAndUpdateMastery({
-        userId,
-        userMessage: userInput,
-      });
-    } catch (error) {
-      console.error("FAILED TO UPDATE QUEST LANGUAGE MASTERY:", error);
-    }
-  }
-
-  if (normalizedEvaluation.isCorrect === true) {
-    try {
-      await saveCorrectAnswerVocabulary({
-        userId,
-        scene: currentScene,
-        userInput,
-        evaluation: normalizedEvaluation,
-      });
-    } catch (error) {
-      console.error("FAILED TO SAVE CORRECT ANSWER TO VOCABULARY:", error);
-    }
-  }
-
-  await saveSubmittedConversation({
-    run,
-    scene: currentScene,
-    userInput,
-    evaluation: normalizedEvaluation,
-    attemptNumber,
-  });
-
-  await recordSubmissionEvent({
-    run,
-    scene: currentScene,
-    userInput,
-    evaluation: normalizedEvaluation,
-    responseTimeMs,
-    attemptNumber,
-  });
+  const submissionEvent =
+    buildSubmissionEvent({
+      scene: currentScene,
+      userInput,
+      evaluation: normalizedEvaluation,
+      responseTimeMs,
+      attemptNumber,
+    });
 
   if (
     shouldRetryScene({
@@ -525,42 +669,63 @@ export async function submitQuestScene({
       nextScene: currentScene,
     });
 
-    const updatedRun = await updateQuestRun({
-      runId: run.id,
-      state: retryState,
-    });
-
-    await recordQuestEvent({
-      runId: run.id,
-      scene: currentScene,
-      eventType: "scene_presented",
-      metadata: {
-        resumed: false,
-        retry: true,
-        attemptNumber: attemptNumber + 1,
-        actId: currentScene.act_id,
-        orderIndex: currentScene.order_index,
-      },
-    });
-
-    return {
+    const result: SubmitQuestSceneResult = {
       runId: run.id,
       completed: false,
-      score: updatedRun.score,
-      xpEarned: updatedRun.xp_earned,
-      coinsEarned: updatedRun.coins_earned,
+      score: run.score,
+      xpEarned: run.xp_earned,
+      coinsEarned: run.coins_earned,
       progress: buildProgress({
-        completedSceneCount: updatedRun.completed_scene_count,
+        completedSceneCount: run.completed_scene_count,
         totalScenes: scenes.length,
         completed: false,
       }),
       evaluation: toPublicEvaluation(normalizedEvaluation),
       scene: mapPublicScene(currentScene),
     };
+
+    const committed =
+      await commitAtomicQuestSubmission({
+        runId: run.id,
+        sceneId: currentScene.id,
+        submissionId,
+        attemptNumber,
+        newStatus: run.status,
+        newCurrentSceneId: currentScene.id,
+        newCurrentSceneCode: currentScene.scene_code,
+        newCompletedSceneCount: run.completed_scene_count,
+        newScore: run.score,
+        newXpEarned: run.xp_earned,
+        newCoinsEarned: run.coins_earned,
+        newState: retryState,
+        completedAt: run.completed_at ?? null,
+        result,
+        events: [
+          submissionEvent,
+          buildScenePresentedEvent({
+            scene: currentScene,
+            retry: true,
+            attemptNumber: attemptNumber + 1,
+          }),
+        ],
+        conversationMessages,
+      });
+
+    if (committed.committed) {
+      await saveLearningSideEffects({
+        userId,
+        scene: currentScene,
+        userInput,
+        evaluation: normalizedEvaluation,
+      });
+    }
+
+    return committed.result;
   }
 
   const nextSceneCode =
-    normalizedEvaluation.nextSceneCode ?? currentScene.next_scene_code;
+    normalizedEvaluation.nextSceneCode ??
+    currentScene.next_scene_code;
 
   const progression = resolveNextScene({
     currentScene,
@@ -569,7 +734,8 @@ export async function submitQuestScene({
     nextSceneCode,
   });
 
-  const nextScore = run.score + normalizedEvaluation.scoreAwarded;
+  const nextScore =
+    run.score + normalizedEvaluation.scoreAwarded;
 
   const completedSceneCount = Math.min(
     run.completed_scene_count + 1,
@@ -583,30 +749,16 @@ export async function submitQuestScene({
     nextScene: progression.nextScene,
   });
 
-  await recordQuestEvent({
-    runId: run.id,
-    scene: currentScene,
-    eventType: "scene_completed",
-    userInput,
-    evaluation: {
-      mode: normalizedEvaluation.mode,
-
-      grade: normalizedEvaluation.grade,
-
-      feedback: normalizedEvaluation.feedback,
-
-      nextSceneCode,
-
-      metadata: normalizedEvaluation.metadata,
-    },
-    isCorrect: normalizedEvaluation.isCorrect,
-    scoreAwarded: normalizedEvaluation.scoreAwarded,
-    responseTimeMs,
-    metadata: {
+  const sceneCompletedEvent =
+    buildSceneCompletedEvent({
+      scene: currentScene,
+      userInput,
+      evaluation: normalizedEvaluation,
+      responseTimeMs,
       attemptNumber,
       completedSceneCount,
-    },
-  });
+      nextSceneCode,
+    });
 
   if (progression.completed || !progression.nextScene) {
     const maxScore =
@@ -617,29 +769,37 @@ export async function submitQuestScene({
         : nextScore;
 
     const scoreRatio =
-      maxScore > 0 ? Math.min(1, Math.max(0, nextScore / maxScore)) : 1;
+      maxScore > 0
+        ? Math.min(1, Math.max(0, nextScore / maxScore))
+        : 1;
 
     const rewardRatio = Math.max(0.5, scoreRatio);
 
-    const scaledXpReward = Math.round(quest.xp_reward * rewardRatio);
+    const scaledXpReward = Math.round(
+      quest.xp_reward * rewardRatio,
+    );
 
-    const scaledCoinReward = Math.round(quest.coin_reward * rewardRatio);
+    const scaledCoinReward = Math.round(
+      quest.coin_reward * rewardRatio,
+    );
 
-    const completion = await completeQuest({
-      run,
-      finalScene: currentScene,
+    const existingEvents =
+      await listQuestRunEvents(run.id);
+
+    const completionSummary =
+      buildQuestCompletionSummary([
+        ...existingEvents,
+        toCompletionSummaryEvent(submissionEvent),
+      ]);
+
+    const completedAt = new Date().toISOString();
+
+    const result: SubmitQuestSceneResult = {
+      runId: run.id,
+      completed: true,
       score: nextScore,
       xpEarned: scaledXpReward,
       coinsEarned: scaledCoinReward,
-      completedSceneCount,
-    });
-
-    return {
-      runId: run.id,
-      completed: true,
-      score: completion.score,
-      xpEarned: completion.xpEarned,
-      coinsEarned: completion.coinsEarned,
       progress: buildProgress({
         completedSceneCount,
         totalScenes: scenes.length,
@@ -647,47 +807,116 @@ export async function submitQuestScene({
       }),
       evaluation: toPublicEvaluation(normalizedEvaluation),
       scene: null,
-      completionSummary: completion.summary,
+      completionSummary,
     };
+
+    const questCompletedEvent: AtomicQuestEvent = {
+      sceneId: currentScene.id,
+      sceneCode: currentScene.scene_code,
+      eventType: "quest_completed",
+      metadata: {
+        score: nextScore,
+        xpEarned: scaledXpReward,
+        coinsEarned: scaledCoinReward,
+        completedAt,
+      },
+    };
+
+    const committed =
+      await commitAtomicQuestSubmission({
+        runId: run.id,
+        sceneId: currentScene.id,
+        submissionId,
+        attemptNumber,
+        newStatus: "completed",
+        newCurrentSceneId: null,
+        newCurrentSceneCode: null,
+        newCompletedSceneCount: completedSceneCount,
+        newScore: nextScore,
+        newXpEarned: scaledXpReward,
+        newCoinsEarned: scaledCoinReward,
+
+        /*
+         * completeQuest() previously did not persist nextState
+         * on the final scene. null preserves that behavior.
+         */
+        newState: null,
+
+        completedAt,
+        result,
+        events: [
+          submissionEvent,
+          sceneCompletedEvent,
+          questCompletedEvent,
+        ],
+        conversationMessages,
+      });
+
+    if (committed.committed) {
+      await saveLearningSideEffects({
+        userId,
+        scene: currentScene,
+        userInput,
+        evaluation: normalizedEvaluation,
+      });
+    }
+
+    return committed.result;
   }
 
   const nextScene = progression.nextScene;
 
-  const updatedRun = await updateQuestRun({
-    runId: run.id,
-    currentSceneId: nextScene.id,
-    currentSceneCode: nextScene.scene_code,
-    completedSceneCount,
-    score: nextScore,
-    state: nextState,
-  });
-
-  await recordQuestEvent({
-    runId: run.id,
-    scene: nextScene,
-    eventType: "scene_presented",
-    metadata: {
-      resumed: false,
-      retry: false,
-      actId: nextScene.act_id,
-      orderIndex: nextScene.order_index,
-      previousSceneId: currentScene.id,
-      previousSceneCode: currentScene.scene_code,
-    },
-  });
-
-  return {
+  const result: SubmitQuestSceneResult = {
     runId: run.id,
     completed: false,
-    score: updatedRun.score,
-    xpEarned: updatedRun.xp_earned,
-    coinsEarned: updatedRun.coins_earned,
+    score: nextScore,
+    xpEarned: run.xp_earned,
+    coinsEarned: run.coins_earned,
     progress: buildProgress({
-      completedSceneCount: updatedRun.completed_scene_count,
+      completedSceneCount,
       totalScenes: scenes.length,
       completed: false,
     }),
     evaluation: toPublicEvaluation(normalizedEvaluation),
     scene: mapPublicScene(nextScene),
   };
+
+  const committed =
+    await commitAtomicQuestSubmission({
+      runId: run.id,
+      sceneId: currentScene.id,
+      submissionId,
+      attemptNumber,
+      newStatus: run.status,
+      newCurrentSceneId: nextScene.id,
+      newCurrentSceneCode: nextScene.scene_code,
+      newCompletedSceneCount: completedSceneCount,
+      newScore: nextScore,
+      newXpEarned: run.xp_earned,
+      newCoinsEarned: run.coins_earned,
+      newState: nextState,
+      completedAt: run.completed_at ?? null,
+      result,
+      events: [
+        submissionEvent,
+        sceneCompletedEvent,
+        buildScenePresentedEvent({
+          scene: nextScene,
+          retry: false,
+          previousScene: currentScene,
+        }),
+      ],
+      conversationMessages,
+    });
+
+  if (committed.committed) {
+    await saveLearningSideEffects({
+      userId,
+      scene: currentScene,
+      userInput,
+      evaluation: normalizedEvaluation,
+    });
+  }
+
+  return committed.result;
 }

@@ -218,6 +218,7 @@ export function useQuest() {
       const requestVersion = requestVersionRef.current;
       const answeredRunId = runId;
       const answeredScene = scene;
+      const submissionId = crypto.randomUUID();
 
       submitLockRef.current = true;
 
@@ -231,10 +232,12 @@ export function useQuest() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            runId: answeredRunId,
-            userInput,
-            responseTimeMs,
-          }),
+  runId: answeredRunId,
+  sceneId: answeredScene.id,
+  submissionId,
+  userInput,
+  responseTimeMs,
+}),
         });
 
         const result =

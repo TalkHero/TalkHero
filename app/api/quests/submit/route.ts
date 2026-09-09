@@ -10,6 +10,8 @@ import { createClient } from "@/lib/supabase/server";
 const SubmitQuestSceneSchema =
   z.object({
     runId: z.string().uuid(),
+    sceneId: z.string().uuid(),
+    submissionId: z.string().uuid(),
     userInput: z.unknown(),
     responseTimeMs:
       z
@@ -54,6 +56,8 @@ export async function POST(
       await submitQuestScene({
         userId: user.id,
         runId: body.runId,
+        sceneId: body.sceneId,
+        submissionId: body.submissionId,
         userInput:
           body.userInput,
         responseTimeMs:
