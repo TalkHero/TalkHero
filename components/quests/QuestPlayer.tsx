@@ -231,7 +231,12 @@ const restartQuest = () => {
   );
 }
 if (quest.pendingFeedback) {
-  const { evaluation, result } = quest.pendingFeedback;
+  const { answeredScene, evaluation, result } = quest.pendingFeedback;
+
+const isRetry =
+  !result.completed &&
+  result.scene?.id === answeredScene.id &&
+  evaluation.isCorrect === false;
 
   return (
     <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
@@ -267,8 +272,10 @@ if (quest.pendingFeedback) {
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
   <p className="text-sm text-muted-foreground">
     {result.completed
-      ? "Відповідь зараховано. Перейдіть до підсумків місії."
-      : "Відповідь перевірено. Можна переходити далі."}
+  ? "Місію завершено. Перейдіть до підсумків."
+  : isRetry
+    ? "Перегляньте виправлення та спробуйте відповісти ще раз."
+    : "Відповідь перевірено. Можна переходити далі."}
   </p>
 
   <Button
@@ -277,7 +284,11 @@ if (quest.pendingFeedback) {
   onClick={quest.continueAfterFeedback}
   className="shrink-0 gap-2"
 >
-    {result.completed ? "До результатів" : "Продовжити"}
+   {result.completed
+  ? "До результатів"
+  : isRetry
+    ? "Спробувати ще раз"
+    : "Продовжити"}
 
     <ArrowRight
       className="size-4"
