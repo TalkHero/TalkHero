@@ -34,7 +34,9 @@ async function readJson<T>(response: Response): Promise<T> {
     ApiErrorPayload;
 
   if (!response.ok) {
-    throw new Error(payload.error || `Request failed (${response.status})`);
+    throw new Error(
+      payload.error || `Request failed (${response.status})`,
+    );
   }
 
   return payload;
@@ -47,7 +49,8 @@ export function useQuest() {
 
   const [scene, setScene] = useState<PublicQuestScene | null>(null);
 
-  const [progress, setProgress] = useState<QuestProgress | null>(null);
+  const [progress, setProgress] =
+    useState<QuestProgress | null>(null);
 
   const [evaluation, setEvaluation] =
     useState<QuestSceneEvaluation | null>(null);
@@ -70,90 +73,139 @@ export function useQuest() {
 
   const [submitting, setSubmitting] = useState(false);
 
-  const submitLockRef = useRef(false);
-
   const [completed, setCompleted] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
-  const startQuest = useCallback(async (params: StartQuestParams) => {
-    setLoading(true);
-    setError(null);
-    setEvaluation(null);
-    setPendingFeedback(null);
-    setCompletionSummary(null);
-    setCompleted(false);
+  const submitLockRef = useRef(false);
 
-    try {
-      const response = await fetch("/api/quests/start", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(params),
-      });
+  /*
+   * Кожен новий startQuest збільшує версію.
+   *
+   * Асинхронна відповідь від попереднього start/submit
+   * не має права змінювати state після нового запуску.
+   */
+  const requestVersionRef = useRef(0);
 
-      const result = await readJson<StartedQuest>(response);
+  const startQuest = useCallback(
+    async (params: StartQuestParams) => {
+      const requestVersion = ++requestVersionRef.current;
 
-      setRunId(result.runId);
-      setQuest(result.quest);
-      setScene(result.scene);
-      setProgress(result.progress);
+      /*
+       * Новий запуск анулює старий submit на рівні UI.
+       * Його HTTP-запит може фізично завершитися,
+       * але його результат буде проігноровано.
+       */
+      submitLockRef.current = false;
 
-      setScore(result.score);
-setMaxScore(result.maxScore);
-setXpEarned(result.xpEarned);
-setCoinsEarned(result.coinsEarned);
+      setLoading(true);
+      setSubmitting(false);
+
+      setError(null);
+      setEvaluation(null);
+      setPendingFeedback(null);
       setCompletionSummary(null);
-    } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "Failed to start quest",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      setCompleted(false);
+
+      try {
+        const response = await fetch("/api/quests/start", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(params),
+        });
+
+        const result = await readJson<StartedQuest>(response);
+
+        if (requestVersion !== requestVersionRef.current) {
+          return;
+        }
+
+        setRunId(result.runId);
+        setQuest(result.quest);
+        setScene(result.scene);
+        setProgress(result.progress);
+
+        setScore(result.score);
+        setMaxScore(result.maxScore);
+        setXpEarned(result.xpEarned);
+        setCoinsEarned(result.coinsEarned);
+
+        setCompletionSummary(null);
+      } catch (caught) {
+        if (requestVersion !== requestVersionRef.current) {
+          return;
+        }
+
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "Failed to start quest",
+        );
+      } finally {
+        if (requestVersion === requestVersionRef.current) {
+          setLoading(false);
+        }
+      }
+    },
+    [],
+  );
 
   const applySubmitResult = useCallback(
     (result: SubmitQuestSceneResult) => {
       setScene(result.scene);
       setProgress(result.progress);
       setEvaluation(result.evaluation);
+
       setScore(result.score);
       setXpEarned(result.xpEarned);
       setCoinsEarned(result.coinsEarned);
+
       setCompleted(result.completed);
-      setCompletionSummary(result.completionSummary ?? null);
+
+      setCompletionSummary(
+        result.completionSummary ?? null,
+      );
     },
     [],
   );
 
   const continueAfterFeedback = useCallback(() => {
-  if (!pendingFeedback) {
-    return;
-  }
+    if (!pendingFeedback) {
+      return;
+    }
 
-  const result = pendingFeedback.result;
+    const result = pendingFeedback.result;
 
-  setPendingFeedback(null);
+    setPendingFeedback(null);
 
-  setScene(result.scene);
-  setProgress(result.progress);
+    setScene(result.scene);
+    setProgress(result.progress);
 
-  // Feedback уже показали окремим кроком.
-  // Не переносимо evaluation попередньої відповіді
-  // на наступну або retry-сцену.
-  setEvaluation(null);
+    /*
+     * Feedback уже показали окремим кроком.
+     * Не переносимо evaluation попередньої відповіді
+     * на наступну або retry-сцену.
+     */
+    setEvaluation(null);
 
-  setScore(result.score);
-  setXpEarned(result.xpEarned);
-  setCoinsEarned(result.coinsEarned);
-  setCompleted(result.completed);
-  setCompletionSummary(result.completionSummary ?? null);
-}, [pendingFeedback]);
+    setScore(result.score);
+    setXpEarned(result.xpEarned);
+    setCoinsEarned(result.coinsEarned);
+
+    setCompleted(result.completed);
+
+    setCompletionSummary(
+      result.completionSummary ?? null,
+    );
+  }, [pendingFeedback]);
 
   const submitAnswer = useCallback(
-    async ({ userInput, responseTimeMs }: SubmitAnswerParams) => {
+    async ({
+      userInput,
+      responseTimeMs,
+    }: SubmitAnswerParams) => {
       if (
         !runId ||
         !scene ||
@@ -163,9 +215,12 @@ setCoinsEarned(result.coinsEarned);
         return;
       }
 
+      const requestVersion = requestVersionRef.current;
+      const answeredRunId = runId;
       const answeredScene = scene;
 
       submitLockRef.current = true;
+
       setSubmitting(true);
       setError(null);
 
@@ -176,7 +231,7 @@ setCoinsEarned(result.coinsEarned);
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            runId,
+            runId: answeredRunId,
             userInput,
             responseTimeMs,
           }),
@@ -184,6 +239,17 @@ setCoinsEarned(result.coinsEarned);
 
         const result =
           await readJson<SubmitQuestSceneResult>(response);
+
+        /*
+         * Поки submit виконувався, міг початися
+         * інший quest/run. Старий результат ігноруємо.
+         */
+        if (
+          requestVersion !== requestVersionRef.current ||
+          result.runId !== answeredRunId
+        ) {
+          return;
+        }
 
         const aiConversation =
           answeredScene.metadata.aiConversation === true;
@@ -207,14 +273,24 @@ setCoinsEarned(result.coinsEarned);
 
         applySubmitResult(result);
       } catch (caught) {
+        if (requestVersion !== requestVersionRef.current) {
+          return;
+        }
+
         setError(
           caught instanceof Error
             ? caught.message
             : "Failed to submit answer",
         );
       } finally {
-        submitLockRef.current = false;
-        setSubmitting(false);
+        /*
+         * Старий запит не повинен скидати lock/loading
+         * вже нового запуску або нового submit.
+         */
+        if (requestVersion === requestVersionRef.current) {
+          submitLockRef.current = false;
+          setSubmitting(false);
+        }
       }
     },
     [
