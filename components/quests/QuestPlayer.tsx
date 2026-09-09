@@ -264,32 +264,27 @@ if (quest.pendingFeedback) {
         />
       ) : null}
 
-      <Card className="border-primary/15">
-        <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-semibold text-foreground">
-              {result.completed
-                ? "Місію завершено"
-                : "Готові рухатися далі?"}
-            </p>
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+  <p className="text-sm text-muted-foreground">
+    {result.completed
+      ? "Відповідь зараховано. Перейдіть до підсумків місії."
+      : "Відповідь перевірено. Можна переходити далі."}
+  </p>
 
-            <p className="mt-1 text-sm text-muted-foreground">
-              {result.completed
-                ? "Перейдіть до підсумків місії."
-                : "Перегляньте відгук і продовжуйте пригоду."}
-            </p>
-          </div>
+  <Button
+  type="button"
+  autoFocus
+  onClick={quest.continueAfterFeedback}
+  className="shrink-0 gap-2"
+>
+    {result.completed ? "До результатів" : "Продовжити"}
 
-          <Button
-            type="button"
-            onClick={quest.continueAfterFeedback}
-            className="shrink-0 gap-2"
-          >
-            {result.completed ? "До результатів" : "Продовжити"}
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Button>
-        </CardContent>
-      </Card>
+    <ArrowRight
+      className="size-4"
+      aria-hidden="true"
+    />
+  </Button>
+</div>
     </main>
   );
 }

@@ -10,7 +10,13 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 import { normalizeFeedback } from "@/lib/learning/feedback";
 import type { LearningFeedback } from "@/lib/quests/types";
 import { cn } from "@/lib/utils";
@@ -21,7 +27,10 @@ type Props = {
   grade: "correct" | "almost" | "incorrect" | null;
 };
 
-type FeedbackVariant = "correct" | "almost" | "incorrect";
+type FeedbackVariant =
+  | "correct"
+  | "almost"
+  | "incorrect";
 
 const VARIANT_STYLES: Record<
   FeedbackVariant,
@@ -29,58 +38,80 @@ const VARIANT_STYLES: Record<
     card: string;
     header: string;
     icon: string;
-    badge: "success" | "warning" | "destructive";
+    badge:
+      | "success"
+      | "warning"
+      | "destructive";
     title: string;
     description: string;
   }
 > = {
   correct: {
     card: "border-success/20",
-    header: "bg-success-soft",
+    header: "bg-success-soft/70",
     icon: "bg-emerald-100 text-emerald-700",
     badge: "success",
     title: "Чудово!",
-    description: "Відповідь правильна й природно звучить у розмові.",
+    description:
+      "Відповідь правильна й звучить природно.",
   },
+
   almost: {
     card: "border-warning/25",
-    header: "bg-warning-soft",
+    header: "bg-warning-soft/70",
     icon: "bg-amber-100 text-amber-700",
     badge: "warning",
     title: "Майже правильно",
-    description: "Хороша спроба. Розберімо невеликий нюанс.",
+    description:
+      "Є невеликий нюанс, який легко виправити.",
   },
+
   incorrect: {
     card: "border-destructive/20",
-    header: "bg-destructive-soft",
+    header: "bg-destructive-soft/70",
     icon: "bg-red-100 text-red-700",
     badge: "destructive",
     title: "Розберімо відповідь",
-    description: "Подивімося, що можна виправити й запам’ятати.",
+    description:
+      "Подивіться, як сказати точніше.",
   },
 };
 
-export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
-  const coach = normalizeFeedback(feedback, isCorrect);
+function normalizeText(
+  value: string | null | undefined,
+) {
+  return (
+    value
+      ?.trim()
+      .toLowerCase()
+      .replace(/[.!?,;:'"“”‘’]/g, "") ?? ""
+  );
+}
+
+export function AIFeedbackCard({
+  feedback,
+  isCorrect,
+  grade,
+}: Props) {
+  const coach =
+    normalizeFeedback(feedback, isCorrect);
 
   if (!coach) {
     return null;
   }
 
-  const normalizeText = (value: string | null | undefined) =>
-    value
-      ?.trim()
-      .toLowerCase()
-      .replace(/[.!?,;:'"“”‘’]/g, "") ?? "";
-
   const hasExplicitCorrection =
-    Boolean(coach.originalFragment && coach.correctedFragment) &&
+    Boolean(
+      coach.originalFragment &&
+        coach.correctedFragment,
+    ) &&
     normalizeText(coach.originalFragment) !==
       normalizeText(coach.correctedFragment);
 
   const variant: FeedbackVariant =
     isCorrect === true
-      ? hasExplicitCorrection || grade === "almost"
+      ? hasExplicitCorrection ||
+        grade === "almost"
         ? "almost"
         : "correct"
       : grade === "almost"
@@ -92,7 +123,9 @@ export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
     variant !== "correct" &&
     (!coach.originalFragment ||
       normalizeText(coach.naturalAnswer) !==
-        normalizeText(coach.originalFragment));
+        normalizeText(
+          coach.originalFragment,
+        ));
 
   const styles = VARIANT_STYLES[variant];
 
@@ -108,76 +141,95 @@ export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
     >
       <CardHeader
         className={cn(
-          "flex-row items-start gap-4 border-b border-border pb-5",
+          "flex-row items-center gap-3 border-b border-border px-5 py-4 sm:px-6",
           styles.header,
         )}
       >
         <div
           className={cn(
-            "flex size-11 shrink-0 items-center justify-center rounded-lg",
+            "flex size-10 shrink-0 items-center justify-center rounded-xl",
             styles.icon,
           )}
         >
           {variant === "correct" ? (
-            <CheckCircle2 className="size-5" aria-hidden="true" />
+            <CheckCircle2
+              className="size-5"
+              aria-hidden="true"
+            />
           ) : variant === "almost" ? (
-            <Sparkles className="size-5" aria-hidden="true" />
+            <Sparkles
+              className="size-5"
+              aria-hidden="true"
+            />
           ) : (
-            <CircleAlert className="size-5" aria-hidden="true" />
+            <CircleAlert
+              className="size-5"
+              aria-hidden="true"
+            />
           )}
         </div>
 
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <CardTitle>{styles.title}</CardTitle>
+            <CardTitle className="text-lg">
+              {styles.title}
+            </CardTitle>
 
-            <Badge variant={styles.badge}>Навчальний відгук</Badge>
+            <Badge variant={styles.badge}>
+              {variant === "correct"
+                ? "Правильно"
+                : variant === "almost"
+                  ? "Майже"
+                  : "Виправлення"}
+            </Badge>
           </div>
 
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {styles.description}
           </p>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 px-5 py-4 sm:px-6 sm:py-5">
         {hasExplicitCorrection ? (
           <section
             aria-labelledby="correction-heading"
-            className="rounded-xl border border-border bg-muted/40 p-4"
+            className="overflow-hidden rounded-xl border border-border"
           >
             <h3
               id="correction-heading"
-              className="flex items-center gap-2 text-sm font-bold text-foreground"
+              className="sr-only"
             >
-              <ArrowRight className="size-4 text-primary" aria-hidden="true" />
               Що саме виправити
             </h3>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {coach.originalFragment ? (
-                <div className="rounded-lg border border-destructive/15 bg-destructive-soft p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
-                    Було
-                  </p>
+            <div className="grid sm:grid-cols-[1fr_auto_1fr] sm:items-stretch">
+              <div className="bg-destructive-soft/60 p-3.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">
+                  Було
+                </p>
 
-                  <p className="mt-1 font-medium leading-6 text-foreground">
-                    {coach.originalFragment}
-                  </p>
-                </div>
-              ) : null}
+                <p className="mt-1.5 font-medium leading-6 text-foreground">
+                  {coach.originalFragment}
+                </p>
+              </div>
 
-              {coach.correctedFragment ? (
-                <div className="rounded-lg border border-success/15 bg-success-soft p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                    Краще
-                  </p>
+              <div className="hidden items-center justify-center border-x border-border px-2 sm:flex">
+                <ArrowRight
+                  className="size-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
 
-                  <p className="mt-1 font-medium leading-6 text-foreground">
-                    {coach.correctedFragment}
-                  </p>
-                </div>
-              ) : null}
+              <div className="border-t border-border bg-success-soft/60 p-3.5 sm:border-t-0">
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                  Краще
+                </p>
+
+                <p className="mt-1.5 font-semibold leading-6 text-foreground">
+                  {coach.correctedFragment}
+                </p>
+              </div>
             </div>
           </section>
         ) : null}
@@ -185,17 +237,20 @@ export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
         {showNaturalAnswer ? (
           <section
             aria-labelledby="natural-answer-heading"
-            className="rounded-xl border border-primary/15 bg-primary-soft p-4"
+            className="rounded-xl border border-primary/15 bg-primary-soft/60 px-4 py-3"
           >
             <h3
               id="natural-answer-heading"
-              className="flex items-center gap-2 text-sm font-bold text-primary"
+              className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary"
             >
-              <CheckCircle2 className="size-4" aria-hidden="true" />
+              <CheckCircle2
+                className="size-4"
+                aria-hidden="true"
+              />
               Як сказати природно
             </h3>
 
-            <p className="mt-2 whitespace-pre-line text-lg font-semibold leading-7 text-foreground">
+            <p className="mt-1.5 text-base font-semibold leading-6 text-foreground sm:text-lg">
               “{coach.naturalAnswer}”
             </p>
           </section>
@@ -203,17 +258,23 @@ export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
 
         <section
           aria-labelledby="feedback-explanation-heading"
-          className="rounded-xl border border-violet-100 bg-violet-50 p-4 dark:border-violet-900 dark:bg-violet-950/40"
+          className="rounded-xl border border-violet-100 bg-violet-50/70 px-4 py-3 dark:border-violet-900 dark:bg-violet-950/30"
         >
           <h3
             id="feedback-explanation-heading"
             className="flex items-center gap-2 text-sm font-bold text-violet-800 dark:text-violet-200"
           >
-            <MessageCircle className="size-4" aria-hidden="true" />
-            {variant === "correct" ? "Чому це добре" : "Чому саме так"}
+            <MessageCircle
+              className="size-4"
+              aria-hidden="true"
+            />
+
+            {variant === "correct"
+              ? "Чому це добре"
+              : "Чому саме так"}
           </h3>
 
-          <p className="mt-2 whitespace-pre-line leading-7 text-foreground/80">
+          <p className="mt-1.5 whitespace-pre-line text-sm leading-6 text-foreground/80 sm:text-base">
             {coach.explanation}
           </p>
         </section>
@@ -221,36 +282,47 @@ export function AIFeedbackCard({ feedback, isCorrect, grade }: Props) {
         {coach.remember ? (
           <section
             aria-labelledby="remember-heading"
-            className="rounded-xl border border-warning/20 bg-warning-soft p-4"
+            className="flex gap-3 rounded-xl border border-warning/20 bg-warning-soft/60 px-4 py-3"
           >
-            <h3
-              id="remember-heading"
-              className="flex items-center gap-2 text-sm font-bold text-amber-800 dark:text-amber-200"
-            >
-              <Lightbulb className="size-4" aria-hidden="true" />
-              {variant === "correct" ? "Корисно знати" : "Запам’ятайте"}
-            </h3>
+            <Lightbulb
+              className="mt-0.5 size-4 shrink-0 text-amber-700 dark:text-amber-300"
+              aria-hidden="true"
+            />
 
-            <p className="mt-2 whitespace-pre-line leading-7 text-foreground/80">
-              {coach.remember}
-            </p>
+            <div className="min-w-0">
+              <h3
+                id="remember-heading"
+                className="text-sm font-bold text-amber-800 dark:text-amber-200"
+              >
+                {variant === "correct"
+                  ? "Корисно знати"
+                  : "Запам’ятайте"}
+              </h3>
+
+              <p className="mt-1 whitespace-pre-line text-sm leading-6 text-foreground/80">
+                {coach.remember}
+              </p>
+            </div>
           </section>
         ) : null}
 
         {coach.npcReply ? (
           <section
             aria-labelledby="npc-reply-heading"
-            className="rounded-xl border border-success/15 bg-success-soft p-4"
+            className="rounded-xl border border-success/15 bg-success-soft/50 px-4 py-3"
           >
             <h3
               id="npc-reply-heading"
               className="flex items-center gap-2 text-sm font-bold text-emerald-800 dark:text-emerald-200"
             >
-              <MessageCircle className="size-4" aria-hidden="true" />
+              <MessageCircle
+                className="size-4"
+                aria-hidden="true"
+              />
               Відповідь персонажа
             </h3>
 
-            <p className="mt-2 whitespace-pre-line text-lg font-medium leading-7 text-foreground">
+            <p className="mt-1.5 whitespace-pre-line font-medium leading-6 text-foreground">
               “{coach.npcReply}”
             </p>
           </section>
