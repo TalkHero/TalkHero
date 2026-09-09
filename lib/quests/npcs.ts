@@ -697,6 +697,105 @@ export const NPCS: Record<string, NPC> = {
     voiceId: "marin",
     theme: "violet",
   },
+    // ========================================================
+  // London Mastery — C2
+  // ========================================================
+
+  "london-mastery-boardroom-negotiation-evelyn-harcourt": {
+    id: "london-mastery-boardroom-negotiation-evelyn-harcourt",
+    name: "Evelyn",
+    role: "Board Strategy Director",
+    avatar:
+      "/images/characters/london-mastery/evelyn-harcourt-board-strategy-director.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "verse",
+    theme: "slate",
+  },
+
+  "london-mastery-media-interview-naomi-brooks": {
+    id: "london-mastery-media-interview-naomi-brooks",
+    name: "Naomi",
+    role: "Senior Broadcast Journalist",
+    avatar:
+      "/images/characters/london-mastery/naomi-brooks-senior-broadcast-journalist.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "coral",
+    theme: "rose",
+  },
+
+  "london-mastery-academic-debate-marcus-ellwood": {
+    id: "london-mastery-academic-debate-marcus-ellwood",
+    name: "Dr Marcus Ellwood",
+    role: "Senior Lecturer in Public Policy",
+    avatar:
+      "/images/characters/london-mastery/marcus-ellwood-senior-lecturer-public-policy.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "onyx",
+    theme: "blue",
+  },
+
+  "london-mastery-crisis-management-leila-morgan": {
+    id: "london-mastery-crisis-management-leila-morgan",
+    name: "Leila",
+    role: "Director of Crisis Response",
+    avatar:
+      "/images/characters/london-mastery/leila-morgan-director-crisis-response.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "marin",
+    theme: "violet",
+  },
+
+  "london-mastery-diplomatic-reception-adrian-vale": {
+    id: "london-mastery-diplomatic-reception-adrian-vale",
+    name: "Adrian",
+    role: "Senior Diplomatic Adviser",
+    avatar:
+      "/images/characters/london-mastery/adrian-vale-senior-diplomatic-adviser.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "ash",
+    theme: "amber",
+  },
+
+  "london-mastery-ethics-committee-helena-ward": {
+    id: "london-mastery-ethics-committee-helena-ward",
+    name: "Professor Helena Ward",
+    role: "Chair of the Ethics Committee",
+    avatar:
+      "/images/characters/london-mastery/helena-ward-chair-ethics-committee.png",
+    emotion: "neutral",
+    accent: "british",
+    voiceId: "ballad",
+    theme: "slate",
+  },
+
+  "london-mastery-investigative-hearing-nathan-cole": {
+    id: "london-mastery-investigative-hearing-nathan-cole",
+    name: "Nathan",
+    role: "Lead Investigative Counsel",
+    avatar:
+      "/images/characters/london-mastery/nathan-cole-lead-investigative-counsel.png",
+    emotion: "thinking",
+    accent: "british",
+    voiceId: "cedar",
+    theme: "blue",
+  },
+
+  "london-mastery-global-summit-sofia-bennett": {
+    id: "london-mastery-global-summit-sofia-bennett",
+    name: "Sofia",
+    role: "Summit Chair",
+    avatar:
+      "/images/characters/london-mastery/sofia-bennett-summit-chair.png",
+    emotion: "encouraging",
+    accent: "british",
+    voiceId: "shimmer",
+    theme: "rose",
+  },
 };
 
 export function getNPCById(
