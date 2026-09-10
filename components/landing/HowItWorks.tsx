@@ -86,7 +86,10 @@ const accentClasses = {
 
 export function HowItWorks() {
   return (
-    <section className="relative overflow-hidden bg-white py-20 sm:py-24 lg:py-28">
+   <section
+  id="how-it-works"
+  className="scroll-mt-20 relative overflow-hidden bg-white py-20 sm:py-24 lg:py-28"
+>
       {/* Background glow */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-180px] top-20 h-[420px] w-[420px] rounded-full bg-indigo-100/60 blur-3xl" />

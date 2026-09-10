@@ -1,30 +1,26 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import {
+  ArrowDown,
   ArrowRight,
-  CheckCircle2,
-  Flame,
-  Play,
+  Mic,
   Sparkles,
   TrendingUp,
-  Volume2,
-  Zap,
 } from "lucide-react";
 
 export function Hero() {
   return (
     <section className="relative isolate overflow-hidden bg-white">
-      {/* Background */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-indigo-200/40 blur-3xl" />
+      {/* =========================================================
+          BACKGROUND
+      ========================================================== */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-indigo-200/30 blur-3xl" />
 
-        <div className="absolute right-[-180px] top-16 h-[520px] w-[520px] rounded-full bg-violet-300/35 blur-3xl" />
+        <div className="absolute -right-44 top-16 h-[520px] w-[520px] rounded-full bg-violet-300/30 blur-3xl" />
 
-        <div className="absolute left-1/2 top-[45%] h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-fuchsia-200/20 blur-3xl" />
-
-        <div className="absolute inset-x-0 top-0 h-[600px] bg-[radial-gradient(circle_at_70%_35%,rgba(124,58,237,0.08),transparent_42%)]" />
+        <div className="absolute left-1/2 top-[43%] h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-fuchsia-200/20 blur-3xl" />
 
         <div
           className="absolute inset-0 opacity-[0.035]"
@@ -36,289 +32,300 @@ export function Hero() {
         />
       </div>
 
-      <div className="mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl items-center gap-12 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[0.88fr_1.12fr] lg:gap-8 lg:px-8 lg:py-14">
-        {/* Left content */}
-        <div className="relative z-20 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-white/80 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-sm backdrop-blur">
-            <Sparkles className="h-4 w-4" />
-            Ваш персональний AI-викладач англійської
-          </div>
+      {/* =========================================================
+          MOBILE
+      ========================================================== */}
+      <div className="mx-auto w-full max-w-[440px] px-4 lg:hidden">
+        <div className="relative pt-7">
+          {/* Badge */}
+          <div className="relative z-40 inline-flex max-w-[95%] items-center gap-2 rounded-full border border-indigo-200/80 bg-white/95 px-4 py-2.5 text-[12px] font-semibold text-indigo-700 shadow-[0_6px_20px_rgba(79,70,229,0.08)] backdrop-blur">
+            <Sparkles className="h-4 w-4 shrink-0" />
 
-          <h1 className="mt-7 text-[42px] font-black leading-[0.98] tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-[68px]">
-            Англійська, яка
-
-            <span className="block">
-              починає звучати
+            <span className="truncate">
+              Персональний AI-викладач англійської
             </span>
-
-            <span className="mt-1 block bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
-              природно.
-            </span>
-          </h1>
-
-          <p className="mt-7 max-w-xl text-lg leading-8 text-slate-600 sm:text-xl">
-            Говоріть з Emma — вашим персональним AI-викладачем.
-            Вона слухає, виправляє помилки та адаптує навчання
-            саме під вас.
-          </p>
-
-          {/* CTA */}
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/register"
-              className="group inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-7 text-sm font-bold text-white shadow-xl shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-indigo-600/25"
-            >
-              Почати безкоштовно
-
-              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-            </Link>
-
-            <Link
-              href="#how-it-works"
-              className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white/80 px-7 text-sm font-bold text-slate-700 shadow-sm backdrop-blur transition hover:border-indigo-200 hover:bg-indigo-50/60 hover:text-indigo-700"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100">
-                <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
-              </span>
-
-              Як це працює
-            </Link>
           </div>
 
-          {/* Trust markers */}
-          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-sm font-medium text-slate-600">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-[18px] w-[18px] text-indigo-500" />
-              Без картки
+          {/* Main composition */}
+          <div className="relative mt-5 h-[545px]">
+            {/* Headline */}
+            <div className="absolute left-0 top-0 z-30 w-[88%]">
+              <h1 className="text-[43px] font-black leading-[0.98] tracking-[-0.045em] text-slate-950">
+                Практикуй
+
+                <span className="block">
+                  англійську з AI
+                </span>
+
+                <span className="mt-1 block bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
+                  вже зараз.
+                </span>
+              </h1>
             </div>
 
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-[18px] w-[18px] text-indigo-500" />
-              Українські пояснення
+            {/* Description */}
+            <div className="absolute left-0 top-[158px] z-30 w-[62%]">
+              <p className="text-[15px] font-medium leading-[1.55] text-slate-600">
+                Реальні розмови з{" "}
+                <span className="font-bold text-slate-800">
+                  Emma
+                </span>
+                . Вона почує тебе, виправить помилки та
+                пояснить українською, як говорити природніше.
+              </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-[18px] w-[18px] text-indigo-500" />
-              Від A1 до C1
+            {/* Emma glow */}
+            <div className="pointer-events-none absolute right-[-55px] top-[85px] z-0 h-[380px] w-[380px] rounded-full bg-gradient-to-br from-indigo-300/45 via-violet-300/30 to-fuchsia-200/20 blur-3xl" />
+
+            {/* Emma */}
+            <div className="pointer-events-none absolute -right-[76px] top-[72px] z-20 h-[460px] w-[345px]">
+              <Image
+                src="/images/emma/emma-hero.png"
+                alt="Emma — AI-викладач англійської TalkHero"
+                width={1024}
+                height={1200}
+                priority
+                className="h-full w-full object-contain object-bottom drop-shadow-[0_28px_40px_rgba(79,70,229,0.22)]"
+              />
+            </div>
+
+            {/* Speech bubble */}
+            <div className="absolute right-[-1px] top-[54px] z-40">
+              <div className="relative min-w-[128px] rounded-[28px] border border-indigo-200 bg-white/95 px-[18px] py-3.5 shadow-[0_12px_30px_rgba(79,70,229,0.12)] backdrop-blur">
+                <p className="text-[16px] font-black leading-tight text-indigo-600">
+                  Hi!
+                </p>
+
+                <p className="text-[15px] font-black leading-tight text-indigo-600">
+                  I&apos;m Emma 👋
+                </p>
+
+                <span className="absolute -bottom-2.5 right-7 h-5 w-5 rotate-45 border-b border-r border-indigo-200 bg-white" />
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="absolute left-0 top-[342px] z-50 w-[67%]">
+              <a
+  href="#speaking-demo"
+  className="group flex h-[62px] w-full items-center justify-center gap-2.5 rounded-[22px] bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 text-[14px] font-bold text-white shadow-[0_14px_30px_rgba(79,70,229,0.28)] transition active:scale-[0.98]"
+>
+  <Mic className="h-[18px] w-[18px] shrink-0" />
+
+  <span>Спробувати розмову</span>
+
+  <ArrowRight className="h-[18px] w-[18px] shrink-0 transition group-hover:translate-x-1" />
+</a>
+
+              <p className="mt-3 whitespace-nowrap text-center text-[11px] font-medium text-slate-500">
+                Без реєстрації · Без картки · Безкоштовно
+              </p>
             </div>
           </div>
-        </div>
 
-        {/* Right visual */}
-        <div className="relative mx-auto min-h-[570px] w-full max-w-[700px] lg:min-h-[610px]">
-          {/* Emma glow */}
-          <div className="pointer-events-none absolute left-[-3%] top-[7%] h-[430px] w-[430px] rounded-full bg-gradient-to-br from-indigo-300/50 via-violet-300/35 to-fuchsia-200/30 blur-3xl" />
+          {/* Benefits */}
+          <div className="relative z-40 -mt-6 grid grid-cols-3 gap-3 pb-8">
+            <Benefit
+              icon={<Mic className="h-5 w-5" />}
+              title="Говори"
+              text={
+                <>
+                  Реальні діалоги
+                  <br />з AI
+                </>
+              }
+            />
 
-          <div className="pointer-events-none absolute left-[7%] top-[11%] h-[365px] w-[365px] rounded-full border border-indigo-200/60" />
+            <Benefit
+              icon={<Sparkles className="h-5 w-5" />}
+              title="Виправляйся"
+              text={
+                <>
+                  Зрозумілі пояснення
+                  <br />
+                  українською
+                </>
+              }
+            />
 
-          <div className="pointer-events-none absolute left-[11%] top-[15%] h-[315px] w-[315px] rounded-full border border-violet-200/50" />
-
-          {/* Emma */}
-          <div className="absolute left-[-7%] top-[3%] z-10 w-[59%] min-w-[315px] sm:left-[-4%] sm:w-[56%] lg:left-[-8%] lg:w-[58%]">
-            <Image
-              src="/images/emma/emma-hero.png"
-              alt="Emma — персональний AI-викладач англійської TalkHero"
-              width={1024}
-              height={1200}
-              priority
-              className="h-auto w-full drop-shadow-[0_30px_35px_rgba(79,70,229,0.20)]"
+            <Benefit
+              icon={<TrendingUp className="h-5 w-5" />}
+              title="Прогресуй"
+              text={
+                <>
+                  Від A1
+                  <br />
+                  до C2
+                </>
+              }
             />
           </div>
 
-          {/* Main correction card */}
-          <div className="absolute right-[-3%] top-[11%] z-20 w-[61%] min-w-[330px] overflow-hidden rounded-[28px] border border-white/80 bg-white/88 shadow-[0_30px_80px_rgba(79,70,229,0.18)] backdrop-blur-xl sm:w-[58%]">
-            {/* Emma header */}
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="relative h-11 w-11 overflow-hidden rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 ring-2 ring-white shadow-md">
-                  <Image
-                    src="/images/emma/emma-hero.png"
-                    alt=""
-                    width={80}
-                    height={80}
-                    className="absolute left-1/2 top-[6px] w-[78px] max-w-none -translate-x-1/2"
-                  />
-                </div>
+          {/* Direct transition to live demo */}
+          <a
+  href="#speaking-demo"
+  className="group mx-auto mb-8 flex w-fit flex-col items-center text-center"
+>
+  <p className="text-sm font-semibold text-slate-500 transition group-hover:text-indigo-600">
+    Спробуй TalkHero прямо зараз
+  </p>
 
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-black text-slate-950">
-                      Emma
-                    </p>
-
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]" />
-                  </div>
-
-                  <p className="text-xs font-medium text-slate-500">
-                    AI English Coach
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-violet-100 px-3 py-1.5 text-xs font-black text-violet-700">
-                B1 → B2
-              </div>
-            </div>
-
-            {/* Card content */}
-            <div className="space-y-3 p-5">
-              {/* User phrase */}
-              <div className="rounded-2xl bg-slate-50 px-4 py-3.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  You
-                </p>
-
-                <p className="mt-1.5 text-sm font-medium leading-6 text-slate-800">
-                  Yesterday I{" "}
-                  <span className="border-b-2 border-red-300 text-red-600">
-                    go
-                  </span>{" "}
-                  to my friend&apos;s house.
-                </p>
-              </div>
-
-              {/* Correction */}
-              <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50/60 px-4 py-4 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-indigo-600" />
-
-                  <p className="text-sm font-bold text-slate-900">
-                    Майже правильно
-                  </p>
-                </div>
-
-                <p className="mt-3 text-sm leading-6 text-slate-800">
-                  Yesterday I{" "}
-                  <span className="rounded bg-emerald-100 px-1.5 py-0.5 font-bold text-emerald-700">
-                    went
-                  </span>{" "}
-                  to my friend&apos;s house.
-                </p>
-
-                {/* Grammar */}
-                <div className="mt-3 flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2.5">
-                  <div>
-                    <p className="text-xs font-bold text-slate-800">
-                      go → went
-                    </p>
-
-                    <p className="mt-0.5 text-[11px] text-slate-500">
-                      Past Simple
-                    </p>
-                  </div>
-
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                    <Volume2 className="h-4 w-4" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom actions */}
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600">
-                  <Volume2 className="h-4 w-4" />
-                  Прослухати
-                </div>
-
-                <div className="flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-xs font-black text-amber-700">
-                  <Zap className="h-3.5 w-3.5 fill-amber-400" />
-                  +15 XP
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Floating streak */}
-          <div className="absolute right-[1%] top-[2%] z-30 hidden w-[140px] rounded-2xl border border-orange-100 bg-white/90 p-3.5 shadow-xl shadow-orange-100/50 backdrop-blur sm:block">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-              <Flame className="h-4 w-4 fill-orange-500 text-orange-500" />
-              Серія занять
-            </div>
-
-            <div className="mt-2 flex items-end gap-2">
-              <span className="text-[28px] font-black leading-none text-slate-950">
-                7
-              </span>
-
-              <span className="pb-0.5 text-xs font-medium text-slate-500">
-                днів
-              </span>
-            </div>
-
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-orange-100">
-              <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-orange-400 to-amber-400" />
-            </div>
-          </div>
-
-          {/* Floating speaking */}
-          <div className="absolute bottom-[12%] left-[3%] z-30 hidden w-[160px] rounded-2xl border border-indigo-100 bg-white/90 p-3.5 shadow-xl shadow-indigo-100/60 backdrop-blur sm:block">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-bold text-slate-600">
-                Говоріння
-              </p>
-
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
-            </div>
-
-            <div className="mt-2 flex items-end gap-2">
-              <span className="text-[28px] font-black leading-none text-slate-950">
-                92%
-              </span>
-
-              <span className="pb-0.5 text-xs font-bold text-emerald-600">
-                ↑
-              </span>
-            </div>
-
-            <div className="mt-3 flex items-end gap-1">
-              {[
-                16,
-                24,
-                18,
-                30,
-                21,
-                35,
-                28,
-                38,
-                24,
-                31,
-                20,
-              ].map((height, index) => (
-                <span
-                  key={`${height}-${index}`}
-                  className="w-1.5 rounded-full bg-indigo-400"
-                  style={{
-                    height: `${Math.max(
-                      6,
-                      height / 2,
-                    )}px`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Floating progress */}
-          <div className="absolute bottom-[5%] right-[7%] z-30 hidden items-center gap-2 rounded-2xl border border-violet-100 bg-white/90 px-3.5 py-2.5 shadow-xl shadow-violet-100/60 backdrop-blur md:flex">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
-              <Sparkles className="h-4 w-4" />
-            </div>
-
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                Прогрес
-              </p>
-
-              <p className="text-xs font-black text-slate-900">
-                Ще 78 XP до B2
-              </p>
-            </div>
-          </div>
+  <div className="mt-3 flex h-9 w-9 items-center justify-center rounded-full border border-indigo-100 bg-indigo-50 text-indigo-600 transition group-hover:translate-y-1 group-hover:bg-indigo-100">
+    <ArrowDown className="h-4 w-4" />
+  </div>
+</a>
         </div>
       </div>
 
-      {/* Bottom fade */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent" />
+      {/* =========================================================
+          DESKTOP
+      ========================================================== */}
+      <div className="mx-auto hidden min-h-[calc(100vh-80px)] max-w-7xl grid-cols-[0.9fr_1.1fr] items-center gap-8 px-8 py-14 lg:grid">
+        {/* Left */}
+        <div className="relative z-30 max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/90 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-sm">
+            <Sparkles className="h-4 w-4" />
+
+            Персональний AI-викладач англійської
+          </div>
+
+          <h1 className="mt-7 text-[68px] font-black leading-[0.98] tracking-[-0.045em] text-slate-950">
+            Практикуй
+
+            <span className="block">
+              англійську з AI
+            </span>
+
+            <span className="mt-1 block bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
+              вже зараз.
+            </span>
+          </h1>
+
+          <p className="mt-7 max-w-xl text-xl leading-8 text-slate-600">
+            Реальні розмови з Emma. Вона почує тебе,
+            виправить помилки та пояснить українською, як
+            говорити природніше.
+          </p>
+
+          <div className="mt-9">
+  <a
+    href="#speaking-demo"
+    className="group inline-flex h-14 min-w-[290px] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-8 text-sm font-bold text-white shadow-xl shadow-indigo-600/20 transition hover:-translate-y-0.5"
+  >
+    <Mic className="h-4 w-4" />
+
+    Спробувати розмову
+
+    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+  </a>
+
+  <p className="mt-3 text-xs text-slate-500">
+    Без реєстрації · Без картки · Безкоштовно
+  </p>
+</div>
+
+          <div className="mt-10 grid max-w-xl grid-cols-3 gap-6">
+            <DesktopBenefit
+              icon={<Mic className="h-5 w-5" />}
+              title="Говори"
+              text="Реальні діалоги з AI"
+            />
+
+            <DesktopBenefit
+              icon={<Sparkles className="h-5 w-5" />}
+              title="Виправляйся"
+              text="Пояснення українською"
+            />
+
+            <DesktopBenefit
+              icon={<TrendingUp className="h-5 w-5" />}
+              title="Прогресуй"
+              text="Від A1 до C2"
+            />
+          </div>
+        </div>
+
+        {/* Emma */}
+        <div className="relative min-h-[650px]">
+          <div className="absolute left-1/2 top-[44%] h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-indigo-300/45 via-violet-300/30 to-fuchsia-200/20 blur-3xl" />
+
+          <div className="absolute left-[7%] top-[6%] z-30 rounded-[28px] border border-indigo-200 bg-white/95 px-5 py-4 shadow-xl">
+            <p className="text-xl font-black text-indigo-600">
+              Hi!
+            </p>
+
+            <p className="text-lg font-black text-indigo-600">
+              I&apos;m Emma 👋
+            </p>
+          </div>
+
+          <Image
+            src="/images/emma/emma-hero.png"
+            alt="Emma — AI English Coach TalkHero"
+            width={1024}
+            height={1200}
+            priority
+            className="absolute bottom-0 right-[-3%] z-20 h-[625px] w-auto object-contain drop-shadow-[0_30px_45px_rgba(79,70,229,0.22)]"
+          />
+        </div>
+      </div>
     </section>
+  );
+}
+
+/* =============================================================
+   SMALL COMPONENTS
+============================================================= */
+
+function Benefit({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: React.ReactNode;
+}) {
+  return (
+    <div className="text-center">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-indigo-100 bg-white/95 text-indigo-600 shadow-[0_8px_24px_rgba(79,70,229,0.10)]">
+        {icon}
+      </div>
+
+      <p className="mt-3 text-[14px] font-black text-slate-950">
+        {title}
+      </p>
+
+      <p className="mt-1 text-[11px] leading-[1.45] text-slate-500">
+        {text}
+      </p>
+    </div>
+  );
+}
+
+function DesktopBenefit({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div>
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+        {icon}
+      </div>
+
+      <p className="mt-3 font-black text-slate-950">
+        {title}
+      </p>
+
+      <p className="mt-1 text-sm leading-5 text-slate-500">
+        {text}
+      </p>
+    </div>
   );
 }

@@ -4,11 +4,22 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navigation = [
-  { label: "Можливості", href: "#features" },
-  { label: "Як це працює", href: "#how-it-works" },
-  { label: "Огляд", href: "#preview" },
-  { label: "Переваги", href: "#comparison" },
-  { label: "Поширені питання", href: "#faq" },
+  {
+    label: "Спробувати",
+    href: "#speaking-demo",
+  },
+  {
+    label: "Можливості",
+    href: "#features",
+  },
+  {
+    label: "Як це працює",
+    href: "#how-it-works",
+  },
+  {
+    label: "Поширені питання",
+    href: "#faq",
+  },
 ];
 
 export function Navbar() {
@@ -22,12 +33,16 @@ export function Navbar() {
 
       const sections = navigation
         .map((item) => document.querySelector(item.href))
-        .filter((section): section is Element => section !== null);
+        .filter(
+          (section): section is Element =>
+            section !== null,
+        );
 
       let currentSection = "";
 
       for (const section of sections) {
-        const rect = section.getBoundingClientRect();
+        const rect =
+          section.getBoundingClientRect();
 
         if (rect.top <= 160) {
           currentSection = section.id;
@@ -39,22 +54,85 @@ export function Navbar() {
 
     handleScroll();
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      },
+    );
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
     };
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleEscape = (
+      event: KeyboardEvent,
+    ) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      handleEscape,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleEscape,
+      );
+    };
+  }, [isOpen]);
 
   const closeMenu = () => {
     setIsOpen(false);
   };
 
+  function handleAnchorClick(
+    href: string,
+  ) {
+    closeMenu();
+
+    const id = href.replace("#", "");
+
+    window.requestAnimationFrame(() => {
+      const element =
+        document.getElementById(id);
+
+      if (!element) {
+        return;
+      }
+
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+
+      window.history.replaceState(
+        null,
+        "",
+        href,
+      );
+    });
+  }
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "border-b border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-xl"
+        isScrolled || isOpen
+          ? "border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-xl"
           : "border-b border-transparent bg-white/70 backdrop-blur-md"
       }`}
     >
@@ -70,19 +148,36 @@ export function Navbar() {
           </div>
 
           <span className="text-xl font-black tracking-tight text-slate-950">
-            Talk<span className="text-indigo-600">Hero</span>
+            Talk
+            <span className="text-indigo-600">
+              Hero
+            </span>
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        {/* Desktop navigation */}
+        <nav
+          className="hidden items-center gap-1 lg:flex"
+          aria-label="Головна навігація"
+        >
           {navigation.map((item) => {
-            const sectionId = item.href.replace("#", "");
-            const isActive = activeSection === sectionId;
+            const sectionId =
+              item.href.replace("#", "");
+
+            const isActive =
+              activeSection === sectionId;
 
             return (
-              <Link
+              <a
                 key={item.href}
                 href={item.href}
+                onClick={(event) => {
+                  event.preventDefault();
+
+                  handleAnchorClick(
+                    item.href,
+                  );
+                }}
                 className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                   isActive
                     ? "bg-indigo-50 text-indigo-600"
@@ -90,11 +185,12 @@ export function Navbar() {
                 }`}
               >
                 {item.label}
-              </Link>
+              </a>
             );
           })}
         </nav>
 
+        {/* Desktop auth */}
         <div className="hidden items-center gap-3 lg:flex">
           <Link
             href="/login"
@@ -111,54 +207,77 @@ export function Navbar() {
           </Link>
         </div>
 
+        {/* Mobile menu button */}
         <button
           type="button"
-          onClick={() => setIsOpen((current) => !current)}
-          className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-900 transition hover:bg-slate-50 lg:hidden"
+          onClick={() =>
+            setIsOpen(
+              (current) => !current,
+            )
+          }
+          className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-900 shadow-sm transition hover:bg-slate-50 lg:hidden"
           aria-label={
-            isOpen ? "Закрити меню навігації" : "Відкрити меню навігації"
+            isOpen
+              ? "Закрити меню навігації"
+              : "Відкрити меню навігації"
           }
           aria-expanded={isOpen}
+          aria-controls="mobile-navigation"
         >
           <span className="relative block h-5 w-5">
             <span
-              className={`absolute left-0 top-1 block h-0.5 w-5 rounded-full bg-current transition ${
-                isOpen ? "translate-y-1.5 rotate-45" : ""
+              className={`absolute left-0 top-1 block h-0.5 w-5 rounded-full bg-current transition duration-200 ${
+                isOpen
+                  ? "translate-y-1.5 rotate-45"
+                  : ""
               }`}
             />
 
             <span
-              className={`absolute left-0 top-2.5 block h-0.5 w-5 rounded-full bg-current transition ${
+              className={`absolute left-0 top-2.5 block h-0.5 w-5 rounded-full bg-current transition duration-200 ${
                 isOpen ? "opacity-0" : ""
               }`}
             />
 
             <span
-              className={`absolute left-0 top-4 block h-0.5 w-5 rounded-full bg-current transition ${
-                isOpen ? "-translate-y-1.5 -rotate-45" : ""
+              className={`absolute left-0 top-4 block h-0.5 w-5 rounded-full bg-current transition duration-200 ${
+                isOpen
+                  ? "-translate-y-1.5 -rotate-45"
+                  : ""
               }`}
             />
           </span>
         </button>
       </div>
 
+      {/* Mobile navigation */}
       <div
+        id="mobile-navigation"
         className={`overflow-hidden border-slate-200 bg-white transition-all duration-300 lg:hidden ${
           isOpen
             ? "max-h-[520px] border-t opacity-100"
             : "max-h-0 border-t-0 opacity-0"
         }`}
       >
-        <div className="mx-auto max-w-7xl space-y-2 px-4 py-5 sm:px-6">
+        <div className="mx-auto max-w-7xl space-y-1 px-4 py-5 sm:px-6">
           {navigation.map((item) => {
-            const sectionId = item.href.replace("#", "");
-            const isActive = activeSection === sectionId;
+            const sectionId =
+              item.href.replace("#", "");
+
+            const isActive =
+              activeSection === sectionId;
 
             return (
-              <Link
+              <a
                 key={item.href}
                 href={item.href}
-                onClick={closeMenu}
+                onClick={(event) => {
+                  event.preventDefault();
+
+                  handleAnchorClick(
+                    item.href,
+                  );
+                }}
                 className={`block rounded-2xl px-4 py-3 text-base font-bold transition ${
                   isActive
                     ? "bg-indigo-50 text-indigo-600"
@@ -166,7 +285,7 @@ export function Navbar() {
                 }`}
               >
                 {item.label}
-              </Link>
+              </a>
             );
           })}
 
@@ -182,7 +301,7 @@ export function Navbar() {
             <Link
               href="/register"
               onClick={closeMenu}
-              className="inline-flex h-12 items-center justify-center rounded-2xl bg-indigo-600 text-sm font-bold text-white transition hover:bg-indigo-700"
+              className="inline-flex h-12 items-center justify-center rounded-2xl bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-600/15 transition hover:bg-indigo-700"
             >
               Почати безкоштовно
             </Link>

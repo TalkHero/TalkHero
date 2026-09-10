@@ -1,17 +1,42 @@
 import Link from "next/link";
-import { Bot, Globe, Mail } from "lucide-react";
+import {
+  Bot,
+  Globe,
+  Mail,
+} from "lucide-react";
 
 const productLinks = [
-  { label: "Можливості", href: "#features" },
-  { label: "Як це працює", href: "#how-it-works" },
-  { label: "Платформа", href: "#platform" },
-  { label: "Поширені запитання", href: "#faq" },
+  {
+    label: "Спробувати TalkHero",
+    href: "#speaking-demo",
+  },
+  {
+    label: "Можливості",
+    href: "#features",
+  },
+  {
+    label: "Як це працює",
+    href: "#how-it-works",
+  },
+  {
+    label: "Поширені запитання",
+    href: "#faq",
+  },
 ];
 
 const legalLinks = [
-  { label: "Політика конфіденційності", href: "/privacy" },
-  { label: "Умови використання", href: "/terms" },
-  { label: "Контакти", href: "/contact" },
+  {
+    label: "Політика конфіденційності",
+    href: "/privacy",
+  },
+  {
+    label: "Умови використання",
+    href: "/terms",
+  },
+  {
+    label: "Контакти",
+    href: "/contact",
+  },
 ];
 
 export function Footer() {
@@ -19,21 +44,31 @@ export function Footer() {
     <footer className="border-t border-slate-200 bg-slate-950 text-white">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+          {/* Brand */}
           <div className="max-w-md">
-            <Link href="/" className="inline-flex items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-3"
+            >
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 text-white">
                 <Bot className="h-6 w-6" />
               </div>
 
               <span className="text-xl font-black">
-                Talk<span className="text-indigo-400">Hero</span>
+                Talk
+                <span className="text-indigo-400">
+                  Hero
+                </span>
               </span>
             </Link>
 
             <p className="mt-5 leading-7 text-slate-400">
-              Персональний ШІ-викладач англійської, який допомагає
-              практикувати живі діалоги, покращувати вимову, розширювати
-              словниковий запас і впевнено рухатися до своєї мети.
+              Персональний AI-викладач
+              англійської, який допомагає
+              практикувати живі діалоги,
+              покращувати вимову, розширювати
+              словниковий запас і впевнено
+              рухатися до своєї мети.
             </p>
 
             <div className="mt-6 flex items-center gap-3">
@@ -55,30 +90,38 @@ export function Footer() {
             </div>
           </div>
 
+          {/* Product */}
           <div>
             <h3 className="font-bold text-white">
               TalkHero
             </h3>
 
-            <nav className="mt-5 flex flex-col gap-3">
+            <nav
+              className="mt-5 flex flex-col gap-3"
+              aria-label="Навігація TalkHero"
+            >
               {productLinks.map((link) => (
-                <Link
+                <a
                   key={link.label}
                   href={link.href}
                   className="w-fit text-sm text-slate-400 transition hover:text-white"
                 >
                   {link.label}
-                </Link>
+                </a>
               ))}
             </nav>
           </div>
 
+          {/* Legal */}
           <div>
             <h3 className="font-bold text-white">
               Інформація
             </h3>
 
-            <nav className="mt-5 flex flex-col gap-3">
+            <nav
+              className="mt-5 flex flex-col gap-3"
+              aria-label="Інформація"
+            >
               {legalLinks.map((link) => (
                 <Link
                   key={link.label}
@@ -93,9 +136,14 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-slate-800 pt-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 TalkHero. Усі права захищені.</p>
+          <p>
+            © 2026 TalkHero. Усі права захищені.
+          </p>
 
-          <p>Вивчайте. Практикуйте. Досягайте більшого.</p>
+          <p>
+            Вивчайте. Практикуйте. Досягайте
+            більшого.
+          </p>
         </div>
       </div>
     </footer>

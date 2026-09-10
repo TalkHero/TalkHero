@@ -222,7 +222,10 @@ function FeatureVisual({ visual }: { visual: string }) {
 
 export function Features() {
   return (
-    <section className="bg-slate-50 py-24">
+   <section
+  id="features"
+  className="scroll-mt-20 bg-slate-50 py-12 sm:py-16 lg:py-24"
+>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-4 py-2 text-sm font-semibold text-indigo-700">
