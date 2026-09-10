@@ -23,21 +23,29 @@ export function RegisterForm() {
     useState(false);
 
   const signUpStartedTracked =
-    useRef(false);
+  useRef<Set<"email" | "google">>(
+    new Set(),
+  );
 
   function trackSignUpStarted(
-    method: "email" | "google",
-  ) {
-    if (signUpStartedTracked.current) {
-      return;
-    }
-
-    signUpStartedTracked.current = true;
-
-    trackEvent("sign_up_started", {
+  method: "email" | "google",
+) {
+  if (
+    signUpStartedTracked.current.has(
       method,
-    });
+    )
+  ) {
+    return;
   }
+
+  signUpStartedTracked.current.add(
+    method,
+  );
+
+  trackEvent("sign_up_started", {
+    method,
+  });
+}
 
   async function handleGoogleRegister() {
     if (googleLoading) {
