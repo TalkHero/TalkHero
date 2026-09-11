@@ -1,33 +1,64 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
 import {
+  ArrowRight,
   Loader2,
   Mic,
-  MicOff,
   RotateCcw,
-  Send,
   Square,
-  Waves,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import type { PublicQuestScene } from "@/lib/quests";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import { useVoiceRecorder } from "../hooks/useVoiceRecorder";
-import { SceneShell } from "./SceneShell";
+import {
+  Button,
+} from "@/components/ui/button";
+
+import type {
+  PublicQuestScene,
+} from "@/lib/quests";
+
+import {
+  cn,
+} from "@/lib/utils";
+
+import {
+  useVoiceRecorder,
+} from "../hooks/useVoiceRecorder";
+
+import {
+  SceneShell,
+} from "./SceneShell";
 
 type VoiceSceneProps = {
   scene: PublicQuestScene;
   loading?: boolean;
-  onSubmit: (value: unknown) => Promise<void>;
+
+  onSubmit: (
+    value: unknown,
+  ) => Promise<void>;
 };
 
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remaining = seconds % 60;
+function formatDuration(
+  seconds: number,
+): string {
+  const minutes =
+    Math.floor(
+      seconds / 60,
+    );
 
-  return `${minutes}:${remaining.toString().padStart(2, "0")}`;
+  const remaining =
+    seconds % 60;
+
+  return `${minutes}:${remaining
+    .toString()
+    .padStart(
+      2,
+      "0",
+    )}`;
 }
 
 export function VoiceScene({
@@ -35,22 +66,34 @@ export function VoiceScene({
   loading = false,
   onSubmit,
 }: VoiceSceneProps) {
-  const recorder = useVoiceRecorder();
+  const recorder =
+    useVoiceRecorder();
 
-  const [transcript, setTranscript] = useState("");
+  const [
+    transcript,
+    setTranscript,
+  ] = useState("");
 
   useEffect(() => {
     recorder.reset();
+
     setTranscript("");
-  }, [scene.id]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    scene.id,
+  ]);
 
   const busy =
     loading ||
-    recorder.state === "requesting" ||
-    recorder.state === "processing";
+    recorder.state ===
+      "requesting" ||
+    recorder.state ===
+      "processing";
 
   async function handleStop() {
-    const text = await recorder.stopAndTranscribe();
+    const text =
+      await recorder.stopAndTranscribe();
 
     if (text) {
       setTranscript(text);
@@ -58,9 +101,13 @@ export function VoiceScene({
   }
 
   async function handleSubmit() {
-    const value = transcript.trim();
+    const value =
+      transcript.trim();
 
-    if (!value || busy) {
+    if (
+      !value ||
+      busy
+    ) {
       return;
     }
 
@@ -69,155 +116,264 @@ export function VoiceScene({
 
   function handleClear() {
     setTranscript("");
+
     recorder.reset();
   }
 
   return (
     <SceneShell
-      title={scene.prompt || "Дайте відповідь голосом"}
-      description={scene.content}
+      taskLabel="Твоє завдання"
+      title={
+        scene.prompt ||
+        "Скажи відповідь англійською:"
+      }
+      description={
+        scene.content ||
+        null
+      }
       footer={
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-5 text-muted-foreground">
-            Голос перетворюється на текст за допомогою штучного інтелекту.
-          </p>
+        <Button
+          type="button"
+          disabled={
+            !transcript.trim() ||
+            busy
+          }
+          onClick={() => {
+            void handleSubmit();
+          }}
+          className="
+            min-h-[52px] w-full
+            rounded-full
+            text-sm font-bold
+          "
+        >
+          {loading ? (
+            <>
+              <Loader2
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
 
-          <Button
-            type="button"
-            disabled={!transcript.trim() || busy}
-            onClick={() => {
-              void handleSubmit();
-            }}
-            className="w-full sm:w-auto"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin" aria-hidden="true" />
-                Перевіряємо…
-              </>
-            ) : (
-              <>
-                Надіслати відповідь
-                <Send aria-hidden="true" />
-              </>
-            )}
-          </Button>
-        </div>
+              Перевіряємо…
+            </>
+          ) : (
+            <>
+              Перевірити
+
+              <ArrowRight
+                className="size-4"
+                aria-hidden="true"
+              />
+            </>
+          )}
+        </Button>
       }
     >
-      <div className="space-y-5">
-        <section className="rounded-xl border border-primary/15 bg-primary-soft/60 p-5 text-center sm:p-6">
-          <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-card text-primary shadow-sm">
-            {recorder.state === "recording" ? (
-              <Waves className="size-8 animate-pulse" aria-hidden="true" />
-            ) : recorder.state === "processing" ||
-              recorder.state === "requesting" ? (
-              <Loader2 className="size-8 animate-spin" aria-hidden="true" />
+      <div className="space-y-4">
+        <section
+          className={cn(
+            "rounded-[20px]",
+            "border",
+            "px-4 py-5",
+            "text-center",
+
+            recorder.state ===
+              "recording"
+              ? [
+                  "border-red-200",
+                  "bg-red-50",
+                ]
+              : [
+                  "border-indigo-100",
+                  "bg-indigo-50/60",
+                ],
+          )}
+        >
+          <div
+            className={cn(
+              "mx-auto flex size-12 items-center justify-center",
+              "rounded-full",
+
+              recorder.state ===
+                "recording"
+                ? "bg-red-100 text-red-600"
+                : "bg-white text-indigo-600 shadow-sm",
+            )}
+          >
+            {recorder.state ===
+              "requesting" ||
+            recorder.state ===
+              "processing" ? (
+              <Loader2
+                className="size-5 animate-spin"
+                aria-hidden="true"
+              />
+            ) : recorder.state ===
+              "recording" ? (
+              <Square
+                className="size-4 fill-current"
+                aria-hidden="true"
+              />
             ) : (
-              <Mic className="size-8" aria-hidden="true" />
+              <Mic
+                className="size-5"
+                aria-hidden="true"
+              />
             )}
           </div>
 
-          <h3 className="mt-4 text-lg font-bold text-foreground">
-            {recorder.state === "recording"
-              ? "Говоріть англійською"
-              : recorder.state === "processing"
+          <p className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-100">
+            {recorder.state ===
+            "recording"
+              ? "Говори англійською"
+              : recorder.state ===
+                  "processing"
                 ? "Розпізнаємо голос…"
-                : recorder.state === "requesting"
+                : recorder.state ===
+                    "requesting"
                   ? "Підключаємо мікрофон…"
-                  : "Запишіть свою відповідь"}
-          </h3>
+                  : transcript
+                    ? "Можеш записати ще раз"
+                    : "Натисни та говори"}
+          </p>
 
-          {recorder.state === "recording" ? (
-            <p className="mt-2 font-mono text-2xl font-bold tabular-nums text-primary">
-              {formatDuration(recorder.durationSeconds)}
+          {recorder.state ===
+          "recording" ? (
+            <p className="mt-1.5 font-mono text-lg font-black tabular-nums text-red-500">
+              {formatDuration(
+                recorder.durationSeconds,
+              )}
             </p>
-          ) : (
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-              Говоріть чітко й природно. Після завершення запису ми покажемо
-              розпізнаний текст.
-            </p>
-          )}
+          ) : null}
 
-          <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-            {recorder.state === "recording" ? (
-              <>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => {
-                    void handleStop();
-                  }}
-                  className="w-full sm:w-auto"
-                >
-                  <Square className="fill-current" aria-hidden="true" />
-                  Завершити запис
-                </Button>
+          <div className="mt-4">
+            {recorder.state ===
+            "recording" ? (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => {
+                  void handleStop();
+                }}
+                className="rounded-full"
+              >
+                <Square
+                  className="size-4 fill-current"
+                  aria-hidden="true"
+                />
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={recorder.cancel}
-                  className="w-full sm:w-auto"
-                >
-                  <MicOff aria-hidden="true" />
-                  Скасувати
-                </Button>
-              </>
+                Зупинити запис
+              </Button>
             ) : (
               <Button
                 type="button"
-                disabled={busy}
+                variant="outline"
+                disabled={
+                  busy
+                }
                 onClick={() => {
                   void recorder.start();
                 }}
-                className="w-full sm:w-auto"
+                className="
+                  rounded-full
+                  border-indigo-300
+                  bg-white
+                  text-indigo-600
+                  hover:bg-indigo-50
+                "
               >
-                {busy ? (
-                  <Loader2 className="animate-spin" aria-hidden="true" />
-                ) : (
-                  <Mic aria-hidden="true" />
-                )}
+                <Mic
+                  className="size-4"
+                  aria-hidden="true"
+                />
 
-                {transcript ? "Записати ще раз" : "Почати запис"}
+                {transcript
+                  ? "Записати ще раз"
+                  : "Сказати голосом"}
               </Button>
             )}
           </div>
         </section>
 
         {recorder.error ? (
-          <div
+          <p
             role="alert"
-            className="rounded-xl border border-destructive/20 bg-destructive-soft p-4 text-sm text-red-700 dark:text-red-300"
+            className="
+              rounded-xl
+              bg-red-50
+              px-3 py-2
+              text-sm text-red-600
+              dark:bg-red-950/30
+              dark:text-red-300
+            "
           >
             {recorder.error}
-          </div>
+          </p>
         ) : null}
 
         {transcript ? (
-          <section className="rounded-xl border border-success/20 bg-success-soft p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <section
+            className="
+              rounded-[18px]
+              border border-slate-200
+              bg-white
+              p-4
+              dark:border-slate-700
+              dark:bg-slate-950
+            "
+          >
+            <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-200">
-                  Розпізнана відповідь
+                <p
+                  className="
+                    text-[10px]
+                    font-bold uppercase
+                    tracking-[0.08em]
+                    text-slate-400
+                  "
+                >
+                  Твоя відповідь
                 </p>
 
-                <p className="mt-2 whitespace-pre-line text-lg font-medium leading-7 text-foreground">
-                  “{transcript}”
+                <p
+                  className="
+                    mt-2
+                    whitespace-pre-line
+                    text-[15px]
+                    font-medium
+                    leading-6
+                    text-slate-800
+                    dark:text-slate-100
+                  "
+                >
+                  {transcript}
                 </p>
               </div>
 
-              <Button
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 disabled={busy}
-                onClick={handleClear}
-                className="shrink-0"
+                onClick={
+                  handleClear
+                }
+                className="
+                  flex size-9 shrink-0
+                  items-center justify-center
+                  rounded-full
+                  bg-slate-50
+                  text-slate-500
+                  transition
+                  hover:bg-slate-100
+                  disabled:opacity-50
+                  dark:bg-slate-900
+                "
+                aria-label="Очистити запис"
               >
-                <RotateCcw aria-hidden="true" />
-                Очистити
-              </Button>
+                <RotateCcw
+                  className="size-4"
+                  aria-hidden="true"
+                />
+              </button>
             </div>
           </section>
         ) : null}

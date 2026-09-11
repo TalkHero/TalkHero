@@ -6,7 +6,7 @@ import {
   Square,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type VoiceRecorderState =
   | "idle"
@@ -23,6 +23,20 @@ type VoiceInputControlsProps = {
   onClick: () => void;
 };
 
+function formatDuration(
+  seconds: number,
+): string {
+  const minutes =
+    Math.floor(seconds / 60);
+
+  const remaining =
+    seconds % 60;
+
+  return `${minutes}:${remaining
+    .toString()
+    .padStart(2, "0")}`;
+}
+
 export function VoiceInputControls({
   state,
   durationSeconds,
@@ -35,71 +49,88 @@ export function VoiceInputControls({
     state === "requesting" ||
     state === "processing";
 
-  const recording = state === "recording";
+  const recording =
+    state === "recording";
 
   const label =
     state === "requesting"
-      ? "Підключення…"
+      ? "Підключаємо мікрофон…"
       : state === "processing"
-        ? "Розпізнавання…"
+        ? "Розпізнаємо голос…"
         : recording
           ? "Зупинити запис"
-          : "Відповісти голосом";
-
-  const status =
-    recording
-      ? `Запис: ${durationSeconds} с`
-      : state === "processing"
-        ? "Перетворюємо голос на текст…"
-        : "Можна писати або говорити";
+          : hasValue
+            ? "Сказати ще раз"
+            : "Сказати голосом";
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-3">
-        <Button
-          type="button"
-          variant={recording ? "destructive" : "outline"}
-          disabled={disabled || busy}
-          onClick={onClick}
-          className="gap-2"
-        >
-          {busy ? (
-            <Loader2
-              className="h-4 w-4 animate-spin"
-              aria-hidden="true"
-            />
-          ) : recording ? (
-            <Square
-              className="h-4 w-4"
-              aria-hidden="true"
-            />
-          ) : (
-            <Mic
-              className="h-4 w-4"
-              aria-hidden="true"
-            />
-          )}
+    <div>
+      <button
+        type="button"
+        disabled={
+          disabled || busy
+        }
+        onClick={onClick}
+        className={cn(
+          "flex min-h-[52px] w-full items-center justify-center gap-2.5",
+          "rounded-full border-[1.5px]",
+          "text-sm font-bold",
+          "transition-all duration-150",
+          recording
+            ? "border-red-300 bg-red-50 text-red-600 hover:bg-red-100"
+            : "border-indigo-300 bg-white text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50/70",
+          "focus-visible:outline-none",
+          "focus-visible:ring-4 focus-visible:ring-indigo-100",
+          "disabled:cursor-not-allowed disabled:opacity-60",
+          "dark:bg-slate-950",
+        )}
+      >
+        {busy ? (
+          <Loader2
+            className="size-4.5 animate-spin"
+            aria-hidden="true"
+          />
+        ) : recording ? (
+          <Square
+            className="size-4 fill-current"
+            aria-hidden="true"
+          />
+        ) : (
+          <Mic
+            className="size-4.5"
+            aria-hidden="true"
+          />
+        )}
 
-          {label}
-        </Button>
+        <span>{label}</span>
 
-        <span className="text-xs text-muted-foreground">
-          {status}
-        </span>
-      </div>
+        {recording ? (
+          <span className="font-mono tabular-nums">
+            {formatDuration(
+              durationSeconds,
+            )}
+          </span>
+        ) : null}
+      </button>
+
+      {state === "processing" ? (
+        <p className="mt-2 text-center text-xs text-slate-400">
+          Перетворюємо голос на текст…
+        </p>
+      ) : null}
+
+      {recording ? (
+        <p className="mt-2 text-center text-xs font-medium text-red-500">
+          Говори англійською
+        </p>
+      ) : null}
 
       {error ? (
         <p
           role="alert"
-          className="text-sm text-destructive"
+          className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/30 dark:text-red-300"
         >
           {error}
-        </p>
-      ) : null}
-
-      {hasValue ? (
-        <p className="text-xs text-muted-foreground">
-          Розпізнаний текст можна відредагувати перед надсиланням.
         </p>
       ) : null}
     </div>

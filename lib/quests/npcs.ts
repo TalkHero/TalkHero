@@ -59,16 +59,6 @@ export const NPCS: Record<string, NPC> = {
     theme: "violet",
   },
 
-  mia: {
-    id: "mia",
-    name: "Mia",
-    role: "Barista",
-    avatar: "☕",
-    emotion: "happy",
-    accent: "british",
-    voiceId: "nova",
-    theme: "emerald",
-  },
 
   // ========================================================
   // London First Day
@@ -796,6 +786,17 @@ export const NPCS: Record<string, NPC> = {
     voiceId: "shimmer",
     theme: "rose",
   },
+
+  mia: {
+  id: "mia",
+  name: "Mia",
+  role: "Barista",
+  avatar: "/images/characters/mia/mia.png",
+  emotion: "happy",
+  accent: "british",
+  voiceId: "nova",
+  theme: "emerald",
+},
 };
 
 export function getNPCById(

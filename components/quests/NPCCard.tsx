@@ -3,18 +3,10 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import {
-  Headphones,
   Loader2,
-  Sparkles,
+  Volume2,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card";
 import type {
   NPC,
   NPCEmotion,
@@ -30,203 +22,141 @@ type NPCCardProps = {
   onListen?: () => void;
 };
 
-const THEME_CLASSES: Record<
-  NPC["theme"],
-  {
-    card: string;
-    avatar: string;
-  }
-> = {
-  violet: {
-    card: "border-violet-200 bg-gradient-to-br from-violet-50/80 via-white to-white",
-    avatar: "bg-violet-100 text-violet-700",
-  },
-  emerald: {
-    card: "border-emerald-200 bg-gradient-to-br from-emerald-50/80 via-white to-white",
-    avatar: "bg-emerald-100 text-emerald-700",
-  },
-  blue: {
-    card: "border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-white",
-    avatar: "bg-blue-100 text-blue-700",
-  },
-  amber: {
-    card: "border-amber-200 bg-gradient-to-br from-amber-50/80 via-white to-white",
-    avatar: "bg-amber-100 text-amber-700",
-  },
-  rose: {
-    card: "border-rose-200 bg-gradient-to-br from-rose-50/80 via-white to-white",
-    avatar: "bg-rose-100 text-rose-700",
-  },
-  slate: {
-    card: "border-border bg-gradient-to-br from-muted/70 via-white to-white",
-    avatar: "bg-muted text-foreground",
-  },
-};
-
-const EMOTION_LABELS: Record<
-  NPCEmotion,
-  string
-> = {
-  happy: "Доброзичливий настрій",
-  neutral: "Спокійний настрій",
-  thinking: "Замислений настрій",
-  surprised: "Здивований настрій",
-  encouraging: "Підтримує вас",
-  celebrating: "Святкує успіх",
-};
-
-function isImageAvatar(avatar: string): boolean {
+function isImageAvatar(
+  avatar: string,
+): boolean {
   return avatar.startsWith("/");
 }
 
 export function NPCCard({
   npc,
   children,
-  emotion = npc.emotion,
   showListenButton = false,
   listening = false,
   onListen,
 }: NPCCardProps) {
-  const theme = THEME_CLASSES[npc.theme];
-  const imageAvatar = isImageAvatar(npc.avatar);
+  const imageAvatar =
+    isImageAvatar(npc.avatar);
 
   return (
-    <Card
+    <section
       className={cn(
-        "overflow-hidden",
-        "animate-in fade-in slide-in-from-bottom-2 duration-300",
-        theme.card,
+        "relative overflow-hidden",
+        "rounded-[28px]",
+        "border border-slate-200/70",
+        "bg-slate-100",
+        "shadow-[0_16px_48px_rgba(15,23,42,0.08)]",
+        "dark:border-slate-800 dark:bg-slate-900",
       )}
     >
-      <CardHeader className="border-b border-black/5 p-6 sm:p-7">
+      <div className="relative min-h-[330px] sm:min-h-[390px]">
+        {imageAvatar ? (
+          <Image
+            src={npc.avatar}
+            alt={npc.name}
+            fill
+            sizes="(max-width: 767px) 100vw, 896px"
+            className="object-cover object-center"
+            priority={false}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-50 via-slate-50 to-violet-100 dark:from-slate-900 dark:to-indigo-950">
+            <span
+              className="text-[120px]"
+              aria-hidden="true"
+            >
+              {npc.avatar}
+            </span>
+          </div>
+        )}
+
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"
+          aria-hidden="true"
+        />
+
         <div
           className={cn(
-            "grid items-center gap-5",
-            "grid-cols-[104px_minmax(0,1fr)]",
-            "sm:grid-cols-[160px_minmax(0,1fr)_auto]",
-            "sm:gap-7",
+            "absolute bottom-5 right-4 z-10",
+            "w-[68%] max-w-[410px]",
+            "rounded-[24px]",
+            "bg-white/96",
+            "px-4 py-3.5",
+            "shadow-[0_14px_34px_rgba(15,23,42,0.18)]",
+            "backdrop-blur-md",
+            "sm:bottom-7 sm:right-7",
+            "sm:px-5 sm:py-4",
+            "dark:bg-slate-950/96",
           )}
         >
-          {/* Character portrait */}
-          <div
+          <span
             className={cn(
-              "relative flex size-[104px] shrink-0 items-center justify-center",
-              "overflow-hidden rounded-2xl shadow-sm",
-              "sm:size-[160px]",
-              "text-4xl sm:text-5xl",
-              theme.avatar,
+              "absolute bottom-8 -left-2.5",
+              "size-5 rotate-45",
+              "bg-white/96",
+              "dark:bg-slate-950/96",
             )}
-          >
-            {imageAvatar ? (
-              <Image
-                src={npc.avatar}
-                alt={npc.name}
-                fill
-                sizes="(max-width: 639px) 104px, 160px"
-                className="object-cover object-top"
-                priority={false}
-              />
-            ) : (
-              <span aria-hidden="true">
-                {npc.avatar}
-              </span>
-            )}
-          </div>
+            aria-hidden="true"
+          />
 
-          {/* Character information */}
-          <div className="min-w-0">
-            <h2 className="truncate text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-              {npc.name}
-            </h2>
+          <div className="relative z-10">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-extrabold text-slate-700 dark:text-slate-200">
+                  {npc.name}
+                </p>
 
-            <p className="mt-1 truncate text-sm text-muted-foreground sm:text-base">
-              {npc.role}
-            </p>
-          </div>
+                {npc.role ? (
+                  <p className="mt-0.5 truncate text-[10px] font-medium text-slate-400">
+                    {npc.role}
+                  </p>
+                ) : null}
+              </div>
 
-          {/* Controls — desktop */}
-          <div className="hidden shrink-0 flex-col items-end gap-3 sm:flex">
-            <Badge variant="neutral">
-              <Sparkles aria-hidden="true" />
-              <span>
-                {EMOTION_LABELS[emotion]}
-              </span>
-            </Badge>
+              {showListenButton ? (
+                <button
+                  type="button"
+                  disabled={!onListen || listening}
+                  onClick={onListen}
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center",
+                    "rounded-full border border-indigo-200",
+                    "bg-white text-indigo-600",
+                    "shadow-sm transition",
+                    "hover:bg-indigo-50",
+                    "focus-visible:outline-none",
+                    "focus-visible:ring-4 focus-visible:ring-indigo-100",
+                    "disabled:cursor-not-allowed disabled:opacity-60",
+                    "dark:border-indigo-800",
+                    "dark:bg-slate-900 dark:text-indigo-300",
+                  )}
+                  aria-label={
+                    listening
+                      ? "Відтворюється репліка"
+                      : `Прослухати репліку ${npc.name}`
+                  }
+                >
+                  {listening ? (
+                    <Loader2
+                      className="size-4.5 animate-spin"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Volume2
+                      className="size-4.5"
+                      aria-hidden="true"
+                    />
+                  )}
+                </button>
+              ) : null}
+            </div>
 
-            {showListenButton ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={!onListen || listening}
-                onClick={onListen}
-                aria-label={
-                  listening
-                    ? "Відтворюється репліка персонажа"
-                    : `Прослухати репліку персонажа ${npc.name}`
-                }
-              >
-                {listening ? (
-                  <Loader2
-                    className="animate-spin"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <Headphones aria-hidden="true" />
-                )}
-
-                <span>
-                  {listening
-                    ? "Відтворення…"
-                    : "Прослухати"}
-                </span>
-              </Button>
-            ) : null}
-          </div>
-
-          {/* Controls — mobile */}
-          <div className="col-span-2 flex flex-wrap items-center gap-2 sm:hidden">
-            <Badge variant="neutral">
-              <Sparkles aria-hidden="true" />
-              <span>Настрій</span>
-            </Badge>
-
-            {showListenButton ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={!onListen || listening}
-                onClick={onListen}
-                aria-label={
-                  listening
-                    ? "Відтворюється репліка персонажа"
-                    : `Прослухати репліку персонажа ${npc.name}`
-                }
-              >
-                {listening ? (
-                  <Loader2
-                    className="animate-spin"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <Headphones aria-hidden="true" />
-                )}
-
-                <span>
-                  {listening
-                    ? "Відтворення…"
-                    : "Прослухати"}
-                </span>
-              </Button>
-            ) : null}
+            <div className="mt-2 whitespace-pre-line text-[16px] font-medium leading-6.5 text-slate-900 sm:text-lg sm:leading-7 dark:text-white">
+              {children}
+            </div>
           </div>
         </div>
-      </CardHeader>
-
-      <CardContent className="px-6 py-7 text-base leading-7 text-foreground sm:px-7 sm:py-8 sm:text-lg sm:leading-8">
-        {children}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

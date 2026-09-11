@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import type { ReactNode } from "react";
+import { Target } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -11,6 +12,8 @@ type SceneShellProps = {
   footer?: ReactNode;
   className?: string;
   contentClassName?: string;
+  taskLabel?: string;
+  showTaskHeader?: boolean;
 };
 
 export function SceneShell({
@@ -20,35 +23,63 @@ export function SceneShell({
   footer,
   className,
   contentClassName,
+  taskLabel = "Твоє завдання",
+  showTaskHeader = true,
 }: SceneShellProps) {
+  const hasHeader =
+    Boolean(title || description);
+
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-2xl border border-border bg-card text-card-foreground",
-        "shadow-card",
-        "animate-in fade-in slide-in-from-bottom-2 duration-300",
+        "overflow-hidden rounded-[28px]",
+        "border border-slate-200/80",
+        "bg-white",
+        "shadow-[0_16px_46px_rgba(15,23,42,0.065)]",
+        "dark:border-slate-800",
+        "dark:bg-slate-950",
         className,
       )}
     >
-      {title || description ? (
-        <header className="border-b border-border bg-muted/30 px-5 py-4 sm:px-6 sm:py-5">
+      {showTaskHeader && hasHeader ? (
+        <header className="px-5 pb-1 pt-5 sm:px-7 sm:pt-6">
+          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-300">
+            <Target
+              className="size-5"
+              strokeWidth={2.4}
+              aria-hidden="true"
+            />
+
+            <p className="text-[13px] font-black uppercase tracking-[0.055em]">
+              {taskLabel}
+            </p>
+          </div>
+
           {title ? (
-            <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground sm:text-2xl">
+            <h2 className="mt-4 text-[16px] font-bold leading-6 text-slate-800 sm:text-lg dark:text-slate-100">
               {title}
             </h2>
           ) : null}
 
           {description ? (
-            <p className="mt-1.5 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
+            <div
+              className={cn(
+                "mt-3 rounded-[17px]",
+                "bg-indigo-50/90",
+                "px-4 py-3",
+                "text-[15px] font-medium leading-6 text-indigo-950",
+                "dark:bg-indigo-950/45 dark:text-indigo-100",
+              )}
+            >
               {description}
-            </p>
+            </div>
           ) : null}
         </header>
       ) : null}
 
       <div
         className={cn(
-          "px-5 py-5 sm:px-6 sm:py-6",
+          "px-5 py-4.5 sm:px-7 sm:py-5",
           contentClassName,
         )}
       >
@@ -56,7 +87,7 @@ export function SceneShell({
       </div>
 
       {footer ? (
-        <footer className="border-t border-border bg-muted/20 px-5 py-3.5 sm:px-6 sm:py-4">
+        <footer className="px-5 pb-5 sm:px-7 sm:pb-6">
           {footer}
         </footer>
       ) : null}

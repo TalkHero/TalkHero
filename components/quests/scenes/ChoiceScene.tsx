@@ -1,13 +1,32 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
-import { Check, Loader2, MousePointerClick } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Loader2,
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import type { PublicQuestScene } from "@/lib/quests";
-import { cn } from "@/lib/utils";
+import {
+  useEffect,
+  useState,
+  type KeyboardEvent,
+} from "react";
 
-import { SceneShell } from "./SceneShell";
+import {
+  Button,
+} from "@/components/ui/button";
+
+import type {
+  PublicQuestScene,
+} from "@/lib/quests";
+
+import {
+  cn,
+} from "@/lib/utils";
+
+import {
+  SceneShell,
+} from "./SceneShell";
 
 type ChoiceOption = {
   id?: string;
@@ -19,14 +38,24 @@ type ChoiceOption = {
 type ChoiceSceneProps = {
   scene: PublicQuestScene;
   loading?: boolean;
-  onSubmit: (value: unknown) => Promise<void>;
+
+  onSubmit: (
+    value: unknown,
+  ) => Promise<void>;
 };
 
-function getOptionLabel(option: ChoiceOption, index: number): string {
+function getOptionLabel(
+  option: ChoiceOption,
+  index: number,
+): string {
   return (
     option.label ??
     option.text ??
-    String(option.value ?? option.id ?? index + 1)
+    String(
+      option.value ??
+        option.id ??
+        index + 1,
+    )
   );
 }
 
@@ -35,165 +64,283 @@ export function ChoiceScene({
   loading = false,
   onSubmit,
 }: ChoiceSceneProps) {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [
+    selectedIndex,
+    setSelectedIndex,
+  ] =
+    useState<number | null>(
+      null,
+    );
 
-  const options = (scene.options as ChoiceOption[]) ?? [];
+  const options =
+    (scene.options as ChoiceOption[]) ??
+    [];
 
   useEffect(() => {
     setSelectedIndex(null);
-  }, [scene.id]);
+  }, [
+    scene.id,
+  ]);
 
   async function handleSubmit() {
-    if (selectedIndex === null || loading) {
+    if (
+      selectedIndex === null ||
+      loading
+    ) {
       return;
     }
 
-    const option = options[selectedIndex];
+    const option =
+      options[selectedIndex];
 
     if (!option) {
       return;
     }
 
-    await onSubmit(option.id ?? option.value ?? String(selectedIndex + 1));
+    /*
+     * ВАЖЛИВО:
+     * зберігаємо існуючу семантику Quest Engine.
+     */
+    await onSubmit(
+      option.id ??
+        option.value ??
+        String(
+          selectedIndex + 1,
+        ),
+    );
   }
 
   function handleOptionKeyDown(
-    event: React.KeyboardEvent<HTMLButtonElement>,
+    event:
+      KeyboardEvent<HTMLButtonElement>,
+
     index: number,
   ) {
-    if (loading || options.length === 0) {
+    if (
+      loading ||
+      options.length === 0
+    ) {
       return;
     }
 
-    let nextIndex: number | null = null;
+    let nextIndex:
+      | number
+      | null = null;
 
-    if (event.key === "ArrowDown" || event.key === "ArrowRight") {
-      nextIndex = (index + 1) % options.length;
+    if (
+      event.key ===
+        "ArrowDown" ||
+      event.key ===
+        "ArrowRight"
+    ) {
+      nextIndex =
+        (index + 1) %
+        options.length;
     }
 
-    if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
-      nextIndex = (index - 1 + options.length) % options.length;
+    if (
+      event.key ===
+        "ArrowUp" ||
+      event.key ===
+        "ArrowLeft"
+    ) {
+      nextIndex =
+        (
+          index -
+          1 +
+          options.length
+        ) %
+        options.length;
     }
 
-    if (nextIndex === null) {
+    if (
+      nextIndex === null
+    ) {
       return;
     }
 
     event.preventDefault();
-    setSelectedIndex(nextIndex);
 
-    document.getElementById(`choice-option-${scene.id}-${nextIndex}`)?.focus();
+    setSelectedIndex(
+      nextIndex,
+    );
+
+    document
+      .getElementById(
+        `choice-option-${scene.id}-${nextIndex}`,
+      )
+      ?.focus();
   }
 
   return (
     <SceneShell
-      title={scene.prompt}
-      description={scene.content}
+      taskLabel="Твоє завдання"
+      title={
+        scene.prompt ||
+        "Обери правильну відповідь"
+      }
+      description={
+        scene.content ||
+        null
+      }
       footer={
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            Оберіть один варіант відповіді
-          </p>
+        <Button
+          type="button"
+          disabled={
+            selectedIndex ===
+              null ||
+            loading
+          }
+          onClick={() => {
+            void handleSubmit();
+          }}
+          className="
+            min-h-[52px] w-full
+            rounded-full
+            text-sm font-bold
+          "
+        >
+          {loading ? (
+            <>
+              <Loader2
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
 
-          <Button
-            type="button"
-            disabled={selectedIndex === null || loading}
-            onClick={() => {
-              void handleSubmit();
-            }}
-            className="w-full sm:w-auto"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="animate-spin" aria-hidden="true" />
-                Перевіряємо…
-              </>
-            ) : (
-              <>
-                Перевірити відповідь
-                <Check aria-hidden="true" />
-              </>
-            )}
-          </Button>
-        </div>
+              Перевіряємо…
+            </>
+          ) : (
+            <>
+              Перевірити
+
+              <ArrowRight
+                className="size-4"
+                aria-hidden="true"
+              />
+            </>
+          )}
+        </Button>
       }
     >
-      <div className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        <MousePointerClick className="size-4" aria-hidden="true" />
-        Натисніть на варіант, який вважаєте правильним
-      </div>
-
       {options.length > 0 ? (
         <div
           role="radiogroup"
           aria-label="Варіанти відповіді"
-          className="space-y-3"
+          className="space-y-2.5"
         >
-          {options.map((option, index) => {
-            const label = getOptionLabel(option, index);
+          {options.map(
+            (
+              option,
+              index,
+            ) => {
+              const label =
+                getOptionLabel(
+                  option,
+                  index,
+                );
 
-            const active = selectedIndex === index;
+              const active =
+                selectedIndex ===
+                index;
 
-            return (
-              <button
-                id={`choice-option-${scene.id}-${index}`}
-                key={option.id ?? `${scene.id}-${index}`}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                disabled={loading}
-                onClick={() => {
-                  setSelectedIndex(index);
-                }}
-                onKeyDown={(event) => {
-                  handleOptionKeyDown(event, index);
-                }}
-                className={cn(
-                  "group w-full rounded-xl border p-4 text-left",
-                  "transition-[transform,background-color,border-color,box-shadow] duration-150",
-                  "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35",
-                  "disabled:cursor-not-allowed disabled:opacity-60",
-                  active
-                    ? "border-primary bg-primary-soft shadow-sm"
-                    : "border-border bg-card hover:-translate-y-px hover:border-primary/30 hover:bg-primary-soft/40 hover:shadow-card-hover",
-                )}
-              >
-                <span className="flex items-start gap-3">
+              const letter =
+                String.fromCharCode(
+                  65 + index,
+                );
+
+              return (
+                <button
+                  id={`choice-option-${scene.id}-${index}`}
+                  key={
+                    option.id ??
+                    `${scene.id}-${index}`
+                  }
+                  type="button"
+                  role="radio"
+                  aria-checked={
+                    active
+                  }
+                  disabled={
+                    loading
+                  }
+                  onClick={() => {
+                    setSelectedIndex(
+                      index,
+                    );
+                  }}
+                  onKeyDown={(
+                    event,
+                  ) => {
+                    handleOptionKeyDown(
+                      event,
+                      index,
+                    );
+                  }}
+                  className={cn(
+                    "group flex min-h-[58px] w-full items-center gap-3",
+                    "rounded-[17px] border px-3.5 py-3 text-left",
+                    "transition-all duration-150",
+                    "focus-visible:outline-none",
+                    "focus-visible:ring-4 focus-visible:ring-indigo-100",
+                    "disabled:cursor-not-allowed disabled:opacity-60",
+
+                    active
+                      ? [
+                          "border-indigo-400",
+                          "bg-indigo-50",
+                          "shadow-[0_5px_18px_rgba(79,70,229,0.10)]",
+                        ]
+                      : [
+                          "border-slate-200",
+                          "bg-white",
+                          "hover:border-indigo-200",
+                          "hover:bg-indigo-50/40",
+                        ],
+
+                    "dark:border-slate-700",
+                    "dark:bg-slate-950",
+                  )}
+                >
                   <span
-                    aria-hidden="true"
                     className={cn(
-                      "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border-2",
-                      "transition-colors duration-150",
+                      "flex size-8 shrink-0 items-center justify-center",
+                      "rounded-full border",
+                      "text-xs font-black",
+                      "transition",
+
                       active
-                        ? "border-primary bg-primary"
-                        : "border-input bg-card group-hover:border-primary/50",
+                        ? "border-indigo-500 bg-indigo-500 text-white"
+                        : "border-slate-200 bg-slate-50 text-slate-400",
                     )}
                   >
                     {active ? (
-                      <Check className="size-3.5 text-primary-foreground" />
-                    ) : null}
+                      <Check
+                        className="size-4"
+                        strokeWidth={3}
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      letter
+                    )}
                   </span>
 
-                  <span
-                    className={cn(
-                      "min-w-0 text-base font-medium leading-6",
-                      active ? "text-foreground" : "text-foreground/90",
-                    )}
-                  >
+                  <span className="text-[15px] font-semibold leading-6 text-slate-800 dark:text-slate-100">
                     {label}
                   </span>
-                </span>
-              </button>
-            );
-          })}
+                </button>
+              );
+            },
+          )}
         </div>
       ) : (
-        <div
+        <p
           role="alert"
-          className="rounded-xl border border-warning/20 bg-warning-soft p-5 text-sm text-amber-800"
+          className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700"
         >
-          Для цієї сцени не налаштовано варіанти відповіді.
-        </div>
+          Для цієї сцени не
+          налаштовано варіанти
+          відповіді.
+        </p>
       )}
     </SceneShell>
   );

@@ -1,55 +1,118 @@
 ﻿"use client";
 
-import type { KeyboardEvent } from "react";
-import { useEffect, useRef, useState } from "react";
 import {
+  ArrowRight,
   Loader2,
-  Send,
 } from "lucide-react";
-import { useVoiceRecorder } from "@/components/quests/hooks/useVoiceRecorder";
-import { Button } from "@/components/ui/button";
-import type { PublicQuestScene } from "@/lib/quests";
-import { cn } from "@/lib/utils";
-import { VoiceInputControls } from "@/components/quests/VoiceInputControls";
 
-import { SceneShell } from "./SceneShell";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
+
+import {
+  useVoiceRecorder,
+} from "@/components/quests/hooks/useVoiceRecorder";
+
+import {
+  VoiceInputControls,
+} from "@/components/quests/VoiceInputControls";
+
+import {
+  Button,
+} from "@/components/ui/button";
+
+import type {
+  PublicQuestScene,
+} from "@/lib/quests";
+
+import {
+  cn,
+} from "@/lib/utils";
+
+import {
+  SceneShell,
+} from "./SceneShell";
 
 type InputSceneProps = {
   scene: PublicQuestScene;
   loading?: boolean;
-  onSubmit: (value: unknown) => Promise<void>;
+
+  onSubmit: (
+    value: unknown,
+  ) => Promise<void>;
 };
 
-const MAX_LENGTH = 1000;
+const MAX_LENGTH = 500;
+
+function getHint(
+  scene: PublicQuestScene,
+): string | null {
+  const metadata =
+    scene.metadata as Record<
+      string,
+      unknown
+    >;
+
+  const value =
+    metadata.inputHint ??
+    metadata.hint;
+
+  return typeof value === "string" &&
+    value.trim()
+    ? value.trim()
+    : null;
+}
 
 export function InputScene({
   scene,
   loading = false,
   onSubmit,
 }: InputSceneProps) {
-  const [value, setValue] = useState("");
-  const recorder = useVoiceRecorder();
-  const sceneIdRef = useRef(scene.id);
+  const [
+    value,
+    setValue,
+  ] = useState("");
+
+  const recorder =
+    useVoiceRecorder();
+
+  const sceneIdRef =
+    useRef(scene.id);
 
   useEffect(() => {
-    sceneIdRef.current = scene.id;
+    sceneIdRef.current =
+      scene.id;
+
     setValue("");
+
     recorder.cancel();
 
-    // Скидаємо голосовий запис лише при зміні сцени.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scene.id]);
+  }, [
+    scene.id,
+  ]);
 
-  const trimmed = value.trim();
+  const trimmed =
+    value.trim();
+
+  const hint =
+    getHint(scene);
 
   const voiceBusy =
-    recorder.state === "requesting" ||
-    recorder.state === "recording" ||
-    recorder.state === "processing";
+    recorder.state ===
+      "requesting" ||
+    recorder.state ===
+      "recording" ||
+    recorder.state ===
+      "processing";
 
   const canSubmit =
     trimmed.length > 0 &&
-    trimmed.length <= MAX_LENGTH &&
+    trimmed.length <=
+      MAX_LENGTH &&
     !loading &&
     !voiceBusy;
 
@@ -58,137 +121,240 @@ export function InputScene({
       return;
     }
 
-    await onSubmit(trimmed);
+    await onSubmit(
+      trimmed,
+    );
   }
 
   async function handleKeyDown(
-    event: KeyboardEvent<HTMLTextAreaElement>,
+    event:
+      KeyboardEvent<HTMLTextAreaElement>,
   ) {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
       event.preventDefault();
+
       await handleSubmit();
     }
   }
 
   async function handleVoiceClick() {
-  if (loading || recorder.state === "processing") {
-    return;
-  }
-
-  if (recorder.state === "recording") {
-    const currentSceneId = sceneIdRef.current;
-
-    const text = await recorder.stopAndTranscribe();
-
-    if (!text || sceneIdRef.current !== currentSceneId) {
+    if (
+      loading ||
+      recorder.state ===
+        "processing"
+    ) {
       return;
     }
 
-    const voiceAnswer = text.slice(0, MAX_LENGTH).trim();
+    if (
+      recorder.state ===
+      "recording"
+    ) {
+      const currentSceneId =
+        sceneIdRef.current;
 
-    if (!voiceAnswer) {
+      const text =
+        await recorder.stopAndTranscribe();
+
+      if (
+        !text ||
+        sceneIdRef.current !==
+          currentSceneId
+      ) {
+        return;
+      }
+
+      const voiceAnswer =
+        text
+          .slice(
+            0,
+            MAX_LENGTH,
+          )
+          .trim();
+
+      if (!voiceAnswer) {
+        return;
+      }
+
+      setValue(
+        voiceAnswer,
+      );
+
       return;
     }
 
-    // Голос лише заповнює поле.
-    // Користувач може відредагувати текст перед надсиланням.
-    setValue(voiceAnswer);
-
-    return;
+    if (
+      recorder.state ===
+      "idle"
+    ) {
+      await recorder.start();
+    }
   }
-
-  if (recorder.state === "idle") {
-    await recorder.start();
-  }
-}
 
   return (
     <SceneShell
-      title={scene.prompt}
-      description={scene.content}
+      taskLabel="Твоє завдання"
+      title={
+        scene.prompt ||
+        "Напиши відповідь англійською:"
+      }
+      description={
+        scene.content ||
+        null
+      }
       footer={
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm text-muted-foreground">
-              {value.length} із {MAX_LENGTH} символів
-            </span>
+        <Button
+          type="button"
+          disabled={!canSubmit}
+          onClick={() => {
+            void handleSubmit();
+          }}
+          className="
+            min-h-[52px] w-full
+            rounded-full
+            text-sm font-bold
+          "
+        >
+          {loading ? (
+            <>
+              <Loader2
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
 
-            <span className="text-xs text-muted-foreground">
-              Enter — надіслати, Shift + Enter — новий рядок
-            </span>
-          </div>
+              Перевіряємо…
+            </>
+          ) : (
+            <>
+              Перевірити
 
-          <Button
-            type="button"
-            disabled={!canSubmit}
-            onClick={() => {
-              void handleSubmit();
-            }}
-            className="w-full sm:w-auto"
-          >
-            {loading ? (
-  <>
-    <Loader2
-      className="h-4 w-4 animate-spin"
-      aria-hidden="true"
-    />
-    Надсилання…
-  </>
-) : (
-  <>
-    <Send
-      className="h-4 w-4"
-      aria-hidden="true"
-    />
-    Надіслати відповідь
-  </>
-)}
-          </Button>
-        </div>
+              <ArrowRight
+                className="size-4"
+                aria-hidden="true"
+              />
+            </>
+          )}
+        </Button>
       }
     >
-      <label
-        htmlFor={`quest-answer-${scene.id}`}
-        className="mb-2 block text-sm font-semibold text-foreground"
-      >
-        Ваша відповідь
-      </label>
+      <div className="space-y-3.5">
+        {hint ? (
+          <div
+            className="
+              rounded-[15px]
+              bg-amber-50
+              px-3.5 py-2.5
+              text-sm leading-5
+              text-amber-800
+              dark:bg-amber-950/30
+              dark:text-amber-200
+            "
+          >
+            <span
+              aria-hidden="true"
+            >
+              💡
+            </span>{" "}
+            {hint}
+          </div>
+        ) : null}
 
-      <textarea
-        id={`quest-answer-${scene.id}`}
-        value={value}
-        disabled={loading || voiceBusy}
-        onChange={(event) => {
-          setValue(event.target.value);
-        }}
-        onKeyDown={(event) => {
-          void handleKeyDown(event);
-        }}
-        rows={6}
-        placeholder="Введіть або скажіть відповідь англійською…"
-        maxLength={MAX_LENGTH}
-        className={cn(
-          "min-h-40 w-full resize-y rounded-xl border border-input bg-card p-4",
-          "text-base leading-7 text-foreground",
-          "outline-none transition-[border-color,box-shadow,background-color] duration-150",
-          "placeholder:text-muted-foreground",
-          "focus:border-primary focus:ring-3 focus:ring-ring/20",
-          "disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-70",
-        )}
-      />
+        <div className="relative">
+          <label
+            htmlFor={`quest-answer-${scene.id}`}
+            className="sr-only"
+          >
+            Твоя відповідь
+          </label>
 
-      <div className="mt-3">
-  <VoiceInputControls
-    state={recorder.state}
-    durationSeconds={recorder.durationSeconds}
-    error={recorder.error}
-    disabled={loading}
-    hasValue={Boolean(value)}
-    onClick={() => {
-      void handleVoiceClick();
-    }}
-  />
-</div>
+          <textarea
+            id={`quest-answer-${scene.id}`}
+            value={value}
+            disabled={
+              loading ||
+              voiceBusy
+            }
+            onChange={(
+              event,
+            ) => {
+              setValue(
+                event.target.value,
+              );
+            }}
+            onKeyDown={(
+              event,
+            ) => {
+              void handleKeyDown(
+                event,
+              );
+            }}
+            rows={4}
+            maxLength={
+              MAX_LENGTH
+            }
+            placeholder="Напиши свою відповідь..."
+            className={cn(
+              "min-h-[118px] w-full resize-none",
+              "rounded-[18px]",
+              "border border-slate-200",
+              "bg-white",
+              "px-4 pb-8 pt-3.5",
+              "text-[15px] leading-6 text-slate-900",
+              "outline-none transition",
+              "placeholder:text-slate-400",
+
+              "focus:border-indigo-400",
+              "focus:ring-4",
+              "focus:ring-indigo-100",
+
+              "disabled:cursor-not-allowed",
+              "disabled:bg-slate-50",
+              "disabled:opacity-70",
+
+              "dark:border-slate-700",
+              "dark:bg-slate-950",
+              "dark:text-white",
+            )}
+          />
+
+          <span
+            className="
+              pointer-events-none
+              absolute bottom-2.5 right-3.5
+              text-[10px]
+              tabular-nums
+              text-slate-400
+            "
+          >
+            {value.length}/
+            {MAX_LENGTH}
+          </span>
+        </div>
+
+        <VoiceInputControls
+          state={
+            recorder.state
+          }
+          durationSeconds={
+            recorder.durationSeconds
+          }
+          error={
+            recorder.error
+          }
+          disabled={
+            loading
+          }
+          hasValue={Boolean(
+            value,
+          )}
+          onClick={() => {
+            void handleVoiceClick();
+          }}
+        />
+      </div>
     </SceneShell>
   );
 }
