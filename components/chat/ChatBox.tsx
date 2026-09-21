@@ -244,6 +244,7 @@ const lastAutoPlayedMessageIdRef =
   autoPlaybackEnabled;
 
     resetSpeech();
+    alert("CANCEL SOURCE: NEW CONVERSATION");
     stopListening();
     clearSelectedWord();
     setInput("");
@@ -257,6 +258,7 @@ autoPlaybackReadyRef.current = false;
 lastAutoPlayedMessageIdRef.current = null;
 shouldAutoPlayOpeningMessageRef.current = false;
     resetSpeech();
+    alert("CANCEL SOURCE: OPEN CONVERSATION");
     stopListening();
     clearSelectedWord();
 
@@ -267,6 +269,7 @@ shouldAutoPlayOpeningMessageRef.current = false;
     resetSpeech();
 
     if (voiceRecorder.isRecording || voiceRecorder.isProcessing) {
+      alert("CANCEL SOURCE: MIC TOGGLE");
       voiceRecorder.cancel();
       return;
     }
@@ -295,6 +298,7 @@ shouldAutoPlayOpeningMessageRef.current = false;
     }
 
     resetSpeech();
+    alert("CANCEL SOURCE: SEND MESSAGE");
     stopListening();
     clearSelectedWord();
 
