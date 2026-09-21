@@ -97,6 +97,10 @@ export function useVoiceRecorder() {
 
   const maxRmsRef = useRef(0);
 
+  const rmsSamplesRef = useRef<number[]>([]);
+
+  const lastRmsSampleAtRef = useRef(0);
+
   const autoStopRef = useRef(false);
 
   const autoTranscriptCallbackRef = useRef<((text: string) => void) | null>(
@@ -378,6 +382,11 @@ export function useVoiceRecorder() {
 
         const now = performance.now();
 
+        if (now - lastRmsSampleAtRef.current >= 250) {
+          rmsSamplesRef.current.push(rms);
+          lastRmsSampleAtRef.current = now;
+        }
+
         if (rms >= SPEECH_THRESHOLD) {
           lastSpeechAtRef.current = now;
 
@@ -562,6 +571,8 @@ export function useVoiceRecorder() {
 );
 
         maxRmsRef.current = 0;
+        rmsSamplesRef.current = [];
+        lastRmsSampleAtRef.current = 0;
 
         recorder.start();
 
@@ -576,7 +587,14 @@ export function useVoiceRecorder() {
 
           window.setTimeout(() => {
             alert(
-              `VAD DEBUG: maxRms=${maxRmsRef.current.toFixed(6)} | threshold=${SPEECH_THRESHOLD} | speechStarted=${speechStartedRef.current} | recorder=${recorder.state}`
+              `VAD DEBUG` +
+                `\nmaxRms=${maxRmsRef.current.toFixed(6)}` +
+                `\nthreshold=${SPEECH_THRESHOLD}` +
+                `\nspeechStarted=${speechStartedRef.current}` +
+                `\nrecorder=${recorder.state}` +
+                `\nRMS=${rmsSamplesRef.current
+                  .map((value) => value.toFixed(6))
+                  .join(", ")}`
             );
           }, 3000);
         }
