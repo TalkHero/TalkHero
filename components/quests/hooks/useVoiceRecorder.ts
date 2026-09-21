@@ -95,6 +95,8 @@ export function useVoiceRecorder() {
 
   const lastSpeechAtRef = useRef<number | null>(null);
 
+  const maxRmsRef = useRef(0);
+
   const autoStopRef = useRef(false);
 
   const autoTranscriptCallbackRef = useRef<((text: string) => void) | null>(
@@ -370,6 +372,10 @@ export function useVoiceRecorder() {
 
         const rms = Math.sqrt(sumSquares / samples.length);
 
+        if (rms > maxRmsRef.current) {
+          maxRmsRef.current = rms;
+        }
+
         const now = performance.now();
 
         if (rms >= SPEECH_THRESHOLD) {
@@ -555,6 +561,8 @@ export function useVoiceRecorder() {
   { once: true },
 );
 
+        maxRmsRef.current = 0;
+
         recorder.start();
 
         startedAtRef.current = Date.now();
@@ -565,6 +573,12 @@ export function useVoiceRecorder() {
 
         if (options.autoStop) {
           startVad(stream, recorder);
+
+          window.setTimeout(() => {
+            alert(
+              `VAD DEBUG: maxRms=${maxRmsRef.current.toFixed(6)} | threshold=${SPEECH_THRESHOLD} | speechStarted=${speechStartedRef.current} | recorder=${recorder.state}`
+            );
+          }, 3000);
         }
       } catch (caught) {
         stopVad();
