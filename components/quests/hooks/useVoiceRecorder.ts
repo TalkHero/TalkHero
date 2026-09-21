@@ -629,7 +629,8 @@ export function useVoiceRecorder() {
 
   const cancel = useCallback(() => {
     alert(
-      `VOICE CANCEL: recorder=${recorderRef.current?.state ?? "null"}`
+      `VOICE CANCEL: recorder=${recorderRef.current?.state ?? "null"}` +
+      `\n\nSTACK:\n${new Error().stack ?? "no stack"}`
     );
 
     const recorder = recorderRef.current;
