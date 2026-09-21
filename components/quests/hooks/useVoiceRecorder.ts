@@ -532,6 +532,10 @@ export function useVoiceRecorder() {
     const onError = autoErrorCallbackRef.current;
 
     void processRecorderStop(recorder).then((text) => {
+      alert(
+        `VOICE RESULT: text=${JSON.stringify(text)} | auto=${wasAutoMode} | callback=${Boolean(onTranscript)}`
+      );
+
       if (wasAutoMode && text && onTranscript) {
         onTranscript(text);
       }
