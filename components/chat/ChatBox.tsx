@@ -43,7 +43,7 @@ export function ChatBox() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const [autoPlaybackEnabled, setAutoPlaybackEnabled] =
