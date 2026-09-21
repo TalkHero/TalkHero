@@ -273,6 +273,18 @@ export function useVoiceRecorder() {
           type: mimeType,
         });
 
+        console.log("VOICE DEBUG", {
+          recorderMimeType: recorder.mimeType,
+          blobType: blob.type,
+          blobSize: blob.size,
+          chunkCount: chunksRef.current.length,
+          chunks: chunksRef.current.map((chunk, index) => ({
+            index,
+            size: chunk.size,
+            type: chunk.type,
+          })),
+        });
+
         const text = await transcribeBlob(blob, mimeType);
 
         setError(null);
