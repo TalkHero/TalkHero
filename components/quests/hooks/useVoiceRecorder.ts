@@ -628,6 +628,10 @@ export function useVoiceRecorder() {
 }, [stopVad]);
 
   const cancel = useCallback(() => {
+    alert(
+      `VOICE CANCEL: recorder=${recorderRef.current?.state ?? "null"}`
+    );
+
     const recorder = recorderRef.current;
 
     /*
