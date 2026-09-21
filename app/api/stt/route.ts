@@ -58,6 +58,15 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log("STT AUDIO DEBUG", {
+      clientMimeType: incoming.get("clientMimeType"),
+      clientBlobType: incoming.get("blobType"),
+      clientBlobSize: incoming.get("blobSize"),
+      serverName: audio.name,
+      serverType: audio.type,
+      serverSize: audio.size,
+    });
+
     if (audio.size <= 0) {
       return NextResponse.json(
         {

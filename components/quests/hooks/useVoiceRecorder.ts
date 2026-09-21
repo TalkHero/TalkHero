@@ -175,6 +175,9 @@ export function useVoiceRecorder() {
       const extension = extensionForMimeType(mimeType);
 
       formData.append("audio", blob, `voice-answer.${extension}`);
+      formData.append("clientMimeType", mimeType);
+      formData.append("blobType", blob.type);
+      formData.append("blobSize", String(blob.size));
 
       const response = await fetch("/api/stt", {
         method: "POST",
