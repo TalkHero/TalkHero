@@ -536,13 +536,7 @@ export function useVoiceRecorder() {
   { once: true },
 );
 
-        /*
-         * 250 мс дає невеликі
-         * MediaRecorder chunks
-         * і нормально працює
-         * з webm/opus.
-         */
-        recorder.start(250);
+        recorder.start();
 
         startedAtRef.current = Date.now();
 
