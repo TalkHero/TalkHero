@@ -22,7 +22,7 @@ import { XpToast } from "@/components/chat/XpToast";
 
 import { useSelectedWord } from "@/hooks/useSelectedWord";
 import { useSpeechControls } from "@/hooks/useSpeechControls";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useVoiceRecorder } from "@/components/quests/hooks/useVoiceRecorder";
 import { type DailyStreak, useChatStream } from "@/hooks/useChatStream";
 import { useConversationManager } from "@/hooks/useConversationManager";
 import { StreakBadge } from "@/components/chat/StreakBadge";
@@ -110,13 +110,18 @@ const lastAutoPlayedMessageIdRef =
   );
 }, []);
 
-  const {
-    isSupported: isRecognitionSupported,
-    isListening,
-    errorMessage: recognitionError,
-    toggleListening,
-    stopListening,
-  } = useSpeechRecognition();
+  const voiceRecorder = useVoiceRecorder();
+
+  const isRecognitionSupported =
+    mounted &&
+    Boolean(navigator.mediaDevices?.getUserMedia) &&
+    typeof MediaRecorder !== "undefined";
+
+  const isListening = voiceRecorder.isRecording;
+
+  const recognitionError = voiceRecorder.error ?? "";
+
+  const stopListening = voiceRecorder.cancel;
 
   const { streamChat } = useChatStream();
 
@@ -261,8 +266,14 @@ shouldAutoPlayOpeningMessageRef.current = false;
   function handleToggleMicrophone() {
     resetSpeech();
 
-    toggleListening({
-      language: "en-US",
+    if (voiceRecorder.isRecording || voiceRecorder.isProcessing) {
+      voiceRecorder.cancel();
+      return;
+    }
+
+    void voiceRecorder.startAutoTranscribe({
+      silenceMs: 900,
+      maxRecordingMs: 30_000,
       onTranscript: (text) => {
         setInput((previous) => {
           const separator = previous.trim().length > 0 ? " " : "";
