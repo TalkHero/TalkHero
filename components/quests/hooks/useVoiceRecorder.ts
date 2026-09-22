@@ -192,23 +192,71 @@ export function useVoiceRecorder() {
       );
 
       if (shouldPlayDebugAudio) {
-        const debugAudio = new Audio(debugAudioUrl);
+        const debugAudio = new Audio();
+        debugAudio.preload = "auto";
+        debugAudio.src = debugAudioUrl;
 
-        try {
-          await debugAudio.play();
+        await new Promise<void>((resolve) => {
+          let finished = false;
 
-          await new Promise<void>((resolve) => {
-            debugAudio.addEventListener("ended", () => resolve(), {
-              once: true,
-            });
+          const finish = (eventName: string) => {
+            if (finished) {
+              return;
+            }
 
-            debugAudio.addEventListener("error", () => resolve(), {
-              once: true,
-            });
+            finished = true;
+
+            const mediaError = debugAudio.error;
+
+            window.alert(
+              `AUDIO PLAYBACK RESULT\n` +
+                `event=${eventName}\n` +
+                `duration=${debugAudio.duration}\n` +
+                `currentTime=${debugAudio.currentTime}\n` +
+                `readyState=${debugAudio.readyState}\n` +
+                `networkState=${debugAudio.networkState}\n` +
+                `paused=${debugAudio.paused}\n` +
+                `errorCode=${mediaError?.code ?? "none"}\n` +
+                `errorMessage=${mediaError?.message ?? "none"}`,
+            );
+
+            resolve();
+          };
+
+          debugAudio.addEventListener(
+            "loadedmetadata",
+            () => {
+              window.alert(
+                `AUDIO METADATA\n` +
+                  `duration=${debugAudio.duration}\n` +
+                  `readyState=${debugAudio.readyState}\n` +
+                  `networkState=${debugAudio.networkState}`,
+              );
+            },
+            { once: true },
+          );
+
+          debugAudio.addEventListener(
+            "ended",
+            () => finish("ended"),
+            { once: true },
+          );
+
+          debugAudio.addEventListener(
+            "error",
+            () => finish("error"),
+            { once: true },
+          );
+
+          debugAudio.play().catch((playbackError) => {
+            console.error("AUDIO DEBUG playback failed:", playbackError);
+            finish("play-rejected");
           });
-        } catch (playbackError) {
-          console.error("AUDIO DEBUG playback failed:", playbackError);
-        }
+
+          window.setTimeout(() => {
+            finish("timeout-10s");
+          }, 10_000);
+        });
       }
 
       URL.revokeObjectURL(debugAudioUrl);
