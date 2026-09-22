@@ -628,6 +628,9 @@ export function useVoiceRecorder() {
               return;
             }
 
+            const audioTrack = stream.getAudioTracks()[0];
+            const trackSettings = audioTrack?.getSettings();
+
             alert(
               `VAD DEBUG` +
                 `\nmaxRms=${maxRmsRef.current.toFixed(6)}` +
@@ -636,6 +639,11 @@ export function useVoiceRecorder() {
                 `\nadaptiveThreshold=${adaptiveThresholdRef.current.toFixed(6)}` +
                 `\nspeechStarted=${speechStartedRef.current}` +
                 `\nrecorder=${recorder.state}` +
+                `\ntrack.enabled=${audioTrack?.enabled}` +
+                `\ntrack.muted=${audioTrack?.muted}` +
+                `\ntrack.readyState=${audioTrack?.readyState}` +
+                `\nsampleRate=${trackSettings?.sampleRate ?? "unknown"}` +
+                `\nchannelCount=${trackSettings?.channelCount ?? "unknown"}` +
                 `\nRMS=${rmsSamplesRef.current
                   .map((value) => value.toFixed(6))
                   .join(", ")}`
