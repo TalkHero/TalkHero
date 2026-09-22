@@ -182,6 +182,37 @@ export function useVoiceRecorder() {
         throw new Error("Запис виявився порожнім.");
       }
 
+      const debugAudioUrl = URL.createObjectURL(blob);
+
+      const shouldPlayDebugAudio = window.confirm(
+        `AUDIO DEBUG\n` +
+          `size=${blob.size}\n` +
+          `type=${blob.type}\n\n` +
+          `Натисніть OK, щоб прослухати запис перед STT.`,
+      );
+
+      if (shouldPlayDebugAudio) {
+        const debugAudio = new Audio(debugAudioUrl);
+
+        try {
+          await debugAudio.play();
+
+          await new Promise<void>((resolve) => {
+            debugAudio.addEventListener("ended", () => resolve(), {
+              once: true,
+            });
+
+            debugAudio.addEventListener("error", () => resolve(), {
+              once: true,
+            });
+          });
+        } catch (playbackError) {
+          console.error("AUDIO DEBUG playback failed:", playbackError);
+        }
+      }
+
+      URL.revokeObjectURL(debugAudioUrl);
+
       const formData = new FormData();
 
       const extension = extensionForMimeType(mimeType);
