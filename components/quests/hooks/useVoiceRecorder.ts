@@ -341,6 +341,8 @@ export function useVoiceRecorder() {
 
       const audioContext = new AudioContextClass();
 
+      alert(`AUDIO CONTEXT: state=${audioContext.state}`);
+
       const analyser = audioContext.createAnalyser();
 
       analyser.fftSize = 1024;
