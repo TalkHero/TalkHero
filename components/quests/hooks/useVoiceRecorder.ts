@@ -341,8 +341,6 @@ export function useVoiceRecorder() {
 
       const audioContext = new AudioContextClass();
 
-      alert(`AUDIO CONTEXT: state=${audioContext.state}`);
-
       const analyser = audioContext.createAnalyser();
 
       analyser.fftSize = 1024;
@@ -588,6 +586,10 @@ export function useVoiceRecorder() {
           startVad(stream, recorder);
 
           window.setTimeout(() => {
+            if (recorder.state !== "recording") {
+              return;
+            }
+
             alert(
               `VAD DEBUG` +
                 `\nmaxRms=${maxRmsRef.current.toFixed(6)}` +
