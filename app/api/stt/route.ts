@@ -151,7 +151,27 @@ openAIForm.append(
     const text = typeof result.text === "string" ? result.text.trim() : "";
     console.log("STT RAW TRANSCRIPT:", JSON.stringify(text));
 
-    if (!text) {
+    const normalizedText = text
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const looksLikePromptLeak =
+      normalizedText.startsWith(
+        "this is an english learning conversation between a student and a tutor",
+      ) ||
+      normalizedText.includes(
+        "transcribe exactly what the speaker says",
+      ) ||
+      normalizedText.includes(
+        "do not correct grammar or pronunciation",
+      );
+
+    if (!text || looksLikePromptLeak) {
+      if (looksLikePromptLeak) {
+        console.warn("STT: rejected prompt-like transcript.");
+      }
+
       return NextResponse.json(
         {
           error: "Не вдалося розпізнати слова. Спробуйте говорити чіткіше.",
