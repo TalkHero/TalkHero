@@ -99,6 +99,10 @@ export function useVoiceRecorder() {
 
   const maxRmsRef = useRef(0);
 
+  const noiseFloorRef = useRef<number | null>(null);
+
+  const adaptiveThresholdRef = useRef(SPEECH_THRESHOLD);
+
   const rmsSamplesRef = useRef<number[]>([]);
 
   const lastRmsSampleAtRef = useRef(0);
@@ -384,6 +388,18 @@ export function useVoiceRecorder() {
 
         const now = performance.now();
 
+        if (noiseFloorRef.current === null) {
+          noiseFloorRef.current = rms;
+        } else if (rms < adaptiveThresholdRef.current) {
+          noiseFloorRef.current =
+            noiseFloorRef.current * 0.95 + rms * 0.05;
+        }
+
+        adaptiveThresholdRef.current = Math.max(
+          0.0003,
+          (noiseFloorRef.current ?? 0) * 6,
+        );
+
         if (now - lastRmsSampleAtRef.current >= 250) {
           rmsSamplesRef.current.push(rms);
           lastRmsSampleAtRef.current = now;
@@ -589,6 +605,8 @@ export function useVoiceRecorder() {
 );
 
         maxRmsRef.current = 0;
+        noiseFloorRef.current = null;
+        adaptiveThresholdRef.current = SPEECH_THRESHOLD;
         rmsSamplesRef.current = [];
         lastRmsSampleAtRef.current = 0;
 
@@ -612,6 +630,8 @@ export function useVoiceRecorder() {
               `VAD DEBUG` +
                 `\nmaxRms=${maxRmsRef.current.toFixed(6)}` +
                 `\nthreshold=${SPEECH_THRESHOLD}` +
+                `\nnoiseFloor=${(noiseFloorRef.current ?? 0).toFixed(6)}` +
+                `\nadaptiveThreshold=${adaptiveThresholdRef.current.toFixed(6)}` +
                 `\nspeechStarted=${speechStartedRef.current}` +
                 `\nrecorder=${recorder.state}` +
                 `\nRMS=${rmsSamplesRef.current
