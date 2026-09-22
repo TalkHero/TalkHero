@@ -622,33 +622,6 @@ export function useVoiceRecorder() {
 
         if (options.autoStop) {
           startVad(stream, recorder);
-
-          window.setTimeout(() => {
-            if (recorder.state !== "recording") {
-              return;
-            }
-
-            const audioTrack = stream.getAudioTracks()[0];
-            const trackSettings = audioTrack?.getSettings();
-
-            alert(
-              `VAD DEBUG` +
-                `\nmaxRms=${maxRmsRef.current.toFixed(6)}` +
-                `\nthreshold=${SPEECH_THRESHOLD}` +
-                `\nnoiseFloor=${(noiseFloorRef.current ?? 0).toFixed(6)}` +
-                `\nadaptiveThreshold=${adaptiveThresholdRef.current.toFixed(6)}` +
-                `\nspeechStarted=${speechStartedRef.current}` +
-                `\nrecorder=${recorder.state}` +
-                `\ntrack.enabled=${audioTrack?.enabled}` +
-                `\ntrack.muted=${audioTrack?.muted}` +
-                `\ntrack.readyState=${audioTrack?.readyState}` +
-                `\nsampleRate=${trackSettings?.sampleRate ?? "unknown"}` +
-                `\nchannelCount=${trackSettings?.channelCount ?? "unknown"}` +
-                `\nRMS=${rmsSamplesRef.current
-                  .map((value) => value.toFixed(6))
-                  .join(", ")}`
-            );
-          }, 3000);
         }
       } catch (caught) {
         stopVad();
