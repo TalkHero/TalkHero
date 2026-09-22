@@ -40,6 +40,7 @@ const SPEECH_THRESHOLD = 0.003;
  * початком мовлення.
  */
 const MIN_SPEECH_ACTIVITY_MS = 140;
+const SPEECH_ACTIVITY_GRACE_MS = 120;
 
 function chooseMimeType(): string {
   if (typeof MediaRecorder === "undefined") {
@@ -400,7 +401,19 @@ export function useVoiceRecorder() {
             speechStartedRef.current = true;
           }
         } else {
-          speechActivityStartedAtRef.current = null;
+          if (
+            !speechStartedRef.current &&
+            speechActivityStartedAtRef.current !== null
+          ) {
+            const sinceLastSpeech =
+              lastSpeechAtRef.current === null
+                ? Number.POSITIVE_INFINITY
+                : now - lastSpeechAtRef.current;
+
+            if (sinceLastSpeech > SPEECH_ACTIVITY_GRACE_MS) {
+              speechActivityStartedAtRef.current = null;
+            }
+          }
 
           /*
            * Не завершуємо запис,
