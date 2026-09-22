@@ -405,10 +405,12 @@ export function useVoiceRecorder() {
           lastRmsSampleAtRef.current = now;
         }
 
-        if (rms >= SPEECH_THRESHOLD) {
+        const speechThreshold = adaptiveThresholdRef.current;
+
+        if (rms >= speechThreshold) {
           lastSpeechAtRef.current = now;
 
-          if (rms >= SPEECH_PEAK_THRESHOLD) {
+          if (rms >= speechThreshold * 2) {
             speechStartedRef.current = true;
           }
 
