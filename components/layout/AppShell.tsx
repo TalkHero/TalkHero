@@ -112,7 +112,10 @@ export function AppShell({
           <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
-              onClick={() => setSidebarOpen(true)}
+              onClick={() => {
+                alert("MENU CLICK");
+                setSidebarOpen(true);
+              }}
               aria-label="Відкрити навігацію"
               className={cn(
                 "talkhero-focus flex size-11 shrink-0 items-center justify-center rounded-md",
@@ -220,3 +223,4 @@ export function AppShell({
     </div>
   );
 }
+
