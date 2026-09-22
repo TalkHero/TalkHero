@@ -77,9 +77,7 @@ export function useVoiceRecorder() {
 
   const chunksRef = useRef<Blob[]>([]);
 
-  const manualResolveRef = useRef<
-  ((text: string | null) => void) | null
->(null);
+  const manualResolveRef = useRef<((text: string | null) => void) | null>(null);
 
   const startedAtRef = useRef<number | null>(null);
 
@@ -181,85 +179,6 @@ export function useVoiceRecorder() {
       if (blob.size === 0) {
         throw new Error("Запис виявився порожнім.");
       }
-
-      const debugAudioUrl = URL.createObjectURL(blob);
-
-      const shouldPlayDebugAudio = window.confirm(
-        `AUDIO DEBUG\n` +
-          `size=${blob.size}\n` +
-          `type=${blob.type}\n\n` +
-          `Натисніть OK, щоб прослухати запис перед STT.`,
-      );
-
-      if (shouldPlayDebugAudio) {
-        const debugAudio = new Audio();
-        debugAudio.preload = "auto";
-        debugAudio.src = debugAudioUrl;
-
-        await new Promise<void>((resolve) => {
-          let finished = false;
-
-          const finish = (eventName: string) => {
-            if (finished) {
-              return;
-            }
-
-            finished = true;
-
-            const mediaError = debugAudio.error;
-
-            window.alert(
-              `AUDIO PLAYBACK RESULT\n` +
-                `event=${eventName}\n` +
-                `duration=${debugAudio.duration}\n` +
-                `currentTime=${debugAudio.currentTime}\n` +
-                `readyState=${debugAudio.readyState}\n` +
-                `networkState=${debugAudio.networkState}\n` +
-                `paused=${debugAudio.paused}\n` +
-                `errorCode=${mediaError?.code ?? "none"}\n` +
-                `errorMessage=${mediaError?.message ?? "none"}`,
-            );
-
-            resolve();
-          };
-
-          debugAudio.addEventListener(
-            "loadedmetadata",
-            () => {
-              window.alert(
-                `AUDIO METADATA\n` +
-                  `duration=${debugAudio.duration}\n` +
-                  `readyState=${debugAudio.readyState}\n` +
-                  `networkState=${debugAudio.networkState}`,
-              );
-            },
-            { once: true },
-          );
-
-          debugAudio.addEventListener(
-            "ended",
-            () => finish("ended"),
-            { once: true },
-          );
-
-          debugAudio.addEventListener(
-            "error",
-            () => finish("error"),
-            { once: true },
-          );
-
-          debugAudio.play().catch((playbackError) => {
-            console.error("AUDIO DEBUG playback failed:", playbackError);
-            finish("play-rejected");
-          });
-
-          window.setTimeout(() => {
-            finish("timeout-10s");
-          }, 10_000);
-        });
-      }
-
-      URL.revokeObjectURL(debugAudioUrl);
 
       const formData = new FormData();
 
@@ -367,18 +286,6 @@ export function useVoiceRecorder() {
           type: mimeType,
         });
 
-        console.log("VOICE DEBUG", {
-          recorderMimeType: recorder.mimeType,
-          blobType: blob.type,
-          blobSize: blob.size,
-          chunkCount: chunksRef.current.length,
-          chunks: chunksRef.current.map((chunk, index) => ({
-            index,
-            size: chunk.size,
-            type: chunk.type,
-          })),
-        });
-
         const text = await transcribeBlob(blob, mimeType);
 
         setError(null);
@@ -470,8 +377,7 @@ export function useVoiceRecorder() {
         if (noiseFloorRef.current === null) {
           noiseFloorRef.current = rms;
         } else if (rms < adaptiveThresholdRef.current) {
-          noiseFloorRef.current =
-            noiseFloorRef.current * 0.95 + rms * 0.05;
+          noiseFloorRef.current = noiseFloorRef.current * 0.95 + rms * 0.05;
         }
 
         adaptiveThresholdRef.current = Math.max(
@@ -600,62 +506,9 @@ export function useVoiceRecorder() {
       setState("requesting");
 
       try {
-        const initialStream =
-          await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          });
-
-        const mediaDevices =
-          await navigator.mediaDevices.enumerateDevices();
-
-        const speakerphoneInput = mediaDevices.find(
-          (device) =>
-            device.kind === "audioinput" &&
-            device.label.toLowerCase().includes("speakerphone"),
-        );
-
-        let stream = initialStream;
-
-        if (speakerphoneInput) {
-          initialStream.getTracks().forEach((track) => track.stop());
-
-          stream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-              deviceId: {
-                exact: speakerphoneInput.deviceId,
-              },
-            },
-          });
-        }
-
-        const audioTrack = stream.getAudioTracks()[0];
-        const audioSettings = audioTrack?.getSettings();
-        const audioCapabilities = audioTrack?.getCapabilities?.();
-
-        const audioInputs = mediaDevices
-          .filter((device) => device.kind === "audioinput")
-          .map((device) => ({
-            label: device.label,
-            deviceId: device.deviceId,
-            groupId: device.groupId,
-          }));
-
-        window.alert(
-          `AUDIO INPUT DEBUG\n` +
-            `trackLabel=${audioTrack?.label ?? "none"}\n` +
-            `trackEnabled=${audioTrack?.enabled ?? "none"}\n` +
-            `trackMuted=${audioTrack?.muted ?? "none"}\n` +
-            `trackState=${audioTrack?.readyState ?? "none"}\n` +
-            `deviceId=${audioSettings?.deviceId ?? "none"}\n` +
-            `sampleRate=${audioSettings?.sampleRate ?? "none"}\n` +
-            `sampleSize=${audioSettings?.sampleSize ?? "none"}\n` +
-            `channelCount=${audioSettings?.channelCount ?? "none"}\n` +
-            `echoCancellation=${audioSettings?.echoCancellation ?? "none"}\n` +
-            `noiseSuppression=${audioSettings?.noiseSuppression ?? "none"}\n` +
-            `autoGainControl=${audioSettings?.autoGainControl ?? "none"}\n` +
-            `capabilities=${JSON.stringify(audioCapabilities)}\n` +
-            `inputs=${JSON.stringify(audioInputs)}`,
-        );
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
 
         streamRef.current = stream;
 
@@ -704,35 +557,31 @@ export function useVoiceRecorder() {
         });
 
         recorder.addEventListener(
-  "stop",
-  () => {
-    const wasAutoMode = autoStopRef.current;
-    const onTranscript = autoTranscriptCallbackRef.current;
-    const onError = autoErrorCallbackRef.current;
+          "stop",
+          () => {
+            const wasAutoMode = autoStopRef.current;
+            const onTranscript = autoTranscriptCallbackRef.current;
+            const onError = autoErrorCallbackRef.current;
 
-    void processRecorderStop(recorder).then((text) => {
-      alert(
-        `VOICE RESULT: text=${JSON.stringify(text)} | auto=${wasAutoMode} | callback=${Boolean(onTranscript)}`
-      );
+            void processRecorderStop(recorder).then((text) => {
+              if (wasAutoMode && text && onTranscript) {
+                onTranscript(text);
+              }
 
-      if (wasAutoMode && text && onTranscript) {
-        onTranscript(text);
-      }
+              if (wasAutoMode && !text && onError) {
+                onError("Не вдалося розпізнати голос.");
+              }
 
-      if (wasAutoMode && !text && onError) {
-        onError("Не вдалося розпізнати голос.");
-      }
+              const resolve = manualResolveRef.current;
+              manualResolveRef.current = null;
 
-      const resolve = manualResolveRef.current;
-      manualResolveRef.current = null;
+              resolve?.(text);
 
-      resolve?.(text);
-
-      clearAutoMode();
-    });
-  },
-  { once: true },
-);
+              clearAutoMode();
+            });
+          },
+          { once: true },
+        );
 
         maxRmsRef.current = 0;
         noiseFloorRef.current = null;
@@ -790,34 +639,29 @@ export function useVoiceRecorder() {
   );
 
   const stopAndTranscribe = useCallback(async (): Promise<string | null> => {
-  const recorder = recorderRef.current;
+    const recorder = recorderRef.current;
 
-  if (!recorder || recorder.state === "inactive") {
-    return null;
-  }
-
-  autoStopRef.current = false;
-
-  stopVad();
-
-  return await new Promise<string | null>((resolve) => {
-    manualResolveRef.current = resolve;
-
-    try {
-      recorder.stop();
-    } catch {
-      manualResolveRef.current = null;
-      resolve(null);
+    if (!recorder || recorder.state === "inactive") {
+      return null;
     }
-  });
-}, [stopVad]);
+
+    autoStopRef.current = false;
+
+    stopVad();
+
+    return await new Promise<string | null>((resolve) => {
+      manualResolveRef.current = resolve;
+
+      try {
+        recorder.stop();
+      } catch {
+        manualResolveRef.current = null;
+        resolve(null);
+      }
+    });
+  }, [stopVad]);
 
   const cancel = useCallback(() => {
-    alert(
-      `VOICE CANCEL: recorder=${recorderRef.current?.state ?? "null"}` +
-      `\n\nSTACK:\n${new Error().stack ?? "no stack"}`
-    );
-
     const recorder = recorderRef.current;
 
     /*
