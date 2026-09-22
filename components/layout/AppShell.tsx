@@ -113,7 +113,6 @@ export function AppShell({
             <button
               type="button"
               onClick={() => {
-                alert("MENU CLICK");
                 setSidebarOpen(true);
               }}
               aria-label="Відкрити навігацію"
