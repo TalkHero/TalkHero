@@ -604,6 +604,38 @@ export function useVoiceRecorder() {
           audio: true,
         });
 
+        const audioTrack = stream.getAudioTracks()[0];
+        const audioSettings = audioTrack?.getSettings();
+        const audioCapabilities = audioTrack?.getCapabilities?.();
+
+        const mediaDevices =
+          await navigator.mediaDevices.enumerateDevices();
+
+        const audioInputs = mediaDevices
+          .filter((device) => device.kind === "audioinput")
+          .map((device) => ({
+            label: device.label,
+            deviceId: device.deviceId,
+            groupId: device.groupId,
+          }));
+
+        window.alert(
+          `AUDIO INPUT DEBUG\n` +
+            `trackLabel=${audioTrack?.label ?? "none"}\n` +
+            `trackEnabled=${audioTrack?.enabled ?? "none"}\n` +
+            `trackMuted=${audioTrack?.muted ?? "none"}\n` +
+            `trackState=${audioTrack?.readyState ?? "none"}\n` +
+            `deviceId=${audioSettings?.deviceId ?? "none"}\n` +
+            `sampleRate=${audioSettings?.sampleRate ?? "none"}\n` +
+            `sampleSize=${audioSettings?.sampleSize ?? "none"}\n` +
+            `channelCount=${audioSettings?.channelCount ?? "none"}\n` +
+            `echoCancellation=${audioSettings?.echoCancellation ?? "none"}\n` +
+            `noiseSuppression=${audioSettings?.noiseSuppression ?? "none"}\n` +
+            `autoGainControl=${audioSettings?.autoGainControl ?? "none"}\n` +
+            `capabilities=${JSON.stringify(audioCapabilities)}\n` +
+            `inputs=${JSON.stringify(audioInputs)}`,
+        );
+
         streamRef.current = stream;
 
         const mimeType = chooseMimeType();
