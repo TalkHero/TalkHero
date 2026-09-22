@@ -600,16 +600,37 @@ export function useVoiceRecorder() {
       setState("requesting");
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
+        const initialStream =
+          await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+
+        const mediaDevices =
+          await navigator.mediaDevices.enumerateDevices();
+
+        const speakerphoneInput = mediaDevices.find(
+          (device) =>
+            device.kind === "audioinput" &&
+            device.label.toLowerCase().includes("speakerphone"),
+        );
+
+        let stream = initialStream;
+
+        if (speakerphoneInput) {
+          initialStream.getTracks().forEach((track) => track.stop());
+
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              deviceId: {
+                exact: speakerphoneInput.deviceId,
+              },
+            },
+          });
+        }
 
         const audioTrack = stream.getAudioTracks()[0];
         const audioSettings = audioTrack?.getSettings();
         const audioCapabilities = audioTrack?.getCapabilities?.();
-
-        const mediaDevices =
-          await navigator.mediaDevices.enumerateDevices();
 
         const audioInputs = mediaDevices
           .filter((device) => device.kind === "audioinput")
