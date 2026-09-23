@@ -74,7 +74,7 @@ export default function LoginPage() {
           </p>
         </section>
 
-        <section className="flex items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
+        <section className="flex min-h-0 items-start justify-center overflow-y-auto px-5 py-6 sm:px-8 sm:py-10 lg:items-center lg:px-12">
           <div className="w-full max-w-lg">
             <div className="mb-8 lg:hidden">
               <div className="text-2xl font-black text-slate-950">
