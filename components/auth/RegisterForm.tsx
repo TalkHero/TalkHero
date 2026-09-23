@@ -11,79 +11,23 @@ export function RegisterForm() {
   const router = useRouter();
   const supabase = createClient();
 
-  const [fullName, setFullName] =
-    useState("");
-  const [email, setEmail] =
-    useState("");
-  const [password, setPassword] =
-    useState("");
-  const [loading, setLoading] =
-    useState(false);
-  const [googleLoading, setGoogleLoading] =
-    useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const signUpStartedTracked =
-  useRef<Set<"email" | "google">>(
-    new Set(),
-  );
+  const signUpStartedTracked = useRef(false);
 
-  function trackSignUpStarted(
-  method: "email" | "google",
-) {
-  if (
-    signUpStartedTracked.current.has(
-      method,
-    )
-  ) {
-    return;
-  }
-
-  signUpStartedTracked.current.add(
-    method,
-  );
-
-  trackEvent("sign_up_started", {
-    method,
-  });
-}
-
-  async function handleGoogleRegister() {
-    if (googleLoading) {
+  function trackSignUpStarted() {
+    if (signUpStartedTracked.current) {
       return;
     }
 
-    trackSignUpStarted("google");
+    signUpStartedTracked.current = true;
 
-    setGoogleLoading(true);
-
-    try {
-      const { error } =
-        await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-
-      if (error) {
-        alert(
-          "Не вдалося продовжити реєстрацію через Google.",
-        );
-
-        setGoogleLoading(false);
-      }
-    } catch (error) {
-      console.error(
-        "GOOGLE REGISTER ERROR:",
-        error,
-      );
-
-      alert(
-        "Не вдалося продовжити реєстрацію через Google.",
-      );
-
-      setGoogleLoading(false);
-    }
+    trackEvent("sign_up_started", {
+      method: "email",
+    });
   }
 
   async function handleRegister() {
@@ -91,11 +35,8 @@ export function RegisterForm() {
       return;
     }
 
-    const normalizedFullName =
-      fullName.trim();
-
-    const normalizedEmail =
-      email.trim().toLowerCase();
+    const normalizedFullName = fullName.trim();
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (
       !normalizedEmail ||
@@ -110,7 +51,6 @@ export function RegisterForm() {
       alert(
         "Пароль має містити щонайменше 8 символів.",
       );
-
       return;
     }
 
@@ -123,8 +63,7 @@ export function RegisterForm() {
           password,
           options: {
             data: {
-              full_name:
-                normalizedFullName,
+              full_name: normalizedFullName,
             },
           },
         });
@@ -133,18 +72,9 @@ export function RegisterForm() {
         alert(
           "Не вдалося створити акаунт. Перевірте введені дані.",
         );
-
         return;
       }
 
-      /*
-       * sign_up відправляємо лише після
-       * успішної відповіді Supabase.
-       *
-       * Google OAuth тут не відстежуємо,
-       * оскільки запуск OAuth ще не означає
-       * завершену реєстрацію.
-       */
       trackEvent("sign_up", {
         method: "email",
       });
@@ -152,7 +82,6 @@ export function RegisterForm() {
       if (data.session) {
         router.push("/dashboard");
         router.refresh();
-
         return;
       }
 
@@ -187,39 +116,11 @@ export function RegisterForm() {
         </h1>
 
         <p className="mt-2 leading-7 text-slate-500">
-          Почніть перше заняття з
-          TalkHero вже сьогодні.
+          Почніть перше заняття з TalkHero вже сьогодні.
         </p>
       </div>
 
       <div className="mt-7 space-y-5">
-        <Button
-          type="button"
-          variant="outline"
-          className="h-12 w-full rounded-xl border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          onClick={() => {
-            void handleGoogleRegister();
-          }}
-          disabled={
-            loading ||
-            googleLoading
-          }
-        >
-          {googleLoading
-            ? "Підключаємо Google..."
-            : "Продовжити через Google"}
-        </Button>
-
-        <div className="flex items-center gap-4">
-          <div className="h-px flex-1 bg-slate-200" />
-
-          <span className="text-xs font-medium uppercase tracking-wide text-slate-400">
-            або
-          </span>
-
-          <div className="h-px flex-1 bg-slate-200" />
-        </div>
-
         <div>
           <label
             htmlFor="register-name"
@@ -233,19 +134,12 @@ export function RegisterForm() {
             type="text"
             autoComplete="name"
             value={fullName}
-            onFocus={() => {
-              trackSignUpStarted("email");
-            }}
+            onFocus={trackSignUpStarted}
             onChange={(event) => {
-              setFullName(
-                event.target.value,
-              );
+              setFullName(event.target.value);
             }}
             placeholder="Наприклад, Андрій"
-            disabled={
-              loading ||
-              googleLoading
-            }
+            disabled={loading}
             className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70"
           />
         </div>
@@ -264,19 +158,12 @@ export function RegisterForm() {
             autoComplete="email"
             inputMode="email"
             value={email}
-            onFocus={() => {
-              trackSignUpStarted("email");
-            }}
+            onFocus={trackSignUpStarted}
             onChange={(event) => {
-              setEmail(
-                event.target.value,
-              );
+              setEmail(event.target.value);
             }}
             placeholder="you@example.com"
-            disabled={
-              loading ||
-              googleLoading
-            }
+            disabled={loading}
             className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70"
           />
         </div>
@@ -294,35 +181,24 @@ export function RegisterForm() {
             type="password"
             autoComplete="new-password"
             value={password}
-            onFocus={() => {
-              trackSignUpStarted("email");
-            }}
+            onFocus={trackSignUpStarted}
             onChange={(event) => {
-              setPassword(
-                event.target.value,
-              );
+              setPassword(event.target.value);
             }}
             placeholder="Щонайменше 8 символів"
-            disabled={
-              loading ||
-              googleLoading
-            }
+            disabled={loading}
             className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70"
           />
 
           <p className="mt-2 text-xs leading-5 text-slate-400">
-            Використовуйте щонайменше
-            8 символів.
+            Використовуйте щонайменше 8 символів.
           </p>
         </div>
 
         <Button
           type="button"
           className="h-12 w-full rounded-xl bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-700"
-          disabled={
-            loading ||
-            googleLoading
-          }
+          disabled={loading}
           onClick={() => {
             void handleRegister();
           }}
@@ -340,20 +216,15 @@ export function RegisterForm() {
             onClick={() => {
               router.push("/login");
             }}
-            disabled={
-              loading ||
-              googleLoading
-            }
+            disabled={loading}
           >
             Увійти
           </button>
         </p>
 
         <p className="text-center text-xs leading-5 text-slate-400">
-          Створюючи акаунт, ви
-          погоджуєтеся з умовами
-          використання TalkHero та
-          політикою конфіденційності.
+          Створюючи акаунт, ви погоджуєтеся з умовами
+          використання TalkHero та політикою конфіденційності.
         </p>
       </div>
     </div>
