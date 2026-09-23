@@ -42,3 +42,11 @@ next-env.d.ts
 
 # Local safety backups
 backup/
+
+# Android signing keys
+*.jks
+*.keystore
+android/keystore.properties
+
+# Local backup files
+*.bak
