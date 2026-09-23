@@ -58,15 +58,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("STT AUDIO DEBUG", {
-      clientMimeType: incoming.get("clientMimeType"),
-      clientBlobType: incoming.get("blobType"),
-      clientBlobSize: incoming.get("blobSize"),
-      serverName: audio.name,
-      serverType: audio.type,
-      serverSize: audio.size,
-    });
-
     if (audio.size <= 0) {
       return NextResponse.json(
         {
@@ -149,7 +140,6 @@ openAIForm.append(
     };
 
     const text = typeof result.text === "string" ? result.text.trim() : "";
-    console.log("STT RAW TRANSCRIPT:", JSON.stringify(text));
 
     const normalizedText = text
       .toLowerCase()
