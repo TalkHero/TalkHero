@@ -39,7 +39,7 @@ public class MainActivity extends BridgeActivity {
                     systemBars.bottom
             );
 
-            return WindowInsetsCompat.CONSUMED;
+            return windowInsets;
         });
 
         ViewCompat.requestApplyInsets(rootView);
