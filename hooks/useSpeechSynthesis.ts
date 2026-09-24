@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -195,6 +195,12 @@ export function useSpeechSynthesis() {
 
   const requestAudio = useCallback(
     async (text: string, signal: AbortSignal): Promise<PreparedAudio> => {
+      const requestStartedAt = performance.now();
+
+      console.info("TTS CLIENT TIMING request-start", {
+        textLength: text.length,
+      });
+
       const response = await fetch("/api/tts", {
         method: "POST",
 
@@ -209,6 +215,11 @@ export function useSpeechSynthesis() {
         }),
 
         signal,
+      });
+
+      console.info("TTS CLIENT TIMING fetch-complete", {
+        ms: Math.round(performance.now() - requestStartedAt),
+        status: response.status,
       });
 
       if (!response.ok) {
@@ -244,7 +255,15 @@ export function useSpeechSynthesis() {
        * не чекаємо генерацію всієї
        * довгої репліки.
        */
+      const blobStartedAt = performance.now();
+
       const blob = await response.blob();
+
+      console.info("TTS CLIENT TIMING blob-complete", {
+        blobMs: Math.round(performance.now() - blobStartedAt),
+        totalMs: Math.round(performance.now() - requestStartedAt),
+        bytes: blob.size,
+      });
 
       if (blob.size === 0) {
         throw new Error("TTS повернув порожній аудіофайл.");
@@ -258,6 +277,12 @@ export function useSpeechSynthesis() {
       audio.src = objectUrl;
 
       audio.load();
+
+      console.info("TTS CLIENT TIMING audio-created", {
+        totalMs: Math.round(performance.now() - requestStartedAt),
+        readyState: audio.readyState,
+        networkState: audio.networkState,
+      });
 
       return {
         audio,
@@ -464,7 +489,33 @@ export function useSpeechSynthesis() {
         };
 
         try {
+          const playStartedAt = performance.now();
+
+          console.info("TTS CLIENT TIMING play-called", {
+            index,
+            readyState: audio.readyState,
+            networkState: audio.networkState,
+          });
+
+          audio.addEventListener(
+            "playing",
+            () => {
+              console.info("TTS CLIENT TIMING playing", {
+                index,
+                playMs: Math.round(performance.now() - playStartedAt),
+                readyState: audio.readyState,
+                networkState: audio.networkState,
+              });
+            },
+            { once: true },
+          );
+
           await audio.play();
+
+          console.info("TTS CLIENT TIMING play-resolved", {
+            index,
+            playMs: Math.round(performance.now() - playStartedAt),
+          });
         } catch (error) {
           if (sessionId !== sessionIdRef.current) {
             return;
