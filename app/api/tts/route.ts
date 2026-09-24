@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 const ALLOWED_VOICES = [
@@ -42,6 +43,27 @@ export async function POST(request: Request) {
           error: "Потрібно увійти до облікового запису.",
         },
         { status: 401 },
+      );
+    }
+
+    const rateLimit = await consumeApiRateLimit(supabase, {
+      bucket: "tts",
+      limit: 20,
+      windowSeconds: 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Забагато запитів на озвучення. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
       );
     }
 
