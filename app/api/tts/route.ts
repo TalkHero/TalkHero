@@ -29,13 +29,22 @@ const RequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const totalStartedAt = performance.now();
+
   try {
+    const authStartedAt = performance.now();
+
     const supabase = await createClient();
 
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
+
+    console.info(
+      "TTS TIMING auth:",
+      `${Math.round(performance.now() - authStartedAt)}ms`,
+    );
 
     if (authError || !user) {
       return NextResponse.json(
@@ -46,11 +55,18 @@ export async function POST(request: Request) {
       );
     }
 
+    const rateLimitStartedAt = performance.now();
+
     const rateLimit = await consumeApiRateLimit(supabase, {
       bucket: "tts",
       limit: 20,
       windowSeconds: 60,
     });
+
+    console.info(
+      "TTS TIMING rate-limit:",
+      `${Math.round(performance.now() - rateLimitStartedAt)}ms`,
+    );
 
     if (!rateLimit.allowed) {
       return NextResponse.json(
@@ -82,6 +98,8 @@ export async function POST(request: Request) {
 
     const payload = RequestSchema.parse(await request.json());
 
+    const openAiStartedAt = performance.now();
+
     const response = await fetch("https://api.openai.com/v1/audio/speech", {
       method: "POST",
       headers: {
@@ -99,6 +117,15 @@ export async function POST(request: Request) {
       }),
       cache: "no-store",
     });
+
+    console.info(
+      "TTS TIMING openai:",
+      `${Math.round(performance.now() - openAiStartedAt)}ms`,
+    );
+    console.info(
+      "TTS TIMING total-before-stream:",
+      `${Math.round(performance.now() - totalStartedAt)}ms`,
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
