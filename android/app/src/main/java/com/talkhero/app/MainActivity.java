@@ -9,6 +9,8 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -19,10 +21,35 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
 
     private WebView webView;
+    private PermissionRequest pendingAudioPermissionRequest;
+
+    private ActivityResultLauncher<String> microphonePermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        microphonePermissionLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.RequestPermission(),
+                        isGranted -> {
+                            if (pendingAudioPermissionRequest == null) {
+                                return;
+                            }
+
+                            if (isGranted) {
+                                pendingAudioPermissionRequest.grant(
+                                        new String[]{
+                                                PermissionRequest.RESOURCE_AUDIO_CAPTURE
+                                        }
+                                );
+                            } else {
+                                pendingAudioPermissionRequest.deny();
+                            }
+
+                            pendingAudioPermissionRequest = null;
+                        }
+                );
 
         webView = getBridge().getWebView();
         View rootView = webView.getRootView();
@@ -48,25 +75,53 @@ public class MainActivity extends BridgeActivity {
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 runOnUiThread(() -> {
-                    if (ContextCompat.checkSelfPermission(
-                            MainActivity.this,
-                            Manifest.permission.RECORD_AUDIO
-                    ) != PackageManager.PERMISSION_GRANTED) {
+                    boolean requestsAudio = false;
+
+                    for (String resource : request.getResources()) {
+                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
+                            requestsAudio = true;
+                            break;
+                        }
+                    }
+
+                    if (!requestsAudio) {
                         request.deny();
                         return;
                     }
 
-                    for (String resource : request.getResources()) {
-                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
-                            request.grant(new String[]{
-                                    PermissionRequest.RESOURCE_AUDIO_CAPTURE
-                            });
-                            return;
-                        }
+                    if (ContextCompat.checkSelfPermission(
+                            MainActivity.this,
+                            Manifest.permission.RECORD_AUDIO
+                    ) == PackageManager.PERMISSION_GRANTED) {
+
+                        request.grant(
+                                new String[]{
+                                        PermissionRequest.RESOURCE_AUDIO_CAPTURE
+                                }
+                        );
+
+                        return;
                     }
 
-                    request.deny();
+                    if (pendingAudioPermissionRequest != null) {
+                        pendingAudioPermissionRequest.deny();
+                    }
+
+                    pendingAudioPermissionRequest = request;
+
+                    microphonePermissionLauncher.launch(
+                            Manifest.permission.RECORD_AUDIO
+                    );
                 });
+            }
+
+            @Override
+            public void onPermissionRequestCanceled(PermissionRequest request) {
+                if (pendingAudioPermissionRequest == request) {
+                    pendingAudioPermissionRequest = null;
+                }
+
+                super.onPermissionRequestCanceled(request);
             }
         });
 
