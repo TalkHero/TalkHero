@@ -201,21 +201,54 @@ export function useSpeechSynthesis() {
         textLength: text.length,
       });
 
-      const response = await fetch("/api/tts", {
-        method: "POST",
+      const requestController = new AbortController();
+      let didTimeout = false;
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const abortFromParent = () => {
+        requestController.abort();
+      };
 
-        body: JSON.stringify({
-          text,
-          voice: "nova",
-          instructions: createVoiceInstructions(text),
-        }),
+      if (signal.aborted) {
+        requestController.abort();
+      } else {
+        signal.addEventListener("abort", abortFromParent, {
+          once: true,
+        });
+      }
 
-        signal,
-      });
+      const timeoutId = window.setTimeout(() => {
+        didTimeout = true;
+        requestController.abort();
+      }, 10000);
+
+      let response: Response;
+
+      try {
+        response = await fetch("/api/tts", {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            text,
+            voice: "nova",
+            instructions: createVoiceInstructions(text),
+          }),
+
+          signal: requestController.signal,
+        });
+      } catch (error) {
+        if (didTimeout && !signal.aborted) {
+          throw new Error("TTS request timed out.");
+        }
+
+        throw error;
+      } finally {
+        window.clearTimeout(timeoutId);
+        signal.removeEventListener("abort", abortFromParent);
+      }
 
       console.info("TTS CLIENT TIMING fetch-complete", {
         ms: Math.round(performance.now() - requestStartedAt),
