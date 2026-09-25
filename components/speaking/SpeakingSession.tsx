@@ -959,49 +959,48 @@ trackEvent("speaking_completed", {
                 </div>
               </div>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-slate-950">Емма</p>
-                    <p className="text-xs text-slate-500">
-                      Твоя AI-репетиторка
-                    </p>
-                  </div>
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <p className="font-semibold text-slate-950">
+                  Емма
+                </p>
 
-                  <div
-                    className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                      phase === "listening"
-                        ? "bg-indigo-50 text-indigo-700"
-                        : phase === "thinking"
-                          ? "bg-amber-50 text-amber-700"
-                          : phase === "speaking"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : phase === "error"
-                              ? "bg-red-50 text-red-700"
-                              : "bg-slate-100 text-slate-600"
+                <p className="text-xs text-slate-500">
+                  Твоя AI-репетиторка
+                </p>
+
+                <div
+                  className={`mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                    phase === "listening"
+                      ? "bg-indigo-50 text-indigo-700"
+                      : phase === "thinking"
+                        ? "bg-amber-50 text-amber-700"
+                        : phase === "speaking"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : phase === "error"
+                            ? "bg-red-50 text-red-700"
+                            : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  <PhaseIcon
+                    className={`h-3.5 w-3.5 shrink-0 ${
+                      phase === "thinking" ? "animate-spin" : ""
                     }`}
-                  >
-                    <PhaseIcon
-                      className={`h-3.5 w-3.5 ${
-                        phase === "thinking" ? "animate-spin" : ""
-                      }`}
-                    />
+                  />
 
-                    <span>
-                      {phase === "listening"
-                        ? "Слухає"
-                        : phase === "thinking"
-                          ? "Думає"
-                          : phase === "speaking"
-                            ? "Говорить"
-                            : phase === "error"
-                              ? "Пауза"
-                              : "Готова"}
-                    </span>
-                  </div>
+                  <span className="truncate">
+                    {phase === "listening"
+                      ? "Слухає"
+                      : phase === "thinking"
+                        ? "Думає"
+                        : phase === "speaking"
+                          ? "Говорить"
+                          : phase === "error"
+                            ? "Пауза"
+                            : "Готова"}
+                  </span>
                 </div>
 
-                <p className="mt-1 truncate text-xs text-slate-500">
+                <p className="mt-1 max-w-full truncate text-xs text-slate-500">
                   {phaseInformation.description}
                 </p>
               </div>
