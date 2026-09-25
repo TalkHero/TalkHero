@@ -819,7 +819,7 @@ trackEvent("speaking_completed", {
       </div>
 
       <div className="grid min-h-0 flex-1 lg:grid-cols-[340px_1fr]">
-        <div className="flex flex-col items-center justify-center border-b border-slate-200 bg-slate-50 p-8 text-center lg:border-b-0 lg:border-r">
+        <div className="hidden flex-col items-center justify-center border-r border-slate-200 bg-slate-50 p-8 text-center lg:flex">
           <div className="relative">
             {phase === "listening" && (
               <>
@@ -923,6 +923,91 @@ trackEvent("speaking_completed", {
         </div>
 
         <div className="flex min-h-0 flex-col">
+          <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+            <div className="flex items-center gap-3">
+              <div className="relative shrink-0">
+                {phase === "listening" && (
+                  <span className="absolute -inset-1 animate-pulse rounded-full border-2 border-indigo-300" />
+                )}
+
+                {phase === "thinking" && (
+                  <span className="absolute -inset-1 animate-pulse rounded-full border-2 border-amber-300" />
+                )}
+
+                {phase === "speaking" && (
+                  <span className="absolute -inset-1 animate-pulse rounded-full border-2 border-emerald-300" />
+                )}
+
+                <div
+                  className={`relative h-14 w-14 overflow-hidden rounded-full border-2 bg-white shadow-sm ${
+                    phase === "listening"
+                      ? "border-indigo-500"
+                      : phase === "thinking"
+                        ? "border-amber-400"
+                        : phase === "speaking"
+                          ? "border-emerald-500"
+                          : phase === "error"
+                            ? "border-red-400"
+                            : "border-slate-200"
+                  }`}
+                >
+                  <img
+                    src="/images/emma/emma-hero.png"
+                    alt="Емма"
+                    className="h-full w-full object-cover object-top"
+                  />
+                </div>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-slate-950">Емма</p>
+                    <p className="text-xs text-slate-500">
+                      Твоя AI-репетиторка
+                    </p>
+                  </div>
+
+                  <div
+                    className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                      phase === "listening"
+                        ? "bg-indigo-50 text-indigo-700"
+                        : phase === "thinking"
+                          ? "bg-amber-50 text-amber-700"
+                          : phase === "speaking"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : phase === "error"
+                              ? "bg-red-50 text-red-700"
+                              : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    <PhaseIcon
+                      className={`h-3.5 w-3.5 ${
+                        phase === "thinking" ? "animate-spin" : ""
+                      }`}
+                    />
+
+                    <span>
+                      {phase === "listening"
+                        ? "Слухає"
+                        : phase === "thinking"
+                          ? "Думає"
+                          : phase === "speaking"
+                            ? "Говорить"
+                            : phase === "error"
+                              ? "Пауза"
+                              : "Готова"}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="mt-1 truncate text-xs text-slate-500">
+                  {phaseInformation.description}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
             {messages.length === 0 ? (
               <div className="flex min-h-full items-center justify-center">
@@ -953,11 +1038,6 @@ trackEvent("speaking_completed", {
                         isUser ? "justify-end" : "justify-start"
                       }`}
                     >
-                      {!isUser && (
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
-                          <Bot className="h-5 w-5" />
-                        </div>
-                      )}
 
                       <div
                         className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-7 ${
