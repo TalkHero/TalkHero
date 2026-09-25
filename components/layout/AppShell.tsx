@@ -98,6 +98,8 @@ export function AppShell({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const isSpeakingPage = pathname === "/speaking";
+
   const firstName = fullName.trim().split(/\s+/)[0] || "Користувач";
 
   const initial = firstName.slice(0, 1).toUpperCase();
@@ -181,8 +183,20 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1440px] px-4 py-6 pb-28 sm:px-6 sm:py-8 lg:px-8 lg:pb-8">
+        <main
+          className={cn(
+            "min-h-0 flex-1",
+            isSpeakingPage ? "overflow-hidden" : "overflow-y-auto",
+          )}
+        >
+          <div
+            className={cn(
+              "mx-auto w-full max-w-[1440px]",
+              isSpeakingPage
+                ? "h-full min-h-0 px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-6 lg:pt-6"
+                : "px-4 py-6 pb-28 sm:px-6 sm:py-8 lg:px-8 lg:pb-8",
+            )}
+          >
             {children}
           </div>
         </main>
