@@ -424,7 +424,7 @@ export function SpeakingSession() {
         return;
       }
 
-      await evaluateTranscript(text);
+      void evaluateTranscript(text);
 
       if (!sessionActiveRef.current) {
         processingTranscriptRef.current = false;
