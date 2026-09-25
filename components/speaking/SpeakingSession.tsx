@@ -180,7 +180,7 @@ export function SpeakingSession() {
     setErrorMessage("");
 
     await startAutoTranscribe({
-      silenceMs: 900,
+      silenceMs: 2000,
       maxRecordingMs: 30_000,
 
       onTranscript: (text) => {
