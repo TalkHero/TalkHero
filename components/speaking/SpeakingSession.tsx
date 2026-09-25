@@ -742,13 +742,13 @@ trackEvent("speaking_completed", {
     },
 
     listening: {
-      title: "Я слухаю...",
+      title: "Емма слухає...",
       description: "Говоріть англійською природно.",
       icon: Mic,
     },
 
     thinking: {
-      title: "Емма слухає...",
+      title: "Емма думає...",
       description: "Ваша відповідь аналізується.",
       icon: Loader2,
     },
@@ -823,29 +823,72 @@ trackEvent("speaking_completed", {
           <div className="relative">
             {phase === "listening" && (
               <>
-                <span className="absolute inset-0 animate-ping rounded-full bg-indigo-300 opacity-40" />
-                <span className="absolute -inset-4 animate-pulse rounded-full border border-indigo-200" />
+                <span className="absolute inset-0 animate-ping rounded-full bg-indigo-300 opacity-30" />
+                <span className="absolute -inset-4 animate-pulse rounded-full border-2 border-indigo-300" />
+              </>
+            )}
+
+            {phase === "thinking" && (
+              <span className="absolute -inset-3 animate-pulse rounded-full border-2 border-amber-300" />
+            )}
+
+            {phase === "speaking" && (
+              <>
+                <span className="absolute -inset-3 animate-pulse rounded-full border-2 border-emerald-300" />
+                <span className="absolute -inset-6 rounded-full border border-emerald-100" />
               </>
             )}
 
             <div
-              className={`relative flex h-28 w-28 items-center justify-center rounded-full shadow-lg transition ${
+              className={`relative h-36 w-36 overflow-hidden rounded-full border-4 bg-white shadow-xl transition-all duration-300 ${
                 phase === "listening"
-                  ? "bg-indigo-600 text-white"
+                  ? "border-indigo-500"
                   : phase === "thinking"
-                    ? "bg-amber-100 text-amber-600"
+                    ? "border-amber-400"
                     : phase === "speaking"
-                      ? "bg-emerald-100 text-emerald-600"
+                      ? "border-emerald-500"
                       : phase === "error"
-                        ? "bg-red-100 text-red-600"
-                        : "bg-white text-slate-500"
+                        ? "border-red-400"
+                        : "border-white"
+              }`}
+            >
+              <img
+                src="/images/emma/emma-hero.png"
+                alt="Емма"
+                className="h-full w-full object-cover object-top"
+              />
+            </div>
+
+            <div
+              className={`absolute -bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold text-white shadow-lg ${
+                phase === "listening"
+                  ? "bg-indigo-600"
+                  : phase === "thinking"
+                    ? "bg-amber-500"
+                    : phase === "speaking"
+                      ? "bg-emerald-600"
+                      : phase === "error"
+                        ? "bg-red-500"
+                        : "bg-slate-600"
               }`}
             >
               <PhaseIcon
-                className={`h-11 w-11 ${
+                className={`h-3.5 w-3.5 ${
                   phase === "thinking" ? "animate-spin" : ""
                 }`}
               />
+
+              <span>
+                {phase === "listening"
+                  ? "Слухає"
+                  : phase === "thinking"
+                    ? "Думає"
+                    : phase === "speaking"
+                      ? "Говорить"
+                      : phase === "error"
+                        ? "Пауза"
+                        : "Готова"}
+              </span>
             </div>
           </div>
 
