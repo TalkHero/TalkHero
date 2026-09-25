@@ -3,7 +3,7 @@ import { SpeakingSession } from "@/components/speaking/SpeakingSession";
 export default function SpeakingPage() {
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col">
-      <div className="mb-4 shrink-0 sm:mb-6">
+      <div className="hidden shrink-0 lg:mb-6 lg:block">
         <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
           Голосова практика
         </p>
