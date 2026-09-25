@@ -180,8 +180,16 @@ export function SpeakingSession() {
     setErrorMessage("");
 
     await startAutoTranscribe({
-      silenceMs: 2000,
+      silenceMs: 1500,
       maxRecordingMs: 30_000,
+
+      onProcessing: () => {
+        if (!sessionActiveRef.current) {
+          return;
+        }
+
+        setPhase("thinking");
+      },
 
       onTranscript: (text) => {
         const normalizedText = text.trim();
@@ -769,7 +777,7 @@ trackEvent("speaking_completed", {
   const PhaseIcon = phaseInformation.icon;
 
   return (
-    <section className="flex min-h-[620px] w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <section className="flex min-h-[620px] w-full min-w-0 max-w-full flex-1 flex-col overflow-clip rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-6 py-5">
         <div className="flex min-w-0 items-center gap-3">
           <div
@@ -923,7 +931,7 @@ trackEvent("speaking_completed", {
         </div>
 
         <div className="flex min-h-0 w-full min-w-0 max-w-full flex-col">
-          <div className="w-full min-w-0 max-w-full shrink-0 overflow-hidden border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+          <div className="sticky top-0 z-30 w-full min-w-0 max-w-full shrink-0 overflow-hidden border-b border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur lg:hidden">
             <div className="flex min-w-0 items-center gap-3">
               <div className="relative shrink-0">
                 {phase === "listening" && (

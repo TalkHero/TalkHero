@@ -11,6 +11,7 @@ type TranscriptionResponse = {
 
 type StartAutoTranscribeOptions = {
   onTranscript: (text: string) => void;
+  onProcessing?: () => void;
   onError?: (message: string) => void;
   silenceMs?: number;
   maxRecordingMs?: number;
@@ -19,6 +20,7 @@ type StartAutoTranscribeOptions = {
 type StartRecorderOptions = {
   autoStop?: boolean;
   onTranscript?: (text: string) => void;
+  onProcessing?: () => void;
   onError?: (message: string) => void;
   silenceMs?: number;
   maxRecordingMs?: number;
@@ -113,6 +115,8 @@ export function useVoiceRecorder() {
 
   const autoErrorCallbackRef = useRef<((message: string) => void) | null>(null);
 
+  const autoProcessingCallbackRef = useRef<(() => void) | null>(null);
+
   const silenceMsRef = useRef(DEFAULT_SILENCE_MS);
 
   const maxRecordingMsRef = useRef(DEFAULT_MAX_RECORDING_MS);
@@ -166,6 +170,8 @@ export function useVoiceRecorder() {
     autoTranscriptCallbackRef.current = null;
 
     autoErrorCallbackRef.current = null;
+
+    autoProcessingCallbackRef.current = null;
 
     autoStopTriggeredRef.current = false;
 
@@ -562,6 +568,8 @@ export function useVoiceRecorder() {
 
         autoErrorCallbackRef.current = options.onError ?? null;
 
+        autoProcessingCallbackRef.current = options.onProcessing ?? null;
+
         silenceMsRef.current = Math.max(
           500,
           options.silenceMs ?? DEFAULT_SILENCE_MS,
@@ -584,6 +592,11 @@ export function useVoiceRecorder() {
             const wasAutoMode = autoStopRef.current;
             const onTranscript = autoTranscriptCallbackRef.current;
             const onError = autoErrorCallbackRef.current;
+            const onProcessing = autoProcessingCallbackRef.current;
+
+            if (wasAutoMode && onProcessing) {
+              onProcessing();
+            }
 
             void processRecorderStop(recorder).then((text) => {
               if (wasAutoMode && text && onTranscript) {
@@ -645,6 +658,7 @@ export function useVoiceRecorder() {
   const startAutoTranscribe = useCallback(
     async ({
       onTranscript,
+      onProcessing,
       onError,
       silenceMs = DEFAULT_SILENCE_MS,
       maxRecordingMs = DEFAULT_MAX_RECORDING_MS,
@@ -652,6 +666,7 @@ export function useVoiceRecorder() {
       await start({
         autoStop: true,
         onTranscript,
+        onProcessing,
         onError,
         silenceMs,
         maxRecordingMs,
@@ -696,6 +711,8 @@ export function useVoiceRecorder() {
     autoTranscriptCallbackRef.current = null;
 
     autoErrorCallbackRef.current = null;
+
+    autoProcessingCallbackRef.current = null;
 
     stopVad();
 
