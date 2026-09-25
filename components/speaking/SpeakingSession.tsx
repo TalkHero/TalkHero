@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   useCallback,
@@ -477,8 +477,34 @@ export function SpeakingSession() {
           }
         }, 500);
       }
+
+      return;
     }
-  }, [phase, speechStatus]);
+
+    if (speechStatus === "idle" && !speechStartedRef.current) {
+      const timeoutId = window.setTimeout(() => {
+        if (
+          !sessionActiveRef.current ||
+          speechStartedRef.current
+        ) {
+          return;
+        }
+
+        console.warn(
+          "Speaking TTS did not start in time; returning to microphone.",
+        );
+
+        stopSpeaking();
+        processingTranscriptRef.current = false;
+
+        void beginListeningRef.current();
+      }, 12000);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
+    }
+  }, [phase, speechStatus, stopSpeaking]);
 
   async function startSession() {
     if (!voiceSupported || startingSession) {
