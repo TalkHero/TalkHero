@@ -132,6 +132,12 @@ export function SpeakingSession() {
 
   const messagesRef = useRef<SpeakingMessage[]>([]);
 
+  const sessionEvaluationsRef = useRef<SpeakingEvaluation[]>([]);
+
+  const pendingEvaluationPromisesRef = useRef<Set<Promise<void>>>(
+    new Set(),
+  );
+
   const messagesBottomRef = useRef<HTMLDivElement | null>(null);
 
   const recorder = useVoiceRecorder();
@@ -263,7 +269,13 @@ export function SpeakingSession() {
 
       setEvaluation(nextEvaluation);
 
-      setSessionEvaluations((previous) => [...previous, nextEvaluation]);
+      const nextSessionEvaluations = [
+        ...sessionEvaluationsRef.current,
+        nextEvaluation,
+      ];
+
+      sessionEvaluationsRef.current = nextSessionEvaluations;
+      setSessionEvaluations(nextSessionEvaluations);
     } catch (error) {
       console.error("SPEAKING EVALUATION ERROR:", error);
     }
@@ -432,7 +444,13 @@ export function SpeakingSession() {
         return;
       }
 
-      void evaluateTranscript(text);
+      const evaluationPromise = evaluateTranscript(text);
+
+      pendingEvaluationPromisesRef.current.add(evaluationPromise);
+
+      void evaluationPromise.finally(() => {
+        pendingEvaluationPromisesRef.current.delete(evaluationPromise);
+      });
 
       if (!sessionActiveRef.current) {
         processingTranscriptRef.current = false;
@@ -539,6 +557,7 @@ export function SpeakingSession() {
     setSessionActive(true);
     setPhase("thinking");
     setMessages([]);
+    sessionEvaluationsRef.current = [];
     setSessionEvaluations([]);
     setEvaluation(null);
     setConversationId(null);
@@ -628,6 +647,16 @@ const durationSeconds = Math.floor(
   (Date.now() - sessionStartedAt) / 1000,
 );
     try {
+      const pendingEvaluations = [
+        ...pendingEvaluationPromisesRef.current,
+      ];
+
+      if (pendingEvaluations.length > 0) {
+        await Promise.allSettled(pendingEvaluations);
+      }
+
+      const evaluations = [...sessionEvaluationsRef.current];
+
       const response = await fetch("/api/speaking/complete", {
         method: "POST",
         headers: {
@@ -637,7 +666,7 @@ const durationSeconds = Math.floor(
           conversationId,
           startedAt: new Date(sessionStartedAt).toISOString(),
           durationSeconds,
-          evaluations: sessionEvaluations,
+          evaluations,
         }),
       });
 
@@ -657,7 +686,7 @@ const durationSeconds = Math.floor(
       });
 trackEvent("speaking_completed", {
   duration_seconds: durationSeconds,
-  answers_count: sessionEvaluations.length,
+  answers_count: evaluations.length,
   xp_earned: data.session.xpEarned,
 });
       router.refresh();
@@ -696,6 +725,7 @@ trackEvent("speaking_completed", {
     messagesRef.current = [];
 
     setMessages([]);
+    sessionEvaluationsRef.current = [];
     setSessionEvaluations([]);
     setEvaluation(null);
     setConversationId(null);
