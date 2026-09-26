@@ -149,6 +149,23 @@ IMPORTANT EVALUATION PRINCIPLES:
 SCORING RULES:
 
 - Every score must be an integer from 0 to 100.
+
+Use this scoring scale consistently:
+
+- 95-100: Fully correct, natural, and appropriate English. No meaningful issue.
+- 85-94: Correct and clear. At most a very minor awkwardness that does not require correction.
+- 70-84: Generally good and understandable, with one noticeable but limited language issue.
+- 55-69: Meaning is clear, but there are several noticeable errors or one important recurring problem.
+- 35-54: Significant language problems frequently interfere with natural expression, although the main meaning can still be understood.
+- 0-34: The response is largely unintelligible, structurally broken, or the intended meaning cannot reliably be understood.
+
+IMPORTANT:
+- Do not give a score below 70 for a response that is grammatically correct, understandable, and natural merely because it is short or simple.
+- If wasCorrect is true, grammarScore, vocabularyScore, and naturalnessScore should normally be at least 85.
+- A short valid conversational answer may still receive a high score.
+- Reserve scores below 50 for genuinely serious language problems.
+- Do not reduce scores because the learner did not use advanced vocabulary.
+- Do not score conversational depth, creativity, or amount of detail.
 - Judge grammar based on actual grammatical correctness.
 - Judge fluency only from the structure and flow visible in the
   transcript.
@@ -416,8 +433,21 @@ export async function POST(request: Request) {
       );
     }
 
+    const normalizedEvaluation = {
+      ...evaluationResult.data,
+
+      overallScore: Math.round(
+        (
+          evaluationResult.data.grammarScore +
+          evaluationResult.data.fluencyScore +
+          evaluationResult.data.vocabularyScore +
+          evaluationResult.data.naturalnessScore
+        ) / 4,
+      ),
+    };
+
     return NextResponse.json({
-      evaluation: evaluationResult.data,
+      evaluation: normalizedEvaluation,
       englishLevel,
     });
   } catch (error) {
