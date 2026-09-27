@@ -110,6 +110,31 @@ function getCardClasses(status: MissionProgressStatus): string {
   }
 }
 
+async function fetchCampaignProgress(
+  progressCampaignSlug: string,
+): Promise<AdventureCampaignProgress> {
+  const response = await fetch(
+    `/api/adventure/progress?campaign=${encodeURIComponent(
+      progressCampaignSlug,
+    )}`,
+    {
+      cache: "no-store",
+    },
+  );
+
+  const result = (await response.json()) as AdventureCampaignProgress & {
+    error?: string;
+  };
+
+  if (!response.ok) {
+    throw new Error(
+      result.error || "Не вдалося завантажити прогрес.",
+    );
+  }
+
+  return result;
+}
+
 export function CampaignMissionList({ campaign }: CampaignMissionListProps) {
   const [progress, setProgress] = useState<AdventureCampaignProgress | null>(
     null,
@@ -124,22 +149,9 @@ export function CampaignMissionList({ campaign }: CampaignMissionListProps) {
     setError("");
 
     try {
-      const response = await fetch(
-        `/api/adventure/progress?campaign=${encodeURIComponent(
-          campaign.progressCampaignSlug,
-        )}`,
-        {
-          cache: "no-store",
-        },
+      const result = await fetchCampaignProgress(
+        campaign.progressCampaignSlug,
       );
-
-      const result = (await response.json()) as AdventureCampaignProgress & {
-        error?: string;
-      };
-
-      if (!response.ok) {
-        throw new Error(result.error || "Не вдалося завантажити прогрес.");
-      }
 
       setProgress(result);
     } catch (caught) {
@@ -152,7 +164,36 @@ export function CampaignMissionList({ campaign }: CampaignMissionListProps) {
   }
 
   useEffect(() => {
-    void loadProgress();
+    let cancelled = false;
+
+    void fetchCampaignProgress(
+      campaign.progressCampaignSlug,
+    )
+      .then((result) => {
+        if (!cancelled) {
+          setProgress(result);
+        }
+      })
+      .catch((caught: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "Сталася невідома помилка.",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [campaign.progressCampaignSlug]);
 
   const progressBySlug = useMemo(

@@ -492,6 +492,42 @@ const recommendations =
   );
 }
 
+async function fetchAssessmentAttempt(
+  slug: string,
+): Promise<StartAttemptResponse | null> {
+  const response = await fetch(
+    `/api/tests/${encodeURIComponent(slug)}/attempts`,
+    {
+      method: "POST",
+    },
+  );
+
+  if (response.status === 401) {
+    const nextPath = `/assessment/${encodeURIComponent(slug)}`;
+
+    window.location.href =
+      `/login?next=${encodeURIComponent(nextPath)}`;
+
+    return null;
+  }
+
+  const payload =
+    await parseJsonResponse<
+      StartAttemptResponse | ApiErrorResponse
+    >(response);
+
+  if (!response.ok) {
+    throw new Error(
+      getApiErrorMessage(
+        payload as ApiErrorResponse,
+        "Не вдалося розпочати тест.",
+      ),
+    );
+  }
+
+  return payload as StartAttemptResponse;
+}
+
 export function AssessmentRunner({
   slug,
 }: AssessmentRunnerProps) {
@@ -547,38 +583,11 @@ export function AssessmentRunner({
     setSelectedAnswer(null);
 
     try {
-      const response = await fetch(
-        `/api/tests/${encodeURIComponent(slug)}/attempts`,
-        {
-          method: "POST",
-        },
-      );
+      const attempt = await fetchAssessmentAttempt(slug);
 
-      if (response.status === 401) {
-        const nextPath = `/assessment/${encodeURIComponent(slug)}`;
-
-        window.location.href =
-          `/login?next=${encodeURIComponent(nextPath)}`;
-
+      if (!attempt) {
         return;
       }
-
-      const payload =
-        await parseJsonResponse<
-          StartAttemptResponse | ApiErrorResponse
-        >(response);
-
-      if (!response.ok) {
-        throw new Error(
-          getApiErrorMessage(
-            payload as ApiErrorResponse,
-            "Не вдалося розпочати тест.",
-          ),
-        );
-      }
-
-      const attempt =
-        payload as StartAttemptResponse;
 
       setAttemptId(attempt.attemptId);
       setTest(attempt.test);
@@ -602,8 +611,43 @@ export function AssessmentRunner({
   }, [slug]);
 
   useEffect(() => {
-    void loadAttempt();
-  }, [loadAttempt]);
+    let cancelled = false;
+
+    void fetchAssessmentAttempt(slug)
+      .then((attempt) => {
+        if (cancelled || !attempt) {
+          return;
+        }
+
+        setAttemptId(attempt.attemptId);
+        setTest(attempt.test);
+        setProgress(attempt.progress);
+        setQuestion(attempt.question);
+        setStatus("ready");
+      })
+      .catch((loadError: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(
+          "Failed to load assessment:",
+          loadError,
+        );
+
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Не вдалося завантажити тест.",
+        );
+
+        setStatus("error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   const progressPercentage = useMemo(() => {
     if (!progress || progress.total <= 0) {

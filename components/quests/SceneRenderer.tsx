@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { PublicQuestScene, QuestSceneEvaluation } from "@/lib/quests";
 
@@ -32,7 +32,17 @@ export function SceneRenderer({
     return null;
   }
 
-  const sceneKey = `${scene.id}:${scene.metadata.aiConversation === true ? "ai" : scene.sceneType}`;
+  const aiConversationTurn =
+    typeof evaluation?.metadata?.currentTurn === "number"
+      ? evaluation.metadata.currentTurn
+      : 0;
+
+  const sceneKey =
+    `${scene.id}:${
+      scene.metadata.aiConversation === true
+        ? `ai:${aiConversationTurn}`
+        : scene.sceneType
+    }`;
 
   if (scene.metadata.aiConversation === true) {
     return (

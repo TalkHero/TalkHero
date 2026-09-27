@@ -36,7 +36,6 @@ const DEFAULT_MAX_RECORDING_MS = 30_000;
  * для звичайного мікрофона ноутбука.
  */
 const SPEECH_THRESHOLD = 0.003;
-const SPEECH_PEAK_THRESHOLD = 0.004;
 
 /*
  * Не вважаємо випадковий короткий шум

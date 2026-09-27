@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ArrowRight,
@@ -80,20 +80,17 @@ export function TranslateScene({
     useVoiceRecorder();
 
   const sceneIdRef =
-    useRef(scene.id);
+    useRef<string | null>(scene.id);
+
+  const cancelRecording =
+    recorder.cancel;
 
   useEffect(() => {
-    sceneIdRef.current =
-      scene.id;
-
-    setValue("");
-
-    recorder.cancel();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    scene.id,
-  ]);
+    return () => {
+      sceneIdRef.current = null;
+      cancelRecording();
+    };
+  }, [cancelRecording]);
 
   const trimmed =
     value.trim();

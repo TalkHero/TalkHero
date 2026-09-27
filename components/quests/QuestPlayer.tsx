@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ArrowRight,
@@ -9,6 +9,7 @@ import {
 import {
   useEffect,
   useRef,
+  useState,
 } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -282,6 +283,7 @@ export function QuestPlayer({
 
   const {
     startQuest,
+    submitAnswer,
   } = quest;
 
   const trackedStartRef =
@@ -290,13 +292,12 @@ export function QuestPlayer({
   const trackedCompletionRef =
     useRef(false);
 
-  const lastSubmittedAnswerRef =
-    useRef<unknown>(null);
+  const questMemoryKey =
+    `${campaignSlug}/${episodeSlug}/${questSlug}`;
 
   /*
-   * Остання справжня dialogue-сцена.
-   *
-   * Вона потрібна для затвердженого UI:
+   * Остання справжня dialogue-сцена та відповідь
+   * користувача потрібні для затвердженого UI:
    *
    * NPC
    * ↓
@@ -304,13 +305,29 @@ export function QuestPlayer({
    * ↓
    * FEEDBACK
    *
-   * На static input/choice/translate сценах scene.content —
-   * це часто опис ситуації, а не репліка NPC.
+   * Дані прив'язані до конкретного quest, щоб стан
+   * попереднього квесту не потрапив у наступний.
    */
-  const lastDialogueSceneRef =
-    useRef<PublicQuestScene | null>(
-      null,
-    );
+  const [questUiMemory, setQuestUiMemory] =
+    useState<{
+      questKey: string;
+      lastSubmittedAnswer: unknown;
+      lastDialogueScene: PublicQuestScene | null;
+    }>({
+      questKey: questMemoryKey,
+      lastSubmittedAnswer: null,
+      lastDialogueScene: null,
+    });
+
+  const lastSubmittedAnswer =
+    questUiMemory.questKey === questMemoryKey
+      ? questUiMemory.lastSubmittedAnswer
+      : null;
+
+  const lastDialogueScene =
+    questUiMemory.questKey === questMemoryKey
+      ? questUiMemory.lastDialogueScene
+      : null;
 
   useEffect(() => {
     trackedStartRef.current =
@@ -319,11 +336,6 @@ export function QuestPlayer({
     trackedCompletionRef.current =
       false;
 
-    lastSubmittedAnswerRef.current =
-      null;
-
-    lastDialogueSceneRef.current =
-      null;
 
     void startQuest({
       campaignSlug,
@@ -337,22 +349,6 @@ export function QuestPlayer({
     startQuest,
   ]);
 
-  /*
-   * Якщо quest відкрився одразу на dialogue
-   * або користувач resumed саме dialogue —
-   * запам'ятовуємо сцену.
-   */
-  useEffect(() => {
-    if (
-      quest.scene?.sceneType ===
-      "dialogue"
-    ) {
-      lastDialogueSceneRef.current =
-        quest.scene;
-    }
-  }, [
-    quest.scene,
-  ]);
 
   useEffect(() => {
     if (
@@ -452,14 +448,14 @@ export function QuestPlayer({
       return;
     }
 
-    void quest.submitAnswer({
+    void submitAnswer({
       userInput: null,
     });
   }, [
     quest.completed,
     quest.submitting,
     quest.scene?.sceneType,
-    quest.submitAnswer,
+    submitAnswer,
   ]);
 
   function restartQuest() {
@@ -469,11 +465,11 @@ export function QuestPlayer({
     trackedCompletionRef.current =
       false;
 
-    lastSubmittedAnswerRef.current =
-      null;
-
-    lastDialogueSceneRef.current =
-      null;
+    setQuestUiMemory({
+      questKey: questMemoryKey,
+      lastSubmittedAnswer: null,
+      lastDialogueScene: null,
+    });
 
     void startQuest({
       campaignSlug,
@@ -611,7 +607,7 @@ export function QuestPlayer({
         false;
 
     const npcContext =
-      lastDialogueSceneRef.current;
+      lastDialogueScene;
 
     const shouldShowNPC =
       npcContext !== null &&
@@ -653,6 +649,9 @@ export function QuestPlayer({
         {shouldShowNPC &&
         npcContext ? (
           <QuestNPCContext
+            key={`${npcContext.id}:${getFeedbackReaction({
+              evaluation,
+            })}`}
             scene={
               npcContext
             }
@@ -677,7 +676,7 @@ export function QuestPlayer({
               answeredScene
             }
             userAnswer={
-              lastSubmittedAnswerRef.current
+              lastSubmittedAnswer
             }
             suggestedAnswer={
               getEvaluationString(
@@ -724,7 +723,7 @@ export function QuestPlayer({
   const contextScene =
     interactiveScene &&
     !livingNPC
-      ? lastDialogueSceneRef.current
+      ? lastDialogueScene
       : null;
 
   return (
@@ -761,6 +760,7 @@ export function QuestPlayer({
 
       {contextScene ? (
         <QuestNPCContext
+          key={`${contextScene.id}:${contextScene.content}`}
           scene={contextScene}
           text={
             contextScene.content
@@ -782,17 +782,18 @@ export function QuestPlayer({
            * щоб наступна task-сцена мала правильну
            * попередню репліку NPC.
            */
-          if (
-            quest.scene
-              ?.sceneType ===
-            "dialogue"
-          ) {
-            lastDialogueSceneRef.current =
-              quest.scene;
-          }
+          setQuestUiMemory((previous) => ({
+            questKey: questMemoryKey,
 
-          lastSubmittedAnswerRef.current =
-            null;
+            lastDialogueScene:
+              quest.scene?.sceneType === "dialogue"
+                ? quest.scene
+                : previous.questKey === questMemoryKey
+                  ? previous.lastDialogueScene
+                  : null,
+
+            lastSubmittedAnswer: null,
+          }));
 
           void quest.submitAnswer({
             userInput: null,
@@ -801,8 +802,16 @@ export function QuestPlayer({
         onSubmit={async (
           value,
         ) => {
-          lastSubmittedAnswerRef.current =
-            value;
+          setQuestUiMemory((previous) => ({
+            questKey: questMemoryKey,
+
+            lastDialogueScene:
+              previous.questKey === questMemoryKey
+                ? previous.lastDialogueScene
+                : null,
+
+            lastSubmittedAnswer: value,
+          }));
 
           await quest.submitAnswer({
             userInput:
@@ -831,7 +840,7 @@ export function QuestPlayer({
             quest.scene
           }
           userAnswer={
-            lastSubmittedAnswerRef.current
+            lastSubmittedAnswer
           }
           suggestedAnswer={
             getEvaluationString(

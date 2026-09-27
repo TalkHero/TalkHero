@@ -74,39 +74,47 @@ export function VocabularyManager() {
 
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function loadVocabulary() {
-    try {
-      setLoading(true);
-      setErrorMessage("");
+  useEffect(() => {
+    let cancelled = false;
 
-      const response = await fetch("/api/vocabulary", {
-        cache: "no-store",
+    void fetch("/api/vocabulary", {
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || "Не вдалося завантажити словник.",
+          );
+        }
+
+        if (!cancelled) {
+          setVocabulary(data.vocabulary ?? []);
+        }
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        console.error("LOAD VOCABULARY ERROR:", error);
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Не вдалося завантажити словник.",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Не вдалося завантажити словник.",
-        );
-      }
-
-      setVocabulary(data.vocabulary ?? []);
-    } catch (error) {
-      console.error("LOAD VOCABULARY ERROR:", error);
-
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Не вдалося завантажити словник.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    loadVocabulary();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const filteredVocabulary = useMemo(() => {

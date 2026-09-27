@@ -354,6 +354,30 @@ function LoadingState() {
   );
 }
 
+async function fetchSpeakingHistory(): Promise<SpeakingHistoryResponse> {
+  const response = await fetch("/api/speaking/history", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  const responseData: unknown = await response.json();
+
+  if (!response.ok) {
+    const message =
+      typeof responseData === "object" &&
+      responseData !== null &&
+      "error" in responseData &&
+      typeof responseData.error === "string"
+        ? responseData.error
+        : "Не вдалося завантажити історію розмовної практики.";
+
+    throw new Error(message);
+  }
+
+  return responseData as SpeakingHistoryResponse;
+}
+
 export default function SpeakingHistoryPage() {
   const [sessions, setSessions] = useState<SpeakingSession[]>([]);
   const [stats, setStats] = useState<SpeakingStats>(EMPTY_STATS);
@@ -366,27 +390,7 @@ export default function SpeakingHistoryPage() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      const response = await fetch("/api/speaking/history", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      const responseData: unknown = await response.json();
-
-      if (!response.ok) {
-        const message =
-          typeof responseData === "object" &&
-          responseData !== null &&
-          "error" in responseData &&
-          typeof responseData.error === "string"
-            ? responseData.error
-            : "Не вдалося завантажити історію розмовної практики.";
-
-        throw new Error(message);
-      }
-
-      const historyData = responseData as SpeakingHistoryResponse;
+      const historyData = await fetchSpeakingHistory();
 
       setSessions(historyData.sessions ?? []);
       setStats(historyData.stats ?? EMPTY_STATS);
@@ -404,8 +408,40 @@ export default function SpeakingHistoryPage() {
   }, []);
 
   useEffect(() => {
-    void loadHistory();
-  }, [loadHistory]);
+    let cancelled = false;
+
+    void fetchSpeakingHistory()
+      .then((historyData) => {
+        if (cancelled) {
+          return;
+        }
+
+        setSessions(historyData.sessions ?? []);
+        setStats(historyData.stats ?? EMPTY_STATS);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        console.error("LOAD SPEAKING HISTORY ERROR:", error);
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Не вдалося завантажити історію розмовної практики.",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const averageDuration = useMemo(() => {
     if (stats.totalSessions === 0) {

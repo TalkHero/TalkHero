@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Confetti from "react-confetti";
 import { LevelUpModal } from "./LevelUpModal";
@@ -183,36 +183,18 @@ const didLevelUp =
   (completionData?.progress.leveledUp === true ||
     currentLevel > previousLevel);
 
-const [showConfetti, setShowConfetti] = useState(false);
-const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+const [showConfetti, setShowConfetti] = useState(
+  Boolean(completionData),
+);
 
+const [showLevelUpModal, setShowLevelUpModal] = useState(
+  didLevelUp,
+);
 
 useEffect(() => {
   if (!completionData) {
-    setShowConfetti(false);
-    setShowLevelUpModal(false);
     return;
   }
-
-  const currentLevel = completionData.progress.level;
-
-  const calculatedPreviousLevel =
-    Math.floor(
-      Math.max(
-        0,
-        completionData.progress.xp - completionData.xpEarned,
-      ) / 100,
-    ) + 1;
-
-  const previousLevel =
-    completionData.progress.previousLevel ?? calculatedPreviousLevel;
-
-  const leveledUp =
-    completionData.progress.leveledUp === true ||
-    currentLevel > previousLevel;
-
-  setShowConfetti(true);
-  setShowLevelUpModal(leveledUp);
 
   const timer = window.setTimeout(() => {
     setShowConfetti(false);

@@ -87,12 +87,6 @@ function getLevelIndex(level: CEFRLevel): number {
   return index;
 }
 
-function getLevelByIndex(index: number): CEFRLevel {
-  const normalizedIndex = Math.round(clamp(index, 0, CEFR_LEVELS.length - 1));
-
-  return CEFR_LEVELS[normalizedIndex];
-}
-
 function average(values: number[]): number {
   if (values.length === 0) {
     return 0;
@@ -239,83 +233,6 @@ function calculateConfirmedLevel(
   }
 
   return confirmedLevel;
-}
-
-function calculatePerformanceAbility(
-  questions: ScoredPlacementQuestion[],
-): number {
-  const weightedAbilityTotal = questions.reduce((total, question) => {
-    const targetLevelIndex = getLevelIndex(question.targetLevel);
-
-    /*
-     * A score of 70 means the student performs
-     * approximately at the target level.
-     *
-     * Every 20 score points move the demonstrated
-     * ability by roughly one CEFR band.
-     */
-    const scoreAdjustment = (question.overallScore - 70) / 20;
-
-    const demonstratedAbility = clamp(
-      targetLevelIndex + scoreAdjustment,
-      0,
-      CEFR_LEVELS.length - 1,
-    );
-
-    /*
-     * Harder questions provide slightly more
-     * information than easier questions.
-     */
-    const difficultyWeight = 1 + targetLevelIndex * 0.12;
-
-    return total + demonstratedAbility * difficultyWeight;
-  }, 0);
-
-  const totalWeight = questions.reduce((total, question) => {
-    const targetLevelIndex = getLevelIndex(question.targetLevel);
-
-    return total + 1 + targetLevelIndex * 0.12;
-  }, 0);
-
-  if (totalWeight === 0) {
-    return 0;
-  }
-
-  return weightedAbilityTotal / totalWeight;
-}
-
-function calculateEvaluatorAbility(
-  questions: ScoredPlacementQuestion[],
-): number {
-  const weightedLevelTotal = questions.reduce((total, question) => {
-    const reliability = clamp(
-      (normalizeScore(question.comprehension) +
-        normalizeScore(question.taskCompletion)) /
-        200,
-      0.2,
-      1,
-    );
-
-    return total + getLevelIndex(question.estimatedLevel) * reliability;
-  }, 0);
-
-  const totalReliability = questions.reduce((total, question) => {
-    const reliability = clamp(
-      (normalizeScore(question.comprehension) +
-        normalizeScore(question.taskCompletion)) /
-        200,
-      0.2,
-      1,
-    );
-
-    return total + reliability;
-  }, 0);
-
-  if (totalReliability === 0) {
-    return 0;
-  }
-
-  return weightedLevelTotal / totalReliability;
 }
 
 function calculateFinalLevel(

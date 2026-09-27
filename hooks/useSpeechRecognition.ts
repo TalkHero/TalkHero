@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 interface SpeechRecognitionResultItem {
@@ -70,27 +71,37 @@ type SpeechRecognitionStatus =
   | "listening"
   | "error";
 
+function subscribeToSpeechRecognitionSupport() {
+  return () => {};
+}
+
+function getSpeechRecognitionSupportSnapshot() {
+  return Boolean(
+    window.SpeechRecognition ||
+      window.webkitSpeechRecognition,
+  );
+}
+
+function getSpeechRecognitionSupportServerSnapshot() {
+  return false;
+}
+
 export function useSpeechRecognition() {
   const [status, setStatus] =
     useState<SpeechRecognitionStatus>("idle");
 
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [isSupported, setIsSupported] = useState(false);
+  const isSupported = useSyncExternalStore(
+    subscribeToSpeechRecognitionSupport,
+    getSpeechRecognitionSupportSnapshot,
+    getSpeechRecognitionSupportServerSnapshot,
+  );
 
   const recognitionRef =
     useRef<SpeechRecognitionInstance | null>(null);
 
   const shouldContinueRef = useRef(false);
-
-  useEffect(() => {
-    const supported = Boolean(
-      window.SpeechRecognition ||
-        window.webkitSpeechRecognition,
-    );
-
-    setIsSupported(supported);
-  }, []);
 
   const stopListening = useCallback(() => {
     shouldContinueRef.current = false;

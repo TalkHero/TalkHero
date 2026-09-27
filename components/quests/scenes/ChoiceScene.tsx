@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ArrowRight,
@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 
 import {
-  useEffect,
   useState,
   type KeyboardEvent,
 } from "react";
@@ -76,11 +75,6 @@ export function ChoiceScene({
     (scene.options as ChoiceOption[]) ??
     [];
 
-  useEffect(() => {
-    setSelectedIndex(null);
-  }, [
-    scene.id,
-  ]);
 
   async function handleSubmit() {
     if (

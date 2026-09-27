@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -35,7 +35,7 @@ export function useNPCSpeech({
   const [error, setError] =
     useState<string | null>(null);
 
-  const cleanupAudio = useCallback(() => {
+  const releaseAudio = useCallback(() => {
     const audio = audioRef.current;
 
     if (audio) {
@@ -58,9 +58,12 @@ export function useNPCSpeech({
 
       objectUrlRef.current = null;
     }
-
-    setPlaying(false);
   }, []);
+
+  const cleanupAudio = useCallback(() => {
+    releaseAudio();
+    setPlaying(false);
+  }, [releaseAudio]);
 
   const cancelRequest = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -96,11 +99,8 @@ export function useNPCSpeech({
 
     loadingRef.current = false;
 
-    cleanupAudio();
-
-    setLoading(false);
-    setError(null);
-  }, [text, voice, cleanupAudio]);
+    releaseAudio();
+  }, [text, voice, releaseAudio]);
 
   /*
    * Повне очищення при демонтуванні.
@@ -112,29 +112,11 @@ export function useNPCSpeech({
       abortControllerRef.current?.abort();
       abortControllerRef.current = null;
 
-      if (audioRef.current) {
-        audioRef.current.pause();
+      loadingRef.current = false;
 
-        audioRef.current.onplay = null;
-        audioRef.current.onended = null;
-        audioRef.current.onerror = null;
-
-        audioRef.current.removeAttribute(
-          "src",
-        );
-
-        audioRef.current = null;
-      }
-
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(
-          objectUrlRef.current,
-        );
-
-        objectUrlRef.current = null;
-      }
+      releaseAudio();
     };
-  }, []);
+  }, [releaseAudio]);
 
   const play = useCallback(async () => {
     if (!voice || !text.trim()) {

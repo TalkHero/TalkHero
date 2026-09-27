@@ -232,7 +232,7 @@ export default function TermsPage() {
                 href="/contact"
                 className="inline-flex h-12 items-center justify-center rounded-2xl bg-indigo-600 px-6 text-sm font-bold text-white transition hover:bg-indigo-700"
               >
-                Зв'язатися з нами
+                Зв’язатися з нами
               </Link>
 
               <Link

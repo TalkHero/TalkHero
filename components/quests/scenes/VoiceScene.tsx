@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ArrowRight,
@@ -69,20 +69,19 @@ export function VoiceScene({
   const recorder =
     useVoiceRecorder();
 
+  const cancelRecording =
+    recorder.cancel;
+
   const [
     transcript,
     setTranscript,
   ] = useState("");
 
   useEffect(() => {
-    recorder.reset();
-
-    setTranscript("");
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    scene.id,
-  ]);
+    return () => {
+      cancelRecording();
+    };
+  }, [cancelRecording]);
 
   const busy =
     loading ||

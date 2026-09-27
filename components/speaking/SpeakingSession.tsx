@@ -27,6 +27,7 @@ import {
   type SpeakingReportMessage,
 } from "@/components/speaking/SpeakingReport";
 import { UI_ERRORS } from "@/lib/i18n/errors";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 
@@ -898,10 +899,12 @@ trackEvent("speaking_completed", {
                         : "border-white"
               }`}
             >
-              <img
+              <Image
                 src="/images/emma/emma-hero.png"
                 alt="Емма"
-                className="h-full w-full object-cover object-top"
+                fill
+                sizes="144px"
+                className="object-cover object-top"
               />
             </div>
 
@@ -997,10 +1000,12 @@ trackEvent("speaking_completed", {
                             : "border-slate-200"
                   }`}
                 >
-                  <img
+                  <Image
                     src="/images/emma/emma-hero.png"
                     alt="Емма"
-                    className="h-full w-full object-cover object-top"
+                    fill
+                    sizes="48px"
+                    className="object-cover object-top"
                   />
                 </div>
               </div>

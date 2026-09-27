@@ -53,6 +53,7 @@ function ChoiceSceneAdapter({
 }: RegisteredSceneProps) {
   return (
     <ChoiceScene
+      key={scene.id}
       scene={scene}
       loading={loading}
       onSubmit={onSubmit}
@@ -67,6 +68,7 @@ function InputSceneAdapter({
 }: RegisteredSceneProps) {
   return (
     <InputScene
+      key={scene.id}
       scene={scene}
       loading={loading}
       onSubmit={onSubmit}
@@ -81,6 +83,7 @@ function TranslateSceneAdapter({
 }: RegisteredSceneProps) {
   return (
     <TranslateScene
+      key={scene.id}
       scene={scene}
       loading={loading}
       onSubmit={onSubmit}
@@ -95,6 +98,7 @@ function VoiceSceneAdapter({
 }: RegisteredSceneProps) {
   return (
     <VoiceScene
+      key={scene.id}
       scene={scene}
       loading={loading}
       onSubmit={onSubmit}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   ArrowRight,
@@ -79,21 +79,18 @@ export function InputScene({
   const recorder =
     useVoiceRecorder();
 
+  const cancelRecording =
+    recorder.cancel;
+
   const sceneIdRef =
-    useRef(scene.id);
+    useRef<string | null>(scene.id);
 
   useEffect(() => {
-    sceneIdRef.current =
-      scene.id;
-
-    setValue("");
-
-    recorder.cancel();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    scene.id,
-  ]);
+    return () => {
+      sceneIdRef.current = null;
+      cancelRecording();
+    };
+  }, [cancelRecording]);
 
   const trimmed =
     value.trim();

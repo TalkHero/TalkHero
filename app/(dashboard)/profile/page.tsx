@@ -61,6 +61,29 @@ activity: {
 
 };
 
+async function fetchProfileData(): Promise<ProfileDashboardData> {
+  const response = await fetch("/api/profile", {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  const responseData: unknown = await response.json();
+
+  if (!response.ok) {
+    const message =
+      typeof responseData === "object" &&
+      responseData !== null &&
+      "error" in responseData &&
+      typeof responseData.error === "string"
+        ? responseData.error
+        : "Не вдалося завантажити профіль.";
+
+    throw new Error(message);
+  }
+
+  return responseData as ProfileDashboardData;
+}
+
 export default function ProfilePage() {
   const [data, setData] = useState<ProfileDashboardData | null>(null);
 
@@ -72,26 +95,9 @@ export default function ProfilePage() {
     setErrorMessage(null);
 
     try {
-      const response = await fetch("/api/profile", {
-        method: "GET",
-        cache: "no-store",
-      });
+      const profileData = await fetchProfileData();
 
-      const responseData: unknown = await response.json();
-
-      if (!response.ok) {
-        const message =
-          typeof responseData === "object" &&
-          responseData !== null &&
-          "error" in responseData &&
-          typeof responseData.error === "string"
-            ? responseData.error
-            : "Не вдалося завантажити профіль.";
-
-        throw new Error(message);
-      }
-
-      setData(responseData as ProfileDashboardData);
+      setData(profileData);
     } catch (error) {
       console.error("LOAD PROFILE ERROR:", error);
 
@@ -104,7 +110,36 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
-    void loadProfile();
+    let cancelled = false;
+
+    void fetchProfileData()
+      .then((profileData) => {
+        if (!cancelled) {
+          setData(profileData);
+        }
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        console.error("LOAD PROFILE ERROR:", error);
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Не вдалося завантажити профіль.",
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {

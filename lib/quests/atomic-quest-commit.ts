@@ -79,10 +79,9 @@ function getDatabaseErrorCode(message: string): string | null {
 function stripCommitToken(
   value: Record<string, unknown>,
 ): SubmitQuestSceneResult {
-  const {
-    [COMMIT_TOKEN_KEY]: _commitToken,
-    ...publicResult
-  } = value;
+  const publicResult = { ...value };
+
+  delete publicResult[COMMIT_TOKEN_KEY];
 
   return publicResult as unknown as SubmitQuestSceneResult;
 }

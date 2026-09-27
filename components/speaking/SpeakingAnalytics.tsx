@@ -214,7 +214,7 @@ function AnalyticsEmptyState() {
       </div>
 
       <h3 className="mt-4 text-lg font-bold text-slate-950 dark:text-white">
-        Аналітика з'явиться тут
+        Аналітика з’явиться тут
       </h3>
 
       <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">

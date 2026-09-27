@@ -11,5 +11,5 @@ export default async function AssessmentPage({
 }: AssessmentPageProps) {
   const { slug } = await params;
 
-  return <AssessmentRunner slug={slug} />;
+  return <AssessmentRunner key={slug} slug={slug} />;
 }

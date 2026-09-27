@@ -357,10 +357,11 @@ export async function loadCompletedQuestSubmission({
     typeof data.result === "object" &&
     !Array.isArray(data.result)
   ) {
-    const {
-      [COMMIT_TOKEN_KEY]: _commitToken,
-      ...publicResult
-    } = data.result as Record<string, unknown>;
+    const publicResult = {
+      ...(data.result as Record<string, unknown>),
+    };
+
+    delete publicResult[COMMIT_TOKEN_KEY];
 
     return publicResult as unknown as SubmitQuestSceneResult;
   }

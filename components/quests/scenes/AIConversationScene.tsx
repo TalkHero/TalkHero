@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type {
   KeyboardEvent,
@@ -167,7 +167,7 @@ export function AIConversationScene({
     useVoiceRecorder();
 
   const sceneIdRef =
-    useRef(scene.id);
+    useRef<string | null>(scene.id);
 
   const currentTurn =
     getNumber(
@@ -223,18 +223,15 @@ export function AIConversationScene({
         ),
     });
 
+  const cancelRecording =
+    recorder.cancel;
+
   useEffect(() => {
-    sceneIdRef.current =
-      scene.id;
-
-    setValue("");
-    recorder.cancel();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    scene.id,
-    currentTurn,
-  ]);
+    return () => {
+      sceneIdRef.current = null;
+      cancelRecording();
+    };
+  }, [cancelRecording]);
 
   const trimmed =
     value.trim();

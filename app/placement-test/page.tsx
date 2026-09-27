@@ -361,9 +361,6 @@ export default function PlacementTestPage() {
   useRef(false);
 const trackedCompletionRef =
   useRef(false);
-  useEffect(() => {
-    setAnswer("");
-  }, [question?.id]);
 
   useEffect(() => {
   if (

@@ -20,35 +20,6 @@ const MAX_HISTORY_IN_PROMPT = 100;
 const DEFAULT_MODEL =
   process.env.OPENAI_PLACEMENT_MODEL ?? "gpt-5.6";
 
-const CEFR_LEVELS = [
-  "A1",
-  "A2",
-  "B1",
-  "B2",
-  "C1",
-  "C2",
-] as const;
-
-const PLACEMENT_SKILLS = [
-  "personal_information",
-  "daily_life",
-  "present_simple",
-  "past_simple",
-  "future_forms",
-  "description",
-  "experience",
-  "opinion",
-  "comparison",
-  "argumentation",
-  "hypothetical_reasoning",
-  "abstract_discussion",
-] as const;
-
-const ANSWER_LENGTHS = [
-  "short",
-  "medium",
-  "long",
-] as const;
 
 const PlacementQuestionSchema = z.object({
   question: z

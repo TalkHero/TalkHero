@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -161,7 +161,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           </p>
 
           <div className="mt-6">
-            <CampaignMissionList campaign={adventureCampaign} />
+            <CampaignMissionList
+              key={adventureCampaign.progressCampaignSlug}
+              campaign={adventureCampaign}
+            />
           </div>
         </section>
       </div>
