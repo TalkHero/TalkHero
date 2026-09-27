@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -186,7 +186,7 @@ export function AppShell({
         <main
           className={cn(
             "min-h-0 flex-1",
-            isSpeakingPage ? "overflow-hidden" : "overflow-y-auto",
+            "overflow-y-auto",
           )}
         >
           <div
