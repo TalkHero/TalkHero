@@ -6,6 +6,8 @@ import {
   RotateCcw,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+
 import {
   useEffect,
   useRef,
@@ -279,6 +281,7 @@ export function QuestPlayer({
   questSlug,
   onComplete,
 }: QuestPlayerProps) {
+  const router = useRouter();
   const quest = useQuest();
 
   const {
@@ -424,6 +427,7 @@ export function QuestPlayer({
       },
     );
 
+    router.refresh();
     onComplete?.();
   }, [
     quest.completed,
@@ -434,6 +438,7 @@ export function QuestPlayer({
     campaignSlug,
     episodeSlug,
     questSlug,
+    router,
     onComplete,
   ]);
 
