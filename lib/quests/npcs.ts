@@ -1,4 +1,4 @@
-﻿export type NPCEmotion =
+export type NPCEmotion =
   | "happy"
   | "neutral"
   | "thinking"
@@ -785,6 +785,17 @@ export const NPCS: Record<string, NPC> = {
     accent: "british",
     voiceId: "shimmer",
     theme: "rose",
+  },
+
+  oliver: {
+    id: "oliver",
+    name: "Oliver",
+    role: "Station Assistant",
+    avatar: "/images/characters/oliver/oliver.png",
+    emotion: "happy",
+    accent: "british",
+    voiceId: "cedar",
+    theme: "blue",
   },
 
   mia: {
