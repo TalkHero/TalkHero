@@ -29,7 +29,7 @@ export default async function DashboardLayout({
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("full_name, english_level, xp, streak")
+    .select("full_name, english_level, xp, current_streak")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -48,7 +48,7 @@ export default async function DashboardLayout({
       fullName={fullName}
       englishLevel={profile?.english_level ?? "A1"}
       xp={profile?.xp ?? 0}
-      streak={profile?.streak ?? 0}
+      streak={profile?.current_streak ?? 0}
     >
       {children}
     </AppShell>

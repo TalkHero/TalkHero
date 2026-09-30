@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { API_ERRORS } from "@/lib/i18n/errors";
 import { createClient } from "@/lib/supabase/server";
@@ -187,7 +187,7 @@ export async function GET() {
     ] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, english_level, xp, level, streak")
+        .select("full_name, english_level, xp, level, current_streak")
         .eq("id", user.id)
         .maybeSingle(),
 
@@ -644,7 +644,7 @@ export async function GET() {
 
         level: profileResult.data?.level ?? 1,
 
-        streak: profileResult.data?.streak ?? 0,
+        streak: profileResult.data?.current_streak ?? 0,
       },
 
       stats: {
