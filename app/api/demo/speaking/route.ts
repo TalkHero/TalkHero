@@ -2,6 +2,8 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { consumeAnonymousApiRateLimit } from "@/lib/security/anonymous-api-rate-limit";
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -99,6 +101,28 @@ function isDemoResponse(value: unknown): value is DemoResponse {
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = await consumeAnonymousApiRateLimit(request, {
+      bucket: "demo-speaking",
+      limit: 6,
+      windowSeconds: 15 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "Ліміт демо тимчасово вичерпано. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
+
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         {

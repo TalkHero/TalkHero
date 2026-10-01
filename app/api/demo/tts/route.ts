@@ -3,6 +3,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { consumeAnonymousApiRateLimit } from "@/lib/security/anonymous-api-rate-limit";
+
 const ALLOWED_VOICES = [
   "alloy",
   "ash",
@@ -27,6 +29,28 @@ const RequestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = await consumeAnonymousApiRateLimit(request, {
+      bucket: "demo-tts",
+      limit: 10,
+      windowSeconds: 15 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "Ліміт озвучення демо тимчасово вичерпано. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
+
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {

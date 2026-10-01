@@ -2,6 +2,8 @@
 
 import { NextResponse } from "next/server";
 
+import { consumeAnonymousApiRateLimit } from "@/lib/security/anonymous-api-rate-limit";
+
 const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
 
 const ALLOWED_AUDIO_TYPES = new Set([
@@ -15,6 +17,28 @@ const ALLOWED_AUDIO_TYPES = new Set([
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = await consumeAnonymousApiRateLimit(request, {
+      bucket: "demo-stt",
+      limit: 6,
+      windowSeconds: 15 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "Ліміт голосового демо тимчасово вичерпано. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
+
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
