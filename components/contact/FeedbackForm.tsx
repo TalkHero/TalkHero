@@ -1,7 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { CheckCircle2, ImagePlus, Loader2, Send, X } from "lucide-react";
+
+import { createClient } from "@/lib/supabase/client";
 
 type FeedbackResponse = {
   success?: boolean;
@@ -16,6 +18,29 @@ export function FeedbackForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    void supabase.auth.getUser().then(({ data }) => {
+      setIsAuthenticated(Boolean(data.user));
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(Boolean(session?.user));
+
+      if (!session?.user) {
+        setFiles([]);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   function removeFile(index: number) {
     setFiles((current) =>
@@ -177,41 +202,67 @@ export function FeedbackForm() {
           Скріншоти або фото
         </span>
 
-        <label
-          htmlFor="attachments"
-          className="mt-2 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-6 text-center transition hover:border-indigo-400 hover:bg-indigo-50/40"
-        >
-          <ImagePlus className="h-7 w-7 text-indigo-600" />
+        {isAuthenticated ? (
+          <>
+            <label
+              htmlFor="attachments"
+              className="mt-2 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-6 text-center transition hover:border-indigo-400 hover:bg-indigo-50/40"
+            >
+              <ImagePlus className="h-7 w-7 text-indigo-600" />
 
-          <span className="mt-3 font-semibold text-slate-800">
-            Додати зображення
-          </span>
+              <span className="mt-3 font-semibold text-slate-800">
+                Додати зображення
+              </span>
 
-          <span className="mt-1 text-sm text-slate-500">
-            PNG, JPG або WEBP · до 5 MB · максимум {MAX_ATTACHMENTS}
-          </span>
-        </label>
+              <span className="mt-1 text-sm text-slate-500">
+                PNG, JPG або WEBP · до 5 MB · максимум {MAX_ATTACHMENTS}
+              </span>
+            </label>
 
-        <input
-          id="attachments"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          multiple
-          className="sr-only"
-          onChange={(event) => {
-            const selected = Array.from(event.target.files ?? []);
+            <input
+              id="attachments"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              multiple
+              className="sr-only"
+              onChange={(event) => {
+                const selected = Array.from(event.target.files ?? []);
 
-            setError(null);
+                setError(null);
 
-            if (selected.length > MAX_ATTACHMENTS) {
-              setError(`Можна додати не більше ${MAX_ATTACHMENTS} зображень.`);
-              event.target.value = "";
-              return;
-            }
+                if (selected.length > MAX_ATTACHMENTS) {
+                  setError(
+                    `Можна додати не більше ${MAX_ATTACHMENTS} зображень.`,
+                  );
+                  event.target.value = "";
+                  return;
+                }
 
-            setFiles(selected);
-          }}
-        />
+                setFiles(selected);
+              }}
+            />
+          </>
+        ) : (
+          <div className="mt-2 flex min-h-32 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-6 text-center">
+            <ImagePlus className="h-7 w-7 text-slate-400" />
+
+            <span className="mt-3 font-semibold text-slate-700">
+              Вкладення доступні після входу
+            </span>
+
+            <span className="mt-1 max-w-md text-sm leading-6 text-slate-500">
+              Анонімне текстове звернення можна надіслати без входу.
+              Щоб прикріпити скріншот або фото,{" "}
+              <a
+                href="/login"
+                className="font-semibold text-indigo-600 hover:text-indigo-700"
+              >
+                увійдіть до облікового запису
+              </a>
+              .
+            </span>
+          </div>
+        )}
 
         {files.length > 0 && (
           <div className="mt-4 grid gap-2">

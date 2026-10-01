@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { consumeAnonymousApiRateLimit } from "@/lib/security/anonymous-api-rate-limit";
+import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -38,6 +40,39 @@ function getFileExtension(file: File): string {
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const rateLimit = user
+      ? await consumeApiRateLimit(supabase, {
+          bucket: "feedback",
+          limit: 5,
+          windowSeconds: 15 * 60,
+        })
+      : await consumeAnonymousApiRateLimit(request, {
+          bucket: "feedback",
+          limit: 3,
+          windowSeconds: 60 * 60,
+        });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Забагато звернень. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
+
     const formData = await request.formData();
 
     const nameValue = formData.get("name");
@@ -127,6 +162,21 @@ export async function POST(request: Request) {
         (value): value is File => value instanceof File && value.size > 0,
       );
 
+    if (!user && attachments.length > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Щоб додати скріншоти або фото, увійдіть до облікового запису.",
+        },
+        {
+          status: 401,
+          headers: {
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
+
     if (attachments.length > MAX_ATTACHMENTS) {
       return NextResponse.json(
         {
@@ -161,12 +211,6 @@ export async function POST(request: Request) {
         );
       }
     }
-
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
 
     const admin = createAdminClient();
 

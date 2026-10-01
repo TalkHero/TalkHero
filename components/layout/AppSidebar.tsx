@@ -88,7 +88,7 @@ const ACCOUNT_NAVIGATION: NavigationItem[] = [
   },
   {
     href: "/contact",
-    label: "Зворотний зв’язок",
+    label: "Контакти",
     icon: MessageSquareMore,
   },
 ];
