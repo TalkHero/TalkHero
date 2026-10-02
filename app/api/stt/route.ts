@@ -2,6 +2,7 @@
 
 import { NextResponse } from "next/server";
 
+import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_AUDIO_BYTES = 8 * 1024 * 1024;
@@ -30,6 +31,27 @@ export async function POST(request: Request) {
           error: "Потрібно увійти до облікового запису.",
         },
         { status: 401 },
+      );
+    }
+
+    const rateLimit = await consumeApiRateLimit(supabase, {
+      bucket: "stt",
+      limit: 40,
+      windowSeconds: 10 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Забагато запитів на розпізнавання голосу. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
       );
     }
 

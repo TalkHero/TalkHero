@@ -12,12 +12,15 @@ import {
 import { getCurrentLesson } from "@/lib/ai/curriculum/get-current-lesson";
 import { API_ERRORS, UI_ERRORS } from "@/lib/i18n/errors";
 import { awardXp } from "@/lib/progress/awardXp";
+import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { analyzeAndSaveUserMemories } from "@/lib/ai/user-memory/analyze-and-save-memories";
 import { buildSpeakingPrompt } from "@/lib/ai/tutor/build-speaking-prompt";
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const MAX_CHAT_MESSAGE_LENGTH = 4000;
 
 type ChatRequest = {
   message?: string;
@@ -147,6 +150,27 @@ export async function POST(request: Request) {
       );
     }
 
+    const rateLimit = await consumeApiRateLimit(supabase, {
+      bucket: "chat",
+      limit: 30,
+      windowSeconds: 10 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Забагато повідомлень. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
+
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("full_name, native_language, target_language, english_level")
@@ -172,7 +196,11 @@ export async function POST(request: Request) {
     const targetLanguage = getLanguageName(profile?.target_language, "English");
 
     const body = (await request.json()) as ChatRequest;
-    const message = body.message?.trim();
+
+    const message =
+      typeof body.message === "string"
+        ? body.message.trim()
+        : "";
 
     const mode = body.mode === "speaking" ? "speaking" : "chat";
 
@@ -180,6 +208,17 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: API_ERRORS.messageRequired,
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (message.length > MAX_CHAT_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        {
+          error: "Повідомлення не може містити більше ніж 4000 символів.",
         },
         {
           status: 400,

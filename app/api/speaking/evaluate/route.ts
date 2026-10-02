@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { API_ERRORS } from "@/lib/i18n/errors";
 
@@ -234,6 +235,26 @@ export async function POST(request: Request) {
       );
     }
 
+    const rateLimit = await consumeApiRateLimit(supabase, {
+      bucket: "speaking-evaluate",
+      limit: 30,
+      windowSeconds: 10 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Забагато запитів на оцінювання. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
     const requestBody: unknown = await request.json();
 
     const validationResult =

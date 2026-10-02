@@ -11,6 +11,7 @@ import type {
   PlacementSkill,
 } from "@/lib/ai/placement-test";
 import { API_ERRORS } from "@/lib/i18n/errors";
+import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_DATABASE_INSERT_ATTEMPTS = 4;
@@ -478,6 +479,26 @@ export async function POST() {
       );
     }
 
+    const rateLimit = await consumeApiRateLimit(supabase, {
+      bucket: "placement-start",
+      limit: 10,
+      windowSeconds: 10 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Забагато запитів на запуск тесту. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
     const session =
       await getOrCreateActiveSession(
         supabase,

@@ -13,6 +13,7 @@ import type {
   PlacementSkill,
 } from "@/lib/ai/placement-test";
 import { API_ERRORS } from "@/lib/i18n/errors";
+import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import {
   decideAdaptiveProgress,
@@ -723,6 +724,26 @@ export async function POST(request: Request) {
       );
     }
 
+    const rateLimit = await consumeApiRateLimit(supabase, {
+      bucket: "placement-answer",
+      limit: 20,
+      windowSeconds: 30 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Забагато відповідей за короткий час. Спробуйте трохи пізніше.",
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
     let requestBody: unknown;
 
     try {
