@@ -53,7 +53,17 @@ export async function POST(request: Request) {
         : 409;
 
       return NextResponse.json(
-        { error: error.message, code: error.code, details: error.details },
+        {
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Не вдалося запустити квест.",
+          code: error.code,
+          details:
+            process.env.NODE_ENV === "development"
+              ? error.details
+              : undefined,
+        },
         { status },
       );
     }

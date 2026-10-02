@@ -96,11 +96,15 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            error.message,
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Не вдалося надіслати відповідь.",
           code:
             error.code,
           details:
-            error.details,
+            process.env.NODE_ENV === "development"
+              ? error.details
+              : undefined,
         },
         {
           status,
