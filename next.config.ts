@@ -1,5 +1,22 @@
 ﻿import type { NextConfig } from "next";
 
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self' https://www.facebook.com",
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://www.googletagmanager.com https://*.google-analytics.com https://www.google.com https://www.facebook.com",
+  "font-src 'self' data:",
+  "connect-src 'self' https://njyltfddwklkbmfehxvm.supabase.co wss://njyltfddwklkbmfehxvm.supabase.co https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.facebook.com",
+  "media-src 'self' blob: https://njyltfddwklkbmfehxvm.supabase.co",
+  "frame-src https://www.googletagmanager.com https://www.facebook.com",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+].join("; ");
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -25,6 +42,10 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "microphone=(self), camera=(), geolocation=()",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: contentSecurityPolicy,
           },
         ],
       },
