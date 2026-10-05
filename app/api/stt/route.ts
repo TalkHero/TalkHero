@@ -2,10 +2,16 @@
 
 import { NextResponse } from "next/server";
 
+import {
+  InvalidFormDataBodyError,
+  readFormDataWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_AUDIO_BYTES = 8 * 1024 * 1024;
+const MAX_STT_BODY_BYTES = 9 * 1024 * 1024;
 
 const ALLOWED_AUDIO_TYPES = new Set([
   "audio/webm",
@@ -68,7 +74,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const incoming = await request.formData();
+    const incoming =
+      await readFormDataWithLimit(
+        request,
+        MAX_STT_BODY_BYTES,
+      );
+
     const audio = incoming.get("audio");
 
     if (!(audio instanceof File)) {
@@ -196,6 +207,36 @@ openAIForm.append(
       text,
     });
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Аудіозапис або запит занадто великий.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidFormDataBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Некоректні дані аудіозапису.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     console.error("ПОМИЛКА МАРШРУТУ STT:", error);
 
     return NextResponse.json(

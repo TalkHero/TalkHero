@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 
+import {
+  InvalidFormDataBodyError,
+  readFormDataWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { consumeAnonymousApiRateLimit } from "@/lib/security/anonymous-api-rate-limit";
 import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -11,6 +16,12 @@ const ALLOWED_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
+
+const MAX_ANONYMOUS_FEEDBACK_BODY_BYTES =
+  64 * 1024;
+
+const MAX_AUTH_FEEDBACK_BODY_BYTES =
+  26 * 1024 * 1024;
 
 function sanitizeFileName(fileName: string): string {
   return fileName
@@ -73,7 +84,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const formData = await request.formData();
+    const maxBodyBytes = user
+      ? MAX_AUTH_FEEDBACK_BODY_BYTES
+      : MAX_ANONYMOUS_FEEDBACK_BODY_BYTES;
+
+    const formData =
+      await readFormDataWithLimit(
+        request,
+        maxBodyBytes,
+      );
 
     const nameValue = formData.get("name");
     const emailValue = formData.get("email");
@@ -305,6 +324,36 @@ export async function POST(request: Request) {
       },
     );
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Звернення занадто велике.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidFormDataBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Некоректні дані звернення.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     console.error("FEEDBACK API ERROR:", error);
 
     return NextResponse.json(

@@ -2,9 +2,15 @@
 
 import { NextResponse } from "next/server";
 
+import {
+  InvalidFormDataBodyError,
+  readFormDataWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { consumeAnonymousApiRateLimit } from "@/lib/security/anonymous-api-rate-limit";
 
 const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
+const MAX_DEMO_STT_BODY_BYTES = 6 * 1024 * 1024;
 
 const ALLOWED_AUDIO_TYPES = new Set([
   "audio/webm",
@@ -52,7 +58,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const formData = await request.formData();
+    const formData =
+      await readFormDataWithLimit(
+        request,
+        MAX_DEMO_STT_BODY_BYTES,
+      );
+
     const audio = formData.get("audio");
 
     if (!(audio instanceof File)) {
@@ -182,6 +193,36 @@ export async function POST(request: Request) {
       text,
     });
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Аудіозапис або запит занадто великий.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidFormDataBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Некоректні дані аудіозапису.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     console.error("DEMO STT ROUTE ERROR:", error);
 
     return NextResponse.json(
