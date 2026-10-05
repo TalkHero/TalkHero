@@ -2,10 +2,17 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
+import {
   isQuestEngineError,
   startQuest,
 } from "@/lib/quests";
 import { createClient } from "@/lib/supabase/server";
+
+const MAX_START_BODY_BYTES = 4 * 1024;
 
 const StartQuestSchema = z.object({
   campaignSlug: z.string().trim().min(1).max(120),
@@ -15,7 +22,6 @@ const StartQuestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const body = StartQuestSchema.parse(await request.json());
     const supabase = await createClient();
     const {
       data: { user },
@@ -29,6 +35,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const requestBody =
+      await readJsonBodyWithLimit(
+        request,
+        MAX_START_BODY_BYTES,
+      );
+
+    const body =
+      StartQuestSchema.parse(requestBody);
+
     const result = await startQuest({
       userId: user.id,
       ...body,
@@ -36,6 +51,32 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Quest start request is too large",
+        },
+        { status: 413 },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidJsonBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Invalid quest start request",
+        },
+        { status: 400 },
+      );
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid quest start request", issues: error.issues },

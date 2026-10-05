@@ -2,17 +2,37 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
+import {
   isQuestEngineError,
   submitQuestScene,
 } from "@/lib/quests";
 import { createClient } from "@/lib/supabase/server";
+
+const MAX_SUBMIT_BODY_BYTES = 16 * 1024;
+const MAX_USER_INPUT_LENGTH = 2000;
 
 const SubmitQuestSceneSchema =
   z.object({
     runId: z.string().uuid(),
     sceneId: z.string().uuid(),
     submissionId: z.string().uuid(),
-    userInput: z.unknown(),
+    userInput:
+      z
+        .unknown()
+        .refine(
+          (value) =>
+            typeof value !== "string" ||
+            value.length <=
+              MAX_USER_INPUT_LENGTH,
+          {
+            message:
+              "Quest answer is too long.",
+          },
+        ),
     responseTimeMs:
       z
         .number()
@@ -26,11 +46,6 @@ export async function POST(
   request: Request,
 ) {
   try {
-    const body =
-      SubmitQuestSceneSchema.parse(
-        await request.json(),
-      );
-
     const supabase =
       await createClient();
 
@@ -52,6 +67,17 @@ export async function POST(
       );
     }
 
+    const requestBody =
+      await readJsonBodyWithLimit(
+        request,
+        MAX_SUBMIT_BODY_BYTES,
+      );
+
+    const body =
+      SubmitQuestSceneSchema.parse(
+        requestBody,
+      );
+
     const result =
       await submitQuestScene({
         userId: user.id,
@@ -68,6 +94,36 @@ export async function POST(
       result,
     );
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Запит занадто великий.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidJsonBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Некоректні дані відповіді.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     if (
       error instanceof z.ZodError
     ) {
