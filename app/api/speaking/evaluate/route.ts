@@ -1,6 +1,12 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { API_ERRORS } from "@/lib/i18n/errors";
@@ -25,6 +31,9 @@ const VALID_LEVELS: EnglishLevel[] = [
   "C1",
   "C2",
 ];
+
+const MAX_SPEAKING_EVALUATE_BODY_BYTES =
+  48 * 1024;
 
 const evaluateRequestSchema = z.object({
   transcript: z
@@ -255,7 +264,11 @@ export async function POST(request: Request) {
         },
       );
     }
-    const requestBody: unknown = await request.json();
+    const requestBody =
+      await readJsonBodyWithLimit(
+        request,
+        MAX_SPEAKING_EVALUATE_BODY_BYTES,
+      );
 
     const validationResult =
       evaluateRequestSchema.safeParse(requestBody);
@@ -472,6 +485,36 @@ export async function POST(request: Request) {
       englishLevel,
     });
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Запит на оцінювання занадто великий.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidJsonBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            API_ERRORS.invalidEvaluationData,
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     console.error(
       "SPEAKING EVALUATION ERROR:",
       error,

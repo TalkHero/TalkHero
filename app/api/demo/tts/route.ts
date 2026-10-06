@@ -3,6 +3,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { consumeAnonymousApiRateLimit } from "@/lib/security/anonymous-api-rate-limit";
 
 const ALLOWED_VOICES = [
@@ -20,6 +25,8 @@ const ALLOWED_VOICES = [
   "marin",
   "cedar",
 ] as const;
+
+const MAX_DEMO_TTS_BODY_BYTES = 16 * 1024;
 
 const RequestSchema = z.object({
   text: z.string().trim().min(1).max(600),
@@ -64,7 +71,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const payload = RequestSchema.parse(await request.json());
+    const requestBody =
+      await readJsonBodyWithLimit(
+        request,
+        MAX_DEMO_TTS_BODY_BYTES,
+      );
+
+    const payload =
+      RequestSchema.parse(requestBody);
 
     const response = await fetch(
       "https://api.openai.com/v1/audio/speech",
@@ -129,6 +143,34 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error: "Запит озвучення занадто великий.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidJsonBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error: "Некоректні дані для озвучення.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {

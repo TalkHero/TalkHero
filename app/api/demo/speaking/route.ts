@@ -2,6 +2,11 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { consumeAnonymousApiRateLimit } from "@/lib/security/anonymous-api-rate-limit";
 
 const openai = new OpenAI({
@@ -9,6 +14,7 @@ const openai = new OpenAI({
 });
 
 const MAX_DEMO_MESSAGES = 4;
+const MAX_DEMO_SPEAKING_BODY_BYTES = 48 * 1024;
 
 const demoMessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -134,7 +140,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const requestBody: unknown = await request.json();
+    const requestBody =
+      await readJsonBodyWithLimit(
+        request,
+        MAX_DEMO_SPEAKING_BODY_BYTES,
+      );
 
     const validationResult = requestSchema.safeParse(requestBody);
 
@@ -191,6 +201,34 @@ export async function POST(request: Request) {
       ...parsedResponse,
     });
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error: "Запит демо занадто великий.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidJsonBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error: "Некоректний запит.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     console.error("DEMO SPEAKING ERROR:", error);
 
     return NextResponse.json(

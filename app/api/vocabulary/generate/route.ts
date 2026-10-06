@@ -1,6 +1,12 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { API_ERRORS } from "@/lib/i18n/errors";
@@ -8,6 +14,9 @@ import { API_ERRORS } from "@/lib/i18n/errors";
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const MAX_VOCABULARY_GENERATE_BODY_BYTES =
+  16 * 1024;
 
 const generateVocabularyRequestSchema = z.object({
   word: z
@@ -159,7 +168,11 @@ export async function POST(request: Request) {
         },
       );
     }
-    const requestBody: unknown = await request.json();
+    const requestBody =
+      await readJsonBodyWithLimit(
+        request,
+        MAX_VOCABULARY_GENERATE_BODY_BYTES,
+      );
 
     const validationResult =
       generateVocabularyRequestSchema.safeParse(requestBody);
@@ -452,6 +465,36 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Запит на створення картки занадто великий.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidJsonBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            API_ERRORS.invalidRequestData,
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     console.error(
       "GENERATE VOCABULARY ERROR:",
       error,

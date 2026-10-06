@@ -10,6 +10,11 @@ import {
   loadErrors,
 } from "@/lib/ai/error-memory";
 import { getCurrentLesson } from "@/lib/ai/curriculum/get-current-lesson";
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { API_ERRORS, UI_ERRORS } from "@/lib/i18n/errors";
 import { awardXp } from "@/lib/progress/awardXp";
 import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
@@ -21,6 +26,7 @@ const openai = new OpenAI({
 });
 
 const MAX_CHAT_MESSAGE_LENGTH = 4000;
+const MAX_CHAT_BODY_BYTES = 32 * 1024;
 
 type ChatRequest = {
   message?: string;
@@ -195,7 +201,13 @@ export async function POST(request: Request) {
 
     const targetLanguage = getLanguageName(profile?.target_language, "English");
 
-    const body = (await request.json()) as ChatRequest;
+    const requestBody =
+      await readJsonBodyWithLimit(
+        request,
+        MAX_CHAT_BODY_BYTES,
+      );
+
+    const body = requestBody as ChatRequest;
 
     const message =
       typeof body.message === "string"
@@ -641,6 +653,34 @@ const systemPrompt = [
       },
     });
   } catch (error) {
+    if (
+      error instanceof
+      RequestBodyTooLargeError
+    ) {
+      return NextResponse.json(
+        {
+          error: "Запит чату занадто великий.",
+        },
+        {
+          status: 413,
+        },
+      );
+    }
+
+    if (
+      error instanceof
+      InvalidJsonBodyError
+    ) {
+      return NextResponse.json(
+        {
+          error: "Некоректні дані запиту.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     console.error("CHAT API ERROR:", error);
 
     return NextResponse.json(
