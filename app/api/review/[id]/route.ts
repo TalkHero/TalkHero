@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { createClient } from "@/lib/supabase/server";
 import { API_ERRORS } from "@/lib/i18n/errors";
 
@@ -8,6 +14,8 @@ type RouteContext = {
     id: string;
   }>;
 };
+
+const MAX_REVIEW_BODY_BYTES = 4 * 1024;
 
 const reviewSchema = z.object({
   grade: z.enum(["again", "hard", "good", "easy"]),
@@ -116,7 +124,47 @@ export async function PATCH(
 
     const { id } = await context.params;
 
-    const requestBody: unknown = await request.json();
+    let requestBody: unknown;
+
+    try {
+      requestBody =
+        await readJsonBodyWithLimit(
+          request,
+          MAX_REVIEW_BODY_BYTES,
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Запит повторення занадто великий.",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              API_ERRORS.invalidReviewGrade,
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
+    }
 
     const validationResult =
       reviewSchema.safeParse(requestBody);

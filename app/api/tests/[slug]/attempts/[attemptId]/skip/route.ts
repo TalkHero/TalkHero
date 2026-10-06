@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { API_ERRORS } from "@/lib/i18n/errors";
 import { createClient } from "@/lib/supabase/server";
 import {
   AssessmentEngineError,
   skipAssessmentQuestion,
 } from "@/lib/testing/engine";
+
+const MAX_ASSESSMENT_SKIP_BODY_BYTES =
+  4 * 1024;
 
 type RouteContext = {
   params: Promise<{
@@ -67,17 +75,42 @@ export async function POST(
 
     try {
       body =
-        (await request.json()) as SkipQuestionBody;
-    } catch {
-      return NextResponse.json(
-        {
-          error: API_ERRORS.internalServerError,
-          code: "QUESTION_NOT_FOUND",
-        },
-        {
-          status: 400,
-        },
-      );
+        (await readJsonBodyWithLimit(
+          request,
+          MAX_ASSESSMENT_SKIP_BODY_BYTES,
+        )) as SkipQuestionBody;
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Запит пропуску питання занадто великий.",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error: API_ERRORS.internalServerError,
+            code: "QUESTION_NOT_FOUND",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
     }
 
     if (

@@ -12,6 +12,11 @@ import type {
   CEFRLevel,
   PlacementSkill,
 } from "@/lib/ai/placement-test";
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { API_ERRORS } from "@/lib/i18n/errors";
 import { consumeApiRateLimit } from "@/lib/security/api-rate-limit";
 import { createClient } from "@/lib/supabase/server";
@@ -21,6 +26,8 @@ import {
 } from "@/lib/ai/placement-test/adaptive-plan";
 
 const MAX_ANSWER_LENGTH = 10_000;
+const MAX_PLACEMENT_ANSWER_BODY_BYTES =
+  64 * 1024;
 const MAX_DATABASE_INSERT_ATTEMPTS = 4;
 
 const AnswerRequestSchema = z.object({
@@ -747,16 +754,43 @@ export async function POST(request: Request) {
     let requestBody: unknown;
 
     try {
-      requestBody = await request.json();
-    } catch {
-      return NextResponse.json(
-        {
-          error: API_ERRORS.invalidRequestData,
-        },
-        {
-          status: 400,
-        },
-      );
+      requestBody =
+        await readJsonBodyWithLimit(
+          request,
+          MAX_PLACEMENT_ANSWER_BODY_BYTES,
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Відповідь занадто велика.",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              API_ERRORS.invalidRequestData,
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
     }
 
     const parsedBody =

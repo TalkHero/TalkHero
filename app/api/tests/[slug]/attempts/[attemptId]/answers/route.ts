@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { API_ERRORS } from "@/lib/i18n/errors";
 import { createClient } from "@/lib/supabase/server";
 import {
   AssessmentEngineError,
   submitAssessmentAnswer,
 } from "@/lib/testing/engine";
+
+const MAX_ASSESSMENT_ANSWER_BODY_BYTES =
+  32 * 1024;
 
 type RouteContext = {
   params: Promise<{
@@ -67,15 +75,43 @@ export async function POST(
 
     try {
       body =
-        (await request.json()) as SubmitAnswerBody;
-    } catch {
-      return NextResponse.json(
-        {
-          error: API_ERRORS.internalServerError,
-          code: "INVALID_ANSWER",
-        },
-        { status: 400 },
-      );
+        (await readJsonBodyWithLimit(
+          request,
+          MAX_ASSESSMENT_ANSWER_BODY_BYTES,
+        )) as SubmitAnswerBody;
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Відповідь тесту занадто велика.",
+            code: "INVALID_ANSWER",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error: API_ERRORS.internalServerError,
+            code: "INVALID_ANSWER",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
     }
 
     if (

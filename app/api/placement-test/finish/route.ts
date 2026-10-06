@@ -10,8 +10,16 @@ import type {
   PlacementResult,
   PlacementResultQuestion,
 } from "@/lib/ai/placement-test";
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { API_ERRORS } from "@/lib/i18n/errors";
 import { createClient } from "@/lib/supabase/server";
+
+const MAX_PLACEMENT_FINISH_BODY_BYTES =
+  4 * 1024;
 
 const FinishRequestSchema = z.object({
   sessionId: z.string().uuid(),
@@ -828,18 +836,43 @@ export async function POST(
 
     try {
       requestBody =
-        await request.json();
-    } catch {
-      return NextResponse.json(
-        {
-          error:
-            API_ERRORS
-              .invalidRequestData,
-        },
-        {
-          status: 400,
-        },
-      );
+        await readJsonBodyWithLimit(
+          request,
+          MAX_PLACEMENT_FINISH_BODY_BYTES,
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Запит завершення тесту занадто великий.",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              API_ERRORS
+                .invalidRequestData,
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
     }
 
     const parsedBody =
