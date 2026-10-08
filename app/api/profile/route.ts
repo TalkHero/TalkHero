@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { createClient } from "@/lib/supabase/server";
 import { API_ERRORS } from "@/lib/i18n/errors";
 const ACTIVITY_DAYS_COUNT = 91;
+const MAX_PROFILE_UPDATE_BODY_BYTES =
+  4 * 1024;
 
 const updateProfileSchema = z.object({
   fullName: z
@@ -498,8 +505,47 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const requestBody: unknown =
-      await request.json();
+    let requestBody: unknown;
+
+    try {
+      requestBody =
+        await readJsonBodyWithLimit(
+          request,
+          MAX_PROFILE_UPDATE_BODY_BYTES,
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Запит оновлення профілю занадто великий.",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              API_ERRORS.invalidProfileData,
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
+    }
 
     const validationResult =
       updateProfileSchema.safeParse(requestBody);

@@ -1,4 +1,10 @@
 import { NextResponse } from "next/server";
+
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { createClient } from "@/lib/supabase/server";
 import { API_ERRORS } from "@/lib/i18n/errors";
 
@@ -7,6 +13,9 @@ type RouteContext = {
     id: string;
   }>;
 };
+
+const MAX_CONVERSATION_RENAME_BODY_BYTES =
+  4 * 1024;
 
 type RenameConversationRequest = {
   title?: string;
@@ -43,12 +52,43 @@ export async function PATCH(
     let body: RenameConversationRequest;
 
     try {
-      body = (await request.json()) as RenameConversationRequest;
-    } catch {
-      return NextResponse.json(
-        { error: "Некоректні дані запиту." },
-        { status: 400 },
-      );
+      body =
+        (await readJsonBodyWithLimit(
+          request,
+          MAX_CONVERSATION_RENAME_BODY_BYTES,
+        )) as RenameConversationRequest;
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Запит перейменування розмови занадто великий.",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Некоректні дані запиту.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
     }
 
     const title = body.title

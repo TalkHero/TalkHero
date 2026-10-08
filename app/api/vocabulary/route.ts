@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { createClient } from "@/lib/supabase/server";
 import { API_ERRORS } from "@/lib/i18n/errors";
+
+const MAX_VOCABULARY_CREATE_BODY_BYTES =
+  16 * 1024;
 
 const createVocabularySchema = z.object({
   word: z
@@ -103,7 +112,47 @@ export async function POST(request: Request) {
       );
     }
 
-    const requestBody: unknown = await request.json();
+    let requestBody: unknown;
+
+    try {
+      requestBody =
+        await readJsonBodyWithLimit(
+          request,
+          MAX_VOCABULARY_CREATE_BODY_BYTES,
+        );
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Запит додавання слова занадто великий.",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              API_ERRORS.invalidVocabularyData,
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
+    }
 
     const validationResult =
       createVocabularySchema.safeParse(requestBody);

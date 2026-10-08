@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
+
+import {
+  InvalidJsonBodyError,
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/api/request-body";
 import { createClient } from "@/lib/supabase/server";
 import { API_ERRORS } from "@/lib/i18n/errors";
+
+const MAX_ENGLISH_LEVEL_BODY_BYTES =
+  4 * 1024;
 
 const VALID_LEVELS = [
   "A1",
@@ -42,8 +51,47 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const body =
-      (await request.json()) as UpdateEnglishLevelRequest;
+    let body: UpdateEnglishLevelRequest;
+
+    try {
+      body =
+        (await readJsonBodyWithLimit(
+          request,
+          MAX_ENGLISH_LEVEL_BODY_BYTES,
+        )) as UpdateEnglishLevelRequest;
+    } catch (error) {
+      if (
+        error instanceof
+        RequestBodyTooLargeError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Запит оновлення рівня англійської занадто великий.",
+          },
+          {
+            status: 413,
+          },
+        );
+      }
+
+      if (
+        error instanceof
+        InvalidJsonBodyError
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              API_ERRORS.invalidEnglishLevel,
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      throw error;
+    }
 
     if (!isEnglishLevel(body.englishLevel)) {
       return NextResponse.json(
