@@ -22,19 +22,10 @@ type AnonymousRateLimitRpcRow = {
 
 function getClientIp(request: Request): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
+  const clientIp = forwardedFor?.split(",")[0]?.trim();
 
-  const candidates = [
-    request.headers.get("cf-connecting-ip"),
-    request.headers.get("x-real-ip"),
-    forwardedFor?.split(",")[0] ?? null,
-  ];
-
-  for (const candidate of candidates) {
-    const value = candidate?.trim();
-
-    if (value && isIP(value)) {
-      return value;
-    }
+  if (clientIp && isIP(clientIp)) {
+    return clientIp;
   }
 
   return "unknown";
