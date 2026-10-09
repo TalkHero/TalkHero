@@ -1,4 +1,9 @@
-﻿import type { NextConfig } from "next";
+import type { NextConfig } from "next";
+
+const scriptSource =
+  process.env.NODE_ENV === "development"
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net"
+    : "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net";
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -6,7 +11,7 @@ const contentSecurityPolicy = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self' https://www.facebook.com",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net",
+  scriptSource,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://www.googletagmanager.com https://*.google-analytics.com https://www.google.com https://www.google.com.ua https://www.facebook.com",
   "font-src 'self' data:",
