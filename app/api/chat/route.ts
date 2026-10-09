@@ -550,65 +550,67 @@ const systemPrompt = [
 
           let progress = null;
           let xpAwarded = 0;
-
-          try {
-            progress = await awardXp({
-              userId: user.id,
-              amount: 5,
-            });
-
-            xpAwarded += 5;
-          } catch (progressError) {
-            console.error("CHAT XP ERROR:", progressError);
-          }
-
           let streak = null;
-
-          try {
-            const { data: streakData, error: streakError } = await supabase.rpc(
-              "update_daily_streak",
-            );
-
-            if (streakError) {
-              throw streakError;
-            }
-
-            streak = streakData?.[0] ?? null;
-          } catch (streakError) {
-            console.error("CHAT STREAK ERROR:", streakError);
-          }
-
           let unlockedAchievements: UnlockedAchievement[] = [];
 
-          try {
-            const { data: achievementData, error: achievementError } =
-              await supabase.rpc("check_and_unlock_achievements");
-
-            if (achievementError) {
-              throw achievementError;
-            }
-
-            unlockedAchievements =
-              (achievementData as UnlockedAchievement[] | null) ?? [];
-          } catch (achievementError) {
-            console.error("CHAT ACHIEVEMENT ERROR:", achievementError);
-          }
-
-          const achievementXpReward = unlockedAchievements.reduce(
-            (total, achievement) => total + achievement.xp_reward,
-            0,
-          );
-
-          if (achievementXpReward > 0) {
+          if (mode !== "speaking") {
             try {
               progress = await awardXp({
                 userId: user.id,
-                amount: achievementXpReward,
+                amount: 5,
               });
 
-              xpAwarded += achievementXpReward;
-            } catch (achievementXpError) {
-              console.error("CHAT ACHIEVEMENT XP ERROR:", achievementXpError);
+              xpAwarded += 5;
+            } catch (progressError) {
+              console.error("CHAT XP ERROR:", progressError);
+            }
+
+            try {
+              const { data: streakData, error: streakError } =
+                await supabase.rpc("update_daily_streak");
+
+              if (streakError) {
+                throw streakError;
+              }
+
+              streak = streakData?.[0] ?? null;
+            } catch (streakError) {
+              console.error("CHAT STREAK ERROR:", streakError);
+            }
+
+            try {
+              const { data: achievementData, error: achievementError } =
+                await supabase.rpc("check_and_unlock_achievements");
+
+              if (achievementError) {
+                throw achievementError;
+              }
+
+              unlockedAchievements =
+                (achievementData as UnlockedAchievement[] | null) ?? [];
+            } catch (achievementError) {
+              console.error("CHAT ACHIEVEMENT ERROR:", achievementError);
+            }
+
+            const achievementXpReward = unlockedAchievements.reduce(
+              (total, achievement) => total + achievement.xp_reward,
+              0,
+            );
+
+            if (achievementXpReward > 0) {
+              try {
+                progress = await awardXp({
+                  userId: user.id,
+                  amount: achievementXpReward,
+                });
+
+                xpAwarded += achievementXpReward;
+              } catch (achievementXpError) {
+                console.error(
+                  "CHAT ACHIEVEMENT XP ERROR:",
+                  achievementXpError,
+                );
+              }
             }
           }
 
