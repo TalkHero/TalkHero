@@ -687,6 +687,8 @@ async function updateProfileWithConfidence({
         confidence,
       placement_completed_at:
         completedAt,
+      placement_required:
+        false,
       placement_test_attempts:
         attempts,
     })
