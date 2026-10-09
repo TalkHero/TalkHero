@@ -106,7 +106,7 @@ interface UsePlacementTestResult {
   result: PlacementFinalResult | null;
   error: string | null;
 
-  startTest: () => Promise<void>;
+  startTest: (retake?: boolean) => Promise<void>;
   submitAnswer: (
   answer: string,
 ) => Promise<boolean>;
@@ -274,7 +274,7 @@ export function usePlacementTest():
 
 
   const startTest =
-    useCallback(async (): Promise<void> => {
+    useCallback(async (retake = false): Promise<void> => {
       setStatus("starting");
       setError(null);
       setEvaluation(null);
@@ -282,7 +282,9 @@ export function usePlacementTest():
 
       try {
         const response = await fetch(
-          "/api/placement-test/start",
+          retake
+            ? "/api/placement-test/start?retake=1"
+            : "/api/placement-test/start",
           {
             method: "POST",
             headers: {

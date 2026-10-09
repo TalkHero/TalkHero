@@ -171,6 +171,31 @@ async function getActiveSession(
     | null;
 }
 
+async function getLatestCompletedSession(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<PlacementSessionRow | null> {
+  const { data, error } = await supabase
+    .from("placement_test_sessions")
+    .select(SESSION_SELECT)
+    .eq("user_id", userId)
+    .eq("status", "completed")
+    .order("completed_at", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as unknown as
+    | PlacementSessionRow
+    | null;
+}
+
+
 async function createPlacementSession(
   supabase: SupabaseClient,
   userId: string,
@@ -210,9 +235,10 @@ async function createPlacementSession(
     PlacementSessionRow;
 }
 
-async function getOrCreateActiveSession(
+async function getPlacementStartSession(
   supabase: SupabaseClient,
   userId: string,
+  retake: boolean,
 ): Promise<PlacementSessionRow> {
   const activeSession =
     await getActiveSession(
@@ -222,6 +248,18 @@ async function getOrCreateActiveSession(
 
   if (activeSession) {
     return activeSession;
+  }
+
+  if (!retake) {
+    const completedSession =
+      await getLatestCompletedSession(
+        supabase,
+        userId,
+      );
+
+    if (completedSession) {
+      return completedSession;
+    }
   }
 
   return createPlacementSession(
@@ -456,7 +494,7 @@ async function generateAndSaveQuestion(
   );
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const supabase =
       await createClient();
@@ -499,11 +537,23 @@ export async function POST() {
         },
       );
     }
+    const retake =
+      new URL(request.url).searchParams.get(
+        "retake",
+      ) === "1";
+
     const session =
-      await getOrCreateActiveSession(
+      await getPlacementStartSession(
         supabase,
         user.id,
+        retake,
       );
+
+    if (session.status === "completed") {
+      return createReadyToFinishResponse(
+        session,
+      );
+    }
 
     const questionIndex =
       session.current_question_index;

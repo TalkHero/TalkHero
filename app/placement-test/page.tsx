@@ -184,8 +184,10 @@ function getResultSummary(
 
 function FinalResult({
   result,
+  onRetake,
 }: {
   result: PlacementFinalResult;
+  onRetake: () => Promise<void>;
 }) {
   const resultSummary =
     getResultSummary(result);
@@ -293,6 +295,15 @@ function FinalResult({
             Відкрити профіль
           </Link>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            void onRetake();
+          }}
+          className="mt-3 w-full rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Пройти тест повторно
+        </button>
       </section>
     </main>
   );
@@ -478,7 +489,10 @@ useEffect(() => {
     result
   ) {
     return (
-      <FinalResult result={result} />
+      <FinalResult
+        result={result}
+        onRetake={() => startTest(true)}
+      />
     );
   }
 
