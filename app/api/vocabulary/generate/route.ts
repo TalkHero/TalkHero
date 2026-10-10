@@ -92,6 +92,18 @@ function getLanguageName(
   return LANGUAGE_NAMES[normalized] ?? value;
 }
 
+function isCompleteVocabularyItem(item: {
+  translation: string | null;
+  meaning: string | null;
+  example: string | null;
+}): boolean {
+  return Boolean(
+    item.translation?.trim() &&
+      item.meaning?.trim() &&
+      item.example?.trim(),
+  );
+}
+
 function createGenerationPrompt({
   word,
   context,
@@ -244,7 +256,10 @@ export async function POST(request: Request) {
       throw existingItemError;
     }
 
-    if (existingItem) {
+    if (
+      existingItem &&
+      isCompleteVocabularyItem(existingItem)
+    ) {
       return NextResponse.json({
         vocabularyItem: existingItem,
         alreadyExists: true,
@@ -367,6 +382,45 @@ export async function POST(request: Request) {
 
     const generatedCard = generatedResult.data;
 
+    if (existingItem) {
+      const {
+        data: repairedItem,
+        error: repairError,
+      } = await supabase
+        .from("vocabulary")
+        .update({
+          translation: generatedCard.translation,
+          meaning: generatedCard.meaning,
+          example: generatedCard.example,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingItem.id)
+        .eq("user_id", user.id)
+        .select(
+          `
+            id,
+            word,
+            translation,
+            meaning,
+            example,
+            status,
+            review_count,
+            created_at,
+            updated_at
+          `,
+        )
+        .single();
+
+      if (repairError) {
+        throw repairError;
+      }
+
+      return NextResponse.json({
+        vocabularyItem: repairedItem,
+        alreadyExists: true,
+      });
+    }
+
     const {
       data: normalizedExistingItem,
       error: normalizedExistingItemError,
@@ -394,8 +448,51 @@ export async function POST(request: Request) {
     }
 
     if (normalizedExistingItem) {
+      if (
+        isCompleteVocabularyItem(
+          normalizedExistingItem,
+        )
+      ) {
+        return NextResponse.json({
+          vocabularyItem: normalizedExistingItem,
+          alreadyExists: true,
+        });
+      }
+
+      const {
+        data: repairedItem,
+        error: repairError,
+      } = await supabase
+        .from("vocabulary")
+        .update({
+          translation: generatedCard.translation,
+          meaning: generatedCard.meaning,
+          example: generatedCard.example,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", normalizedExistingItem.id)
+        .eq("user_id", user.id)
+        .select(
+          `
+            id,
+            word,
+            translation,
+            meaning,
+            example,
+            status,
+            review_count,
+            created_at,
+            updated_at
+          `,
+        )
+        .single();
+
+      if (repairError) {
+        throw repairError;
+      }
+
       return NextResponse.json({
-        vocabularyItem: normalizedExistingItem,
+        vocabularyItem: repairedItem,
         alreadyExists: true,
       });
     }

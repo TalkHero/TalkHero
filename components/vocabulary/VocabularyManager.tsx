@@ -139,26 +139,64 @@ export function VocabularyManager() {
   async function addWord(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!word.trim() || saving) {
+    const normalizedWord = word.trim();
+    const normalizedTranslation = translation.trim();
+    const normalizedMeaning = meaning.trim();
+    const normalizedExample = example.trim();
+
+    if (!normalizedWord || saving) {
       return;
     }
+
+    const manualFields = [
+      normalizedTranslation,
+      normalizedMeaning,
+      normalizedExample,
+    ];
+
+    const completedManualFields =
+      manualFields.filter(Boolean).length;
+
+    if (
+      completedManualFields > 0 &&
+      completedManualFields < manualFields.length
+    ) {
+      setErrorMessage(
+        "Заповніть переклад, пояснення та приклад повністю або залиште всі три поля порожніми для автоматичного створення картки.",
+      );
+      return;
+    }
+
+    const shouldGenerate =
+      completedManualFields === 0;
 
     setSaving(true);
     setErrorMessage("");
 
     try {
-      const response = await fetch("/api/vocabulary", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        shouldGenerate
+          ? "/api/vocabulary/generate"
+          : "/api/vocabulary",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(
+            shouldGenerate
+              ? {
+                  word: normalizedWord,
+                }
+              : {
+                  word: normalizedWord,
+                  translation: normalizedTranslation,
+                  meaning: normalizedMeaning,
+                  example: normalizedExample,
+                },
+          ),
         },
-        body: JSON.stringify({
-          word,
-          translation,
-          meaning,
-          example,
-        }),
-      });
+      );
 
       const data = await response.json();
 
@@ -168,10 +206,28 @@ export function VocabularyManager() {
         );
       }
 
-      setVocabulary((previous) => [
-        data.vocabularyItem,
-        ...previous,
-      ]);
+      const vocabularyItem =
+        data.vocabularyItem as VocabularyItem;
+
+      setVocabulary((previous) => {
+        const itemAlreadyExists = previous.some(
+          (currentItem) =>
+            currentItem.id === vocabularyItem.id,
+        );
+
+        if (!itemAlreadyExists) {
+          return [
+            vocabularyItem,
+            ...previous,
+          ];
+        }
+
+        return previous.map((currentItem) =>
+          currentItem.id === vocabularyItem.id
+            ? vocabularyItem
+            : currentItem,
+        );
+      });
 
       setWord("");
       setTranslation("");
