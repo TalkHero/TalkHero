@@ -84,6 +84,35 @@ type ApiErrorResponse = {
   code?: unknown;
 };
 
+class AssessmentApiError extends Error {
+  readonly status: number;
+  readonly code: string | null;
+
+  constructor(
+    message: string,
+    status: number,
+    code: unknown,
+  ) {
+    super(message);
+
+    this.name = "AssessmentApiError";
+    this.status = status;
+    this.code =
+      typeof code === "string"
+        ? code
+        : null;
+  }
+}
+
+function shouldLogAssessmentError(
+  error: unknown,
+): boolean {
+  return (
+    !(error instanceof AssessmentApiError) ||
+    error.status >= 500
+  );
+}
+
 type RunnerStatus =
   | "loading"
   | "ready"
@@ -517,11 +546,16 @@ async function fetchAssessmentAttempt(
     >(response);
 
   if (!response.ok) {
-    throw new Error(
+    const apiError =
+      payload as ApiErrorResponse;
+
+    throw new AssessmentApiError(
       getApiErrorMessage(
-        payload as ApiErrorResponse,
+        apiError,
         "Не вдалося розпочати тест.",
       ),
+      response.status,
+      apiError.code,
     );
   }
 
@@ -595,10 +629,12 @@ export function AssessmentRunner({
       setQuestion(attempt.question);
       setStatus("ready");
     } catch (loadError) {
-      console.error(
-        "Failed to load assessment:",
-        loadError,
-      );
+      if (shouldLogAssessmentError(loadError)) {
+        console.error(
+          "Failed to load assessment:",
+          loadError,
+        );
+      }
 
       setError(
         loadError instanceof Error
@@ -630,10 +666,12 @@ export function AssessmentRunner({
           return;
         }
 
-        console.error(
-          "Failed to load assessment:",
-          loadError,
-        );
+        if (shouldLogAssessmentError(loadError)) {
+          console.error(
+            "Failed to load assessment:",
+            loadError,
+          );
+        }
 
         setError(
           loadError instanceof Error
@@ -741,13 +779,15 @@ export function AssessmentRunner({
             return;
           }
 
-          throw new Error(
+          throw new AssessmentApiError(
             getApiErrorMessage(
               apiError,
               action === "answer"
                 ? "Не вдалося зберегти відповідь."
                 : "Не вдалося пропустити запитання.",
             ),
+            response.status,
+            apiError.code,
           );
         }
 
@@ -787,10 +827,12 @@ export function AssessmentRunner({
 
         setStatus("feedback");
       } catch (submitError) {
-        console.error(
-          "Failed to submit assessment action:",
-          submitError,
-        );
+        if (shouldLogAssessmentError(submitError)) {
+          console.error(
+            "Failed to submit assessment action:",
+            submitError,
+          );
+        }
 
         setError(
           submitError instanceof Error

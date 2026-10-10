@@ -45,6 +45,32 @@ function getErrorStatus(
   }
 }
 
+function getErrorMessage(
+  error: AssessmentEngineError,
+): string {
+  switch (error.code) {
+    case "TEST_NOT_FOUND":
+      return API_ERRORS.assessmentTestNotFound;
+
+    case "ATTEMPT_NOT_FOUND":
+      return API_ERRORS.assessmentAttemptNotFound;
+
+    case "QUESTION_NOT_FOUND":
+      return API_ERRORS.assessmentQuestionNotFound;
+
+    case "ATTEMPT_NOT_IN_PROGRESS":
+      return API_ERRORS.assessmentAttemptNotInProgress;
+
+    case "QUESTION_OUT_OF_SEQUENCE":
+      return API_ERRORS.assessmentQuestionOutOfSequence;
+
+    case "QUESTION_ALREADY_ANSWERED":
+      return API_ERRORS.assessmentQuestionAlreadyAnswered;
+
+    default:
+      return API_ERRORS.internalServerError;
+  }
+}
 export async function POST(
   request: Request,
   context: RouteContext,
@@ -101,8 +127,8 @@ export async function POST(
       ) {
         return NextResponse.json(
           {
-            error: API_ERRORS.internalServerError,
-            code: "QUESTION_NOT_FOUND",
+            error: API_ERRORS.invalidRequestData,
+          code: "QUESTION_NOT_FOUND",
           },
           {
             status: 400,
@@ -119,7 +145,7 @@ export async function POST(
     ) {
       return NextResponse.json(
         {
-          error: API_ERRORS.internalServerError,
+          error: API_ERRORS.invalidRequestData,
           code: "QUESTION_NOT_FOUND",
         },
         {
@@ -150,7 +176,7 @@ export async function POST(
 
       return NextResponse.json(
         {
-          error: API_ERRORS.internalServerError,
+          error: getErrorMessage(error),
           code: error.code,
         },
         {

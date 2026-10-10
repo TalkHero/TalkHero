@@ -52,7 +52,7 @@ export async function POST(
       if (error.code === "TEST_NOT_FOUND") {
         return NextResponse.json(
           {
-            error: API_ERRORS.internalServerError,
+            error: API_ERRORS.assessmentTestNotFound,
             code: error.code,
           },
           { status: 404 },
@@ -65,7 +65,7 @@ export async function POST(
       ) {
         return NextResponse.json(
           {
-            error: API_ERRORS.internalServerError,
+            error: API_ERRORS.assessmentUnavailable,
             code: error.code,
           },
           { status: 409 },

@@ -6,6 +6,24 @@ export const API_ERRORS = {
 
   // General request validation
   invalidRequestData: "Некоректні дані запиту.",
+
+  // Assessment
+  assessmentTestNotFound:
+    "Тест не знайдено.",
+  assessmentUnavailable:
+    "Тест тимчасово недоступний. Спробуйте пізніше.",
+  assessmentAttemptNotFound:
+    "Спробу проходження тесту не знайдено.",
+  assessmentAttemptNotInProgress:
+    "Ця спроба тесту вже не активна.",
+  assessmentQuestionNotFound:
+    "Питання тесту не знайдено.",
+  assessmentQuestionOutOfSequence:
+    "Це питання зараз не є поточним.",
+  assessmentQuestionAlreadyAnswered:
+    "На це питання вже було надано відповідь.",
+  assessmentInvalidAnswer:
+    "Некоректна відповідь на питання.",
   userIdRequired: "Ідентифікатор користувача є обов'язковим.",
 
   // Chat

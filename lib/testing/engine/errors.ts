@@ -1,5 +1,6 @@
 export type AssessmentEngineErrorCode =
   | "TEST_NOT_FOUND"
+  | "TEST_LOAD_FAILED"
   | "BLUEPRINT_NOT_FOUND"
   | "NOT_ENOUGH_QUESTIONS"
   | "ATTEMPT_NOT_FOUND"

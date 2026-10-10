@@ -282,7 +282,7 @@ export async function startAssessmentAttempt({
     console.error("Failed to load assessment test:", testError);
 
     throw new AssessmentEngineError(
-      "TEST_NOT_FOUND",
+      "TEST_LOAD_FAILED",
       "Failed to load assessment test",
       { testSlug: normalizedSlug },
     );
