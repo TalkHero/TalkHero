@@ -50,7 +50,9 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/review") ||
     pathname.startsWith("/profile") ||
     pathname.startsWith("/settings") ||
-    pathname.startsWith("/placement-test");
+    pathname.startsWith("/placement-test") ||
+    pathname.startsWith("/assessment") ||
+    pathname.startsWith("/quests");
 
   if (!user && isProtectedPage) {
     const url = request.nextUrl.clone();
@@ -81,5 +83,7 @@ export const config = {
     "/profile/:path*",
     "/settings/:path*",
     "/placement-test/:path*",
+    "/assessment/:path*",
+    "/quests/:path*",
   ],
 };
