@@ -1054,6 +1054,17 @@ trackEvent("speaking_completed", {
                 </p>
               </div>
             </div>
+
+            {phase === "error" && (
+              <button
+                type="button"
+                onClick={retryListening}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+              >
+                <Play className="h-4 w-4" />
+                Продовжити
+              </button>
+            )}
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-5 lg:p-7">
