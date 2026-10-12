@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+
+import { DeleteAccountButton } from "@/components/settings/DeleteAccountButton";
 import {
   Bell,
   Globe2,
@@ -75,9 +77,7 @@ export default function SettingsPage() {
           title="Безпека та конфіденційність"
           description="Керування параметрами облікового запису та приватності."
         >
-          <div className="rounded-xl border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
-            Незабаром
-          </div>
+          <DeleteAccountButton />
         </SettingCard>
       </div>
     </main>

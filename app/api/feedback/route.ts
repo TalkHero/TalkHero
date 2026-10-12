@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
 
 import {
   InvalidFormDataBodyError,
@@ -16,6 +17,21 @@ const ALLOWED_MIME_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
+const CATEGORY_LABELS: Record<string, string> = {
+  bug: "Помилка",
+  idea: "Ідея",
+  question: "Запитання",
+  other: "Інше",
+};
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 const MAX_ANONYMOUS_FEEDBACK_BODY_BYTES =
   64 * 1024;
@@ -311,6 +327,90 @@ export async function POST(request: Request) {
         {
           status: 500,
         },
+      );
+    }
+
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const supportEmail = process.env.SUPPORT_EMAIL;
+    const fromEmail = process.env.RESEND_FROM_EMAIL;
+
+    if (resendApiKey && supportEmail && fromEmail) {
+      try {
+        const resend = new Resend(resendApiKey);
+
+        const categoryLabel =
+          CATEGORY_LABELS[category] ?? category;
+
+        const emailAttachments = await Promise.all(
+          attachments.map(async (file, index) => {
+            const extension = getFileExtension(file);
+
+            const filename =
+              sanitizeFileName(file.name) ||
+              `attachment-${index + 1}.${extension}`;
+
+            const buffer = Buffer.from(
+              await file.arrayBuffer(),
+            );
+
+            return {
+              filename,
+              content: buffer.toString("base64"),
+              contentType: file.type,
+            };
+          }),
+        );
+
+        const { error: emailError } =
+          await resend.emails.send({
+            from: fromEmail,
+            to: supportEmail,
+            replyTo: email,
+            subject: `TalkHero: ${categoryLabel} — ${email}`,
+            attachments: emailAttachments,
+            html: `
+              <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;color:#111827;">
+                <h2 style="margin-bottom:24px;">Нове звернення TalkHero</h2>
+
+                <p><strong>Категорія:</strong> ${escapeHtml(categoryLabel)}</p>
+                <p><strong>Ім’я:</strong> ${escapeHtml(name || "Не вказано")}</p>
+                <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+                <p><strong>Авторизований користувач:</strong> ${
+                  user ? "Так" : "Ні"
+                }</p>
+                <p><strong>Кількість вкладень:</strong> ${
+                  attachmentPaths.length
+                }</p>
+
+                <div style="margin-top:24px;">
+                  <strong>Повідомлення:</strong>
+                  <div style="margin-top:8px;padding:16px;background:#f3f4f6;border-radius:12px;white-space:pre-wrap;">
+                    ${escapeHtml(message)}
+                  </div>
+                </div>
+
+                <p style="margin-top:24px;color:#6b7280;font-size:13px;">
+                  ID звернення: ${feedbackId}
+                </p>
+              </div>
+            `,
+          });
+
+        if (emailError) {
+          console.error(
+            "FEEDBACK EMAIL SEND ERROR:",
+            emailError,
+          );
+        }
+      } catch (emailError) {
+        console.error(
+          "FEEDBACK EMAIL ERROR:",
+          emailError,
+        );
+      }
+    } else {
+      console.warn(
+        "FEEDBACK EMAIL SKIPPED: missing Resend environment variables",
       );
     }
 
