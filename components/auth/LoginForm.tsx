@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
@@ -15,23 +16,45 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [
+    passwordResetSuccess,
+    setPasswordResetSuccess,
+  ] = useState(false);
+
+  useEffect(() => {
+    const searchParams =
+      new URLSearchParams(
+        window.location.search,
+      );
+
+    setPasswordResetSuccess(
+      searchParams.get("password-reset") ===
+        "success",
+    );
+  }, []);
+
   async function handleLogin() {
     if (!email || !password) {
-      alert("Введіть електронну пошту та пароль.");
+      alert(
+        "Введіть електронну пошту та пароль.",
+      );
       return;
     }
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
     setLoading(false);
 
     if (error) {
-      alert("Не вдалося увійти. Перевірте електронну пошту та пароль.");
+      alert(
+        "Не вдалося увійти. Перевірте електронну пошту та пароль.",
+      );
       return;
     }
 
@@ -55,42 +78,84 @@ export function LoginForm() {
         </h1>
 
         <p className="mt-2 leading-7 text-slate-500">
-          Продовжуйте навчання з того місця, де зупинилися.
+          Продовжуйте навчання з того місця, де
+          зупинилися.
         </p>
       </div>
 
       <div className="mt-7 space-y-5">
+        {passwordResetSuccess && (
+          <div
+            role="status"
+            className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3"
+          >
+            <p className="text-sm font-medium leading-6 text-emerald-700">
+              Пароль успішно змінено. Увійдіть з
+              новим паролем.
+            </p>
+          </div>
+        )}
+
         <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-700">
+          <label
+            htmlFor="login-email"
+            className="mb-2 block text-sm font-semibold text-slate-700"
+          >
             Електронна пошта
           </label>
 
           <input
+            id="login-email"
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
             placeholder="you@example.com"
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+            onChange={(event) => {
+              setEmail(event.target.value);
+            }}
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-700">
-            Пароль
-          </label>
+          <div className="mb-2 flex items-center justify-between gap-4">
+            <label
+              htmlFor="login-password"
+              className="text-sm font-semibold text-slate-700"
+            >
+              Пароль
+            </label>
+
+            <Link
+              href="/forgot-password"
+              className="text-sm font-semibold text-indigo-600 transition hover:text-indigo-700"
+            >
+              Забули пароль?
+            </Link>
+          </div>
 
           <input
+            id="login-password"
             className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
             placeholder="Ваш пароль"
             type="password"
             autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            onChange={(event) => {
+              setPassword(event.target.value);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                void handleLogin();
+              }
+            }}
           />
         </div>
 
         <Button
+          type="button"
           className="h-12 w-full rounded-xl bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-700"
           disabled={loading}
           onClick={handleLogin}
@@ -100,12 +165,12 @@ export function LoginForm() {
 
         <p className="text-center text-sm text-slate-500">
           Ще не маєте акаунта?{" "}
-          <a
+          <Link
             href="/register"
-            className="font-semibold text-indigo-600 hover:text-indigo-700"
+            className="font-semibold text-indigo-600 transition hover:text-indigo-700"
           >
             Створити акаунт
-          </a>
+          </Link>
         </p>
       </div>
     </div>
