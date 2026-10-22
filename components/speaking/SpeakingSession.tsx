@@ -445,13 +445,18 @@ export function SpeakingSession() {
         return;
       }
 
-      const evaluationPromise = evaluateTranscript(text);
+      const containsUkrainian =
+        /[А-Яа-яІіЇїЄєҐґ]/.test(text);
 
-      pendingEvaluationPromisesRef.current.add(evaluationPromise);
+      if (!containsUkrainian) {
+        const evaluationPromise = evaluateTranscript(text);
 
-      void evaluationPromise.finally(() => {
-        pendingEvaluationPromisesRef.current.delete(evaluationPromise);
-      });
+        pendingEvaluationPromisesRef.current.add(evaluationPromise);
+
+        void evaluationPromise.finally(() => {
+          pendingEvaluationPromisesRef.current.delete(evaluationPromise);
+        });
+      }
 
       if (!sessionActiveRef.current) {
         processingTranscriptRef.current = false;
