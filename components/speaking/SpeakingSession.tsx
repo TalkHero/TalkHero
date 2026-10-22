@@ -776,13 +776,13 @@ trackEvent("speaking_completed", {
   const phaseInformation = {
     idle: {
       title: "Готові до практики",
-      description: "Почніть розмову з Еммою без використання рук.",
+      description: "Говоріть англійською, а якщо застрягли — попросіть допомогу українською.",
       icon: Mic,
     },
 
     listening: {
       title: "Емма слухає...",
-      description: "Говоріть англійською природно.",
+      description: "Відповідайте англійською або попросіть підказку українською.",
       icon: Mic,
     },
 
@@ -827,7 +827,7 @@ trackEvent("speaking_completed", {
             </h2>
 
             <p className="hidden text-sm text-slate-500 lg:block">
-              Автоматична голосова розмова
+              Розмовна практика з підтримкою української
             </p>
           </div>
         </div>
@@ -966,7 +966,7 @@ trackEvent("speaking_completed", {
             </p>
           ) : (
             <p className="mt-6 text-xs text-slate-400">
-              Після завершення відповіді Емма автоматично знову почне слухати.
+              Емма автоматично слухає далі. Якщо не знаєте, як сказати щось англійською — можете попросити допомогу українською.
             </p>
           )}
         </div>

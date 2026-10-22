@@ -60,6 +60,14 @@ function createOpeningMessage({
   targetLanguage: string;
 }): string {
   if (targetLanguage === "English") {
+    if (nativeLanguage === "Ukrainian") {
+      if (firstName) {
+        return `Hi, ${firstName}! I'm Emma. Я допоможу тобі практикувати англійську. Якщо застрягнеш, можеш сказати українською — я підкажу. What do you like doing in your free time?`;
+      }
+
+      return "Hi! I'm Emma. Я допоможу тобі практикувати англійську. Якщо застрягнеш, можеш сказати українською — я підкажу. What's your name?";
+    }
+
     if (firstName) {
       return `Hi, ${firstName}! I'm Emma. Nice to meet you. What do you like doing in your free time?`;
     }
