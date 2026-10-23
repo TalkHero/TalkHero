@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Brain, CheckCircle2, MessageCircleMore, Sparkles } from "lucide-react";
 
 import { LoginForm } from "@/components/auth/LoginForm";
@@ -86,7 +87,15 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <LoginForm />
+            <Suspense
+  fallback={
+    <div className="w-full rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/60 sm:p-9">
+      <div className="h-72 animate-pulse rounded-2xl bg-slate-100" />
+    </div>
+  }
+>
+  <LoginForm />
+</Suspense>
           </div>
         </section>
       </div>

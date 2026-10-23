@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -523,6 +524,7 @@ const recommendations =
 
 async function fetchAssessmentAttempt(
   slug: string,
+  onUnauthorized: () => void,
 ): Promise<StartAttemptResponse | null> {
   const response = await fetch(
     `/api/tests/${encodeURIComponent(slug)}/attempts`,
@@ -532,11 +534,7 @@ async function fetchAssessmentAttempt(
   );
 
   if (response.status === 401) {
-    const nextPath = `/assessment/${encodeURIComponent(slug)}`;
-
-    window.location.href =
-      `/login?next=${encodeURIComponent(nextPath)}`;
-
+    onUnauthorized();
     return null;
   }
 
@@ -565,6 +563,16 @@ async function fetchAssessmentAttempt(
 export function AssessmentRunner({
   slug,
 }: AssessmentRunnerProps) {
+  const router = useRouter();
+
+  const redirectToLogin = useCallback(() => {
+    const nextPath = `/assessment/${encodeURIComponent(slug)}`;
+
+    router.push(
+      `/login?next=${encodeURIComponent(nextPath)}`,
+    );
+  }, [router, slug]);
+
   const [status, setStatus] =
     useState<RunnerStatus>("loading");
 
@@ -617,7 +625,7 @@ export function AssessmentRunner({
     setSelectedAnswer(null);
 
     try {
-      const attempt = await fetchAssessmentAttempt(slug);
+      const attempt = await fetchAssessmentAttempt(slug, redirectToLogin);
 
       if (!attempt) {
         return;
@@ -644,12 +652,12 @@ export function AssessmentRunner({
 
       setStatus("error");
     }
-  }, [slug]);
+  }, [redirectToLogin, slug]);
 
   useEffect(() => {
     let cancelled = false;
 
-    void fetchAssessmentAttempt(slug)
+    void fetchAssessmentAttempt(slug, redirectToLogin)
       .then((attempt) => {
         if (cancelled || !attempt) {
           return;
@@ -685,7 +693,7 @@ export function AssessmentRunner({
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [redirectToLogin, slug]);
 
   const progressPercentage = useMemo(() => {
     if (!progress || progress.total <= 0) {
@@ -749,11 +757,7 @@ export function AssessmentRunner({
         });
 
         if (response.status === 401) {
-          const nextPath = `/assessment/${encodeURIComponent(slug)}`;
-
-          window.location.href =
-            `/login?next=${encodeURIComponent(nextPath)}`;
-
+          redirectToLogin();
           return;
         }
 
@@ -847,6 +851,7 @@ export function AssessmentRunner({
       attemptId,
       loadAttempt,
       question,
+      redirectToLogin,
       selectedAnswer,
       slug,
       status,

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,22 +16,11 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [
-    passwordResetSuccess,
-    setPasswordResetSuccess,
-  ] = useState(false);
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const searchParams =
-      new URLSearchParams(
-        window.location.search,
-      );
-
-    setPasswordResetSuccess(
-      searchParams.get("password-reset") ===
-        "success",
-    );
-  }, []);
+  const passwordResetSuccess =
+    searchParams.get("password-reset") ===
+    "success";
 
   async function handleLogin() {
     if (!email || !password) {
