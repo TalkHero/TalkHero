@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -40,6 +40,13 @@ type LearningMode = {
   actionLabel: string;
   icon: typeof MessageCircle;
   iconClassName: string;
+};
+
+const NEXT_ENGLISH_LEVEL: Record<string, string> = {
+  A1: "A2",
+  A2: "B1",
+  B1: "B2",
+  B2: "C1",
 };
 
 function LoadingState() {
@@ -182,11 +189,6 @@ export function HomeScreen() {
     };
   }, [loadDashboard]);
 
-  const testHref = useMemo(() => {
-    const slug = data?.assessment.recommendedTestSlug;
-
-    return slug ? `/assessment/${encodeURIComponent(slug)}` : "/placement-test";
-  }, [data]);
 
   if (loading) {
     return <LoadingState />;
@@ -202,6 +204,16 @@ export function HomeScreen() {
       />
     );
   }
+
+  const currentEnglishLevel =
+    data.profile.englishLevel?.trim().toUpperCase() || "A1";
+
+  const nextEnglishLevel =
+    NEXT_ENGLISH_LEVEL[currentEnglishLevel] ?? null;
+
+  const levelTestHref = nextEnglishLevel
+    ? `/assessment/english-${nextEnglishLevel.toLowerCase()}`
+    : null;
 
   const xpPerLevel = 100;
 
@@ -263,9 +275,9 @@ export function HomeScreen() {
 
   const statistics = [
     {
-      label: "Рівень англійської",
-      value: data.profile.englishLevel,
-      icon: GraduationCap,
+      label: "Завершено місій",
+      value: data.nextAdventure.completedMissions.toString(),
+      icon: Gamepad2,
       iconClassName: "bg-primary-soft text-primary",
     },
     {
@@ -332,20 +344,102 @@ export function HomeScreen() {
             kind: "review" as const,
           }
         : {
-            label: "Наступний крок",
-            title: "Перевірте свій прогрес",
+            label: "Рекомендовано",
+            title: "Розмовна практика з Еммою",
             description:
-              "Пройдіть рекомендований тест і подивіться, як змінився ваш рівень.",
-            href: testHref,
-            action: data.assessment.hasAssessment
-              ? "Пройти наступний тест"
-              : "Почати тест",
-            context: "Оцінювання знань",
-            kind: "assessment" as const,
+              "Закріпіть свій прогрес у живій розмові та отримайте мовний зворотний зв’язок.",
+            href: "/speaking",
+            action: "Почати практику",
+            context: "Щоденна практика",
+            kind: "speaking" as const,
           };
 
   return (
     <div className="space-y-8">
+      <section aria-labelledby="level-progress-heading">
+        <Card className="overflow-hidden border-violet-200 bg-gradient-to-br from-white via-white to-violet-50">
+          <CardHeader>
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-2xl">
+                <Badge variant="neutral" className="mb-3">
+                  <BookOpenCheck aria-hidden="true" />
+                  Оцінювання знань
+                </Badge>
+
+                <CardTitle
+                  id="level-progress-heading"
+                  className="text-3xl sm:text-4xl"
+                >
+                  Ваш рівень англійської
+                </CardTitle>
+
+                <CardDescription className="mt-3 text-base leading-7">
+                  {nextEnglishLevel
+                    ? `Наступна ціль — ${nextEnglishLevel}. Складіть тест рівня ${nextEnglishLevel} щонайменше на 70%, щоб підвищити свій рівень англійської.`
+                    : "Ви досягли найвищого рівня, для якого зараз доступний тест у TalkHero."}
+                </CardDescription>
+              </div>
+
+              <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                <GraduationCap className="size-7" aria-hidden="true" />
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+              <div className="rounded-xl border bg-white p-5">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Поточний рівень
+                </p>
+
+                <p className="mt-2 text-4xl font-bold tracking-tight">
+                  {currentEnglishLevel}
+                </p>
+              </div>
+
+              <div className="hidden justify-center sm:flex">
+                <ArrowRight
+                  className="size-6 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
+
+              <div className="rounded-xl border border-violet-200 bg-violet-50/60 p-5">
+                <p className="text-sm font-medium text-violet-700">
+                  {nextEnglishLevel
+                    ? "Наступна ціль"
+                    : "Прогрес рівня"}
+                </p>
+
+                <p className="mt-2 text-4xl font-bold tracking-tight">
+                  {nextEnglishLevel ?? currentEnglishLevel}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+
+          <CardFooter>
+            {nextEnglishLevel && levelTestHref ? (
+              <Link
+                href={levelTestHref}
+                className={buttonVariants()}
+              >
+                Пройти тест {nextEnglishLevel}
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            ) : (
+              <Badge variant="neutral">
+                Максимальний доступний рівень
+              </Badge>
+            )}
+          </CardFooter>
+        </Card>
+      </section>
+
+
+      <DailyGoalsSection goals={data.dailyGoals} />
+
       <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
         <Card className="overflow-hidden border-primary/10 bg-gradient-to-br from-white via-white to-primary-soft">
           <CardHeader className="pb-2">
@@ -413,7 +507,6 @@ export function HomeScreen() {
         </Card>
       </section>
 
-      <DailyGoalsSection goals={data.dailyGoals} />
 
       <section aria-labelledby="learning-modes-heading">
         <div className="mb-5">
@@ -639,46 +732,7 @@ export function HomeScreen() {
         </Card>
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <CardDescription>Оцінювання знань</CardDescription>
-
-                <CardTitle className="mt-1">
-                  {data.assessment.latest
-                    ? `Останній результат: ${Math.round(
-                        data.assessment.latest.percentage,
-                      )}%`
-                    : "Визначте свій рівень англійської"}
-                </CardTitle>
-              </div>
-
-              <div className="flex size-12 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
-                <BookOpenCheck className="size-6" aria-hidden="true" />
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {data.assessment.latest
-                ? "Пройдіть рекомендований тест, щоб перевірити прогрес і знайти теми для покращення."
-                : "Пройдіть коротке оцінювання й отримайте персональні рекомендації."}
-            </p>
-          </CardContent>
-
-          <CardFooter>
-            <Link href={testHref} className={buttonVariants()}>
-              {data.assessment.hasAssessment
-                ? "Пройти наступний тест"
-                : "Почати тест"}
-
-              <ArrowRight aria-hidden="true" />
-            </Link>
-          </CardFooter>
-        </Card>
+      <section>
 
         <Card>
           <CardHeader>
