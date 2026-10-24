@@ -215,14 +215,6 @@ export function HomeScreen() {
     ? `/assessment/english-${nextEnglishLevel.toLowerCase()}`
     : null;
 
-  const xpPerLevel = 100;
-
-  const currentLevelStartXp = Math.max(data.profile.level - 1, 0) * xpPerLevel;
-
-  const xpInsideCurrentLevel = Math.min(
-    Math.max(data.profile.xp - currentLevelStartXp, 0),
-    xpPerLevel,
-  );
 
   const learnedPercentage =
     data.stats.vocabulary > 0
@@ -299,8 +291,6 @@ export function HomeScreen() {
       iconClassName: "bg-success-soft text-emerald-700",
     },
   ];
-
-  const userName = data.profile.fullName?.trim().split(/\s+/)[0] || "друже";
 
   const reviewGoal = data.dailyGoals.items.find((goal) => goal.id === "review");
 
@@ -440,74 +430,49 @@ export function HomeScreen() {
 
       <DailyGoalsSection goals={data.dailyGoals} />
 
-      <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
+      <section aria-labelledby="next-step-heading">
         <Card className="overflow-hidden border-primary/10 bg-gradient-to-br from-white via-white to-primary-soft">
-          <CardHeader className="pb-2">
-            <Badge className="mb-2">
-              <Gamepad2 aria-hidden="true" />
+          <CardHeader className="pb-3">
+            <Badge className="mb-2 w-fit">
+              <Target aria-hidden="true" />
               {smartNextStep.label}
             </Badge>
 
-            <CardTitle className="text-3xl sm:text-4xl">
-              Вітаємо, {userName}
+            <CardTitle
+              id="next-step-heading"
+              className="text-3xl sm:text-4xl"
+            >
+              {smartNextStep.title}
             </CardTitle>
 
-            <CardDescription className="max-w-2xl text-base">
+            <CardDescription className="max-w-3xl text-base leading-7">
               {smartNextStep.description}
             </CardDescription>
           </CardHeader>
 
           <CardContent>
-            <div className="rounded-xl border border-primary/10 bg-white/80 p-5 backdrop-blur">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {smartNextStep.context}
-                  </p>
-
-                  <h2 className="mt-1 text-2xl font-bold tracking-tight">
-                    {smartNextStep.title}
-                  </h2>
-                </div>
-
-                <Link href={smartNextStep.href} className={buttonVariants()}>
-                  {smartNextStep.action}
-                  <ArrowRight aria-hidden="true" />
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-4 rounded-xl border border-primary/10 bg-white/80 p-5 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardDescription>Рівень користувача</CardDescription>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {smartNextStep.context}
+                </p>
 
-                <CardTitle className="mt-1 text-3xl">
-                  {data.profile.level}
-                </CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Продовжуйте з того місця, де зупинилися.
+                </p>
               </div>
 
-              <div className="flex size-12 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                <Target className="size-6" aria-hidden="true" />
-              </div>
+              <Link
+                href={smartNextStep.href}
+                className={buttonVariants()}
+              >
+                {smartNextStep.action}
+                <ArrowRight aria-hidden="true" />
+              </Link>
             </div>
-          </CardHeader>
-
-          <CardContent>
-            <Progress
-              value={xpInsideCurrentLevel}
-              max={xpPerLevel}
-              label={`${xpInsideCurrentLevel} із ${xpPerLevel} XP`}
-              showValue
-            />
           </CardContent>
         </Card>
       </section>
-
-
       <section aria-labelledby="learning-modes-heading">
         <div className="mb-5">
           <h2
